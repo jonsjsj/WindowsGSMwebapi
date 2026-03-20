@@ -58,7 +58,7 @@ jobs:
           Write-Host "Resolved version: $ver"
 
       - name: Restore NuGet packages
-        run: dotnet restore ${{ env.PROJECT_PATH }}
+        run: dotnet restore ${{ env.PROJECT_PATH }} --runtime win-x64
 
       - name: Build (error check)
         run: msbuild ${{ env.PROJECT_PATH }} /p:Configuration=Release /p:Platform=AnyCPU /p:RestorePackages=false
