@@ -58,16 +58,17 @@ jobs:
           Write-Host "Resolved version: $ver"
 
       - name: Restore NuGet packages
-        run: msbuild ${{ env.PROJECT_PATH }} /t:Restore /p:Configuration=Release
+        run: dotnet restore ${{ env.PROJECT_PATH }}
 
       - name: Build (error check)
-        run: msbuild ${{ env.PROJECT_PATH }} /p:Configuration=Release /p:Platform=AnyCPU
+        run: msbuild ${{ env.PROJECT_PATH }} /p:Configuration=Release /p:Platform=AnyCPU /p:RestorePackages=false
 
       - name: Publish self-contained win-x64
         run: |
           msbuild ${{ env.PROJECT_PATH }} `
             /t:Publish `
             /p:Configuration=Release `
+            /p:Platform=AnyCPU `
             /p:RuntimeIdentifier=win-x64 `
             /p:SelfContained=true `
             /p:PublishSingleFile=true `
