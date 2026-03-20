@@ -60,7 +60,7 @@ jobs:
       - name: Build & publish self-contained win-x64
         run: |
           msbuild ${{ env.PROJECT_PATH }} `
-            /t:Restore;Publish `
+            "/t:Restore;Publish" `
             /p:Configuration=Release `
             /p:Platform=AnyCPU `
             /p:RuntimeIdentifier=win-x64 `
