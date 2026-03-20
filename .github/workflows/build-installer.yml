@@ -38,6 +38,9 @@ jobs:
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
+      - name: Add MSBuild to PATH
+        uses: microsoft/setup-msbuild@v2
+
       - name: Resolve version
         id: version
         shell: pwsh
@@ -55,21 +58,22 @@ jobs:
           Write-Host "Resolved version: $ver"
 
       - name: Restore NuGet packages
-        run: dotnet restore ${{ env.PROJECT_PATH }}
+        run: msbuild ${{ env.PROJECT_PATH }} /t:Restore /p:Configuration=Release
 
       - name: Build (error check)
-        run: dotnet build ${{ env.PROJECT_PATH }} --configuration Release --no-restore
+        run: msbuild ${{ env.PROJECT_PATH }} /p:Configuration=Release /p:Platform=AnyCPU
 
       - name: Publish self-contained win-x64
         run: |
-          dotnet publish ${{ env.PROJECT_PATH }} `
-            --configuration Release `
-            --runtime win-x64 `
-            --self-contained true `
-            -p:PublishSingleFile=true `
-            -p:PublishReadyToRun=true `
-            -p:IncludeNativeLibrariesForSelfExtract=true `
-            --output ${{ env.PUBLISH_DIR }}
+          msbuild ${{ env.PROJECT_PATH }} `
+            /t:Publish `
+            /p:Configuration=Release `
+            /p:RuntimeIdentifier=win-x64 `
+            /p:SelfContained=true `
+            /p:PublishSingleFile=true `
+            /p:PublishReadyToRun=true `
+            /p:IncludeNativeLibrariesForSelfExtract=true `
+            /p:PublishDir=..\${{ env.PUBLISH_DIR }}\
 
       - name: Copy wwwroot alongside exe
         run: |
