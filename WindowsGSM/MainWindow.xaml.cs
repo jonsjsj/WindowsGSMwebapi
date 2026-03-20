@@ -2,6 +2,8 @@
 using LiveCharts;
 using LiveCharts.Wpf;
 using MahApps.Metro.Controls;
+using WindowsGSM.WebApi.Models;
+using WindowsGSM.WebApi.Services;
 using MahApps.Metro.Controls.Dialogs;
 using Microsoft.Win32;
 using NCrontab;
@@ -143,6 +145,7 @@ namespace WindowsGSM
 
         public static readonly Dictionary<int, ServerMetadata> _serverMetadata = new Dictionary<int, ServerMetadata>();
         public ServerMetadata GetServerMetadata(object serverId) => _serverMetadata.TryGetValue(int.Parse(serverId.ToString()), out var s) ? s : null;
+        private WebApiServer? _webApiServer;
 
         public List<PluginMetadata> PluginsList = new List<PluginMetadata>();
 
@@ -464,6 +467,7 @@ namespace WindowsGSM
             StartDashBoardRefresh();
 
             StartAutpIpUpdate();
+            InitializeWebApi();
         }
 
         private Process GetConsoleProcess(int processId)
@@ -1145,6 +1149,9 @@ namespace WindowsGSM
 
             // Stop Discord Bot
             g_DiscordBot.Stop().ConfigureAwait(false);
+
+            // Stop Web API
+            _webApiServer?.StopAsync().ConfigureAwait(false);
         }
 
         private void DataGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -4429,6 +4436,7 @@ namespace WindowsGSM
             hMenu_Home.Visibility = (HamburgerMenuControl.SelectedIndex == 0) ? Visibility.Visible : Visibility.Hidden;
             hMenu_Dashboard.Visibility = (HamburgerMenuControl.SelectedIndex == 1) ? Visibility.Visible : Visibility.Hidden;
             hMenu_Discordbot.Visibility = (HamburgerMenuControl.SelectedIndex == 2) ? Visibility.Visible : Visibility.Hidden;
+            hMenu_WebApi.Visibility = (HamburgerMenuControl.SelectedIndex == 3) ? Visibility.Visible : Visibility.Hidden;
 
             if (HamburgerMenuControl.SelectedIndex == 2)
             {
@@ -4487,6 +4495,7 @@ namespace WindowsGSM
             hMenu_Home.Visibility = Visibility.Visible;
             hMenu_Dashboard.Visibility = Visibility.Hidden;
             hMenu_Discordbot.Visibility = Visibility.Hidden;
+            hMenu_WebApi.Visibility = Visibility.Hidden;
 
             await Task.Delay(1); // Delay 0.001 sec due to a bug
             HamburgerMenuControl.SelectedIndex = 0;
@@ -4514,6 +4523,42 @@ namespace WindowsGSM
                 textBox_nextcrontab.Text = CrontabSchedule.TryParse(expression)?.GetNextOccurrence(DateTime.Now).ToString("ddd, MM/dd/yyyy HH:mm:ss");
             }
 
+        }
+
+        // — Web API integration ——————————————————————————————————————————
+
+        private void InitializeWebApi()
+        {
+            try
+            {
+                var config  = WebApiConfig.Load();
+                var network = new NetworkInfoService();
+                var manager = new ServerManagerService(this);
+                _webApiServer = new WebApiServer(config, network, manager);
+                WebApiPanel.Initialize(_webApiServer);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[WebApi] Init failed: {ex.Message}");
+            }
+        }
+
+        public async Task GameServer_StartById(string serverId)
+        {
+            var server = ServerGrid.Items.Cast<ServerTable>().FirstOrDefault(s => s.ID == serverId);
+            if (server != null) await GameServer_Start(server);
+        }
+
+        public async Task GameServer_StopById(string serverId)
+        {
+            var server = ServerGrid.Items.Cast<ServerTable>().FirstOrDefault(s => s.ID == serverId);
+            if (server != null) await GameServer_Stop(server);
+        }
+
+        public async Task GameServer_RestartById(string serverId)
+        {
+            var server = ServerGrid.Items.Cast<ServerTable>().FirstOrDefault(s => s.ID == serverId);
+            if (server != null) await GameServer_Restart(server);
         }
     }
 }

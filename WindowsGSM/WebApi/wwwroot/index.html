@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>WindowsGSM – Remote Control</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:        #1a1a1a;
+    --surface:   #252525;
+    --surface2:  #2e2e2e;
+    --border:    #3a3a3a;
+    --text:      #e0e0e0;
+    --muted:     #888;
+    --accent:    #0078d4;
+    --accent-h:  #1a8ad4;
+    --green:     #4ec9b0;
+    --red:       #f14c4c;
+    --orange:    #e8a838;
+    --radius:    8px;
+  }
+
+  body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 14px; min-height: 100vh; }
+
+  /* — Token screen ————————————————————————————————————————— */
+  #auth-screen {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    min-height: 100vh; padding: 24px;
+  }
+  #auth-screen h1 { font-size: 22px; font-weight: 500; margin-bottom: 6px; }
+  #auth-screen p  { color: var(--muted); margin-bottom: 32px; font-size: 13px; }
+  .auth-card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 28px 32px; width: 100%; max-width: 420px;
+  }
+  .auth-card label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 6px; text-transform: uppercase; letter-spacing: .05em; }
+  .auth-card input[type="password"],
+  .auth-card input[type="text"] {
+    width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: 6px;
+    color: var(--text); padding: 9px 12px; font-size: 14px; outline: none;
+    transition: border-color .15s;
+  }
+  .auth-card input:focus { border-color: var(--accent); }
+  .auth-card button {
+    margin-top: 16px; width: 100%; background: var(--accent); color: #fff; border: none;
+    border-radius: 6px; padding: 10px; font-size: 14px; cursor: pointer; transition: background .15s;
+  }
+  .auth-card button:hover { background: var(--accent-h); }
+  #auth-error { margin-top: 10px; color: var(--red); font-size: 13px; min-height: 18px; }
+  #show-token { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 12px; margin-top: 8px; padding: 0; }
+
+  /* — Dashboard ——————————————————————————————————————————— */
+  #dashboard { display: none; flex-direction: column; min-height: 100vh; }
+
+  header {
+    background: var(--surface); border-bottom: 1px solid var(--border);
+    padding: 0 24px; height: 52px; display: flex; align-items: center; justify-content: space-between;
+    position: sticky; top: 0; z-index: 10;
+  }
+  .logo { font-weight: 600; font-size: 15px; display: flex; align-items: center; gap: 8px; }
+  .logo span { color: var(--muted); font-weight: 400; }
+  .header-right { display: flex; align-items: center; gap: 12px; }
+  #connection-badge {
+    font-size: 11px; padding: 3px 8px; border-radius: 12px;
+    background: #1a3a1a; color: var(--green); border: 1px solid #2a5a2a;
+  }
+  #logout-btn {
+    background: none; border: 1px solid var(--border); color: var(--muted);
+    border-radius: 6px; padding: 5px 12px; cursor: pointer; font-size: 12px;
+    transition: border-color .15s, color .15s;
+  }
+  #logout-btn:hover { border-color: var(--red); color: var(--red); }
+
+  main { padding: 24px; flex: 1; }
+  .toolbar {
+    display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;
+  }
+  .toolbar h2 { font-size: 16px; font-weight: 500; }
+  #refresh-btn {
+    background: var(--surface2); border: 1px solid var(--border); color: var(--text);
+    border-radius: 6px; padding: 6px 14px; cursor: pointer; font-size: 13px;
+    transition: border-color .15s;
+  }
+  #refresh-btn:hover { border-color: var(--accent); }
+
+  /* — Server cards ————————————————————————————————————————— */
+  #server-list { display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); }
+
+  .server-card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 16px; display: flex; flex-direction: column; gap: 10px;
+    transition: border-color .15s;
+  }
+  .server-card:hover { border-color: #555; }
+
+  .card-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+  .server-name { font-weight: 500; font-size: 15px; }
+  .server-game { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+  .status-badge {
+    font-size: 11px; font-weight: 500; padding: 3px 8px; border-radius: 12px;
+    white-space: nowrap; flex-shrink: 0;
+  }
+  .status-started  { background: #1a3a1a; color: var(--green);  border: 1px solid #2a5a2a; }
+  .status-stopped  { background: #2a1a1a; color: var(--red);    border: 1px solid #4a2a2a; }
+  .status-starting { background: #2a2a1a; color: var(--orange); border: 1px solid #4a4a2a; }
+  .status-stopping { background: #2a2a1a; color: var(--orange); border: 1px solid #4a4a2a; }
+  .status-unknown  { background: var(--surface2); color: var(--muted); border: 1px solid var(--border); }
+
+  .card-meta { font-size: 12px; color: var(--muted); display: flex; gap: 16px; flex-wrap: wrap; }
+
+  .card-actions { display: flex; gap: 8px; margin-top: 2px; }
+  .btn-start, .btn-stop, .btn-restart {
+    flex: 1; border: none; border-radius: 6px; padding: 7px 0;
+    font-size: 13px; cursor: pointer; font-weight: 500; transition: opacity .15s, filter .15s;
+  }
+  .btn-start   { background: #1a4a1a; color: var(--green); }
+  .btn-stop    { background: #4a1a1a; color: var(--red);   }
+  .btn-restart { background: #3a3a1a; color: var(--orange); }
+  .btn-start:hover   { filter: brightness(1.2); }
+  .btn-stop:hover    { filter: brightness(1.2); }
+  .btn-restart:hover { filter: brightness(1.2); }
+  .btn-start:disabled, .btn-stop:disabled, .btn-restart:disabled {
+    opacity: .35; cursor: not-allowed; filter: none;
+  }
+
+  .card-feedback { font-size: 12px; color: var(--muted); min-height: 16px; }
+
+  /* — Empty / loading states ————————————————————————————————— */
+  #loading-state, #empty-state {
+    text-align: center; padding: 60px 24px; color: var(--muted);
+  }
+  #loading-state { display: block; }
+  #empty-state   { display: none; }
+  .spinner {
+    width: 32px; height: 32px; border: 3px solid var(--border);
+    border-top-color: var(--accent); border-radius: 50%;
+    animation: spin .7s linear infinite; margin: 0 auto 16px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  @media (max-width: 480px) {
+    header { padding: 0 16px; }
+    main { padding: 16px; }
+    #server-list { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- — Token entry screen ——————————————————————————————————————————————— -->
+<div id="auth-screen">
+  <h1>WindowsGSM</h1>
+  <p>Remote Control</p>
+  <div class="auth-card">
+    <label for="token-input">API Token</label>
+    <input type="password" id="token-input" placeholder="Paste your token here" autocomplete="off" spellcheck="false"/>
+    <button id="show-token" onclick="toggleTokenVis()">Show token</button>
+    <button onclick="connect()">Connect</button>
+    <div id="auth-error"></div>
+  </div>
+</div>
+
+<!-- — Dashboard ——————————————————————————————————————————————————————— -->
+<div id="dashboard">
+  <header>
+    <div class="logo">WindowsGSM <span>Remote</span></div>
+    <div class="header-right">
+      <span id="connection-badge">Connected</span>
+      <button id="logout-btn" onclick="logout()">Disconnect</button>
+    </div>
+  </header>
+  <main>
+    <div class="toolbar">
+      <h2>Game servers</h2>
+      <button id="refresh-btn" onclick="loadServers()">Refresh</button>
+    </div>
+    <div id="loading-state"><div class="spinner"></div>Loading servers...</div>
+    <div id="empty-state">No servers found. Add a server in WindowsGSM first.</div>
+    <div id="server-list"></div>
+  </main>
+</div>
+
+<script>
+  // — State ——————————————————————————————————————————————————————————
+  let API_TOKEN = sessionStorage.getItem('wgsm_token') || '';
+  let refreshTimer = null;
+
+  // — Auth ————————————————————————————————————————————————————————————
+  async function connect() {
+    const input = document.getElementById('token-input');
+    const err   = document.getElementById('auth-error');
+    const token = input.value.trim();
+    if (!token) { err.textContent = 'Please enter your API token.'; return; }
+
+    err.textContent = '';
+    try {
+      const res = await apiFetch('/api/servers', token);
+      if (res.ok) {
+        API_TOKEN = token;
+        sessionStorage.setItem('wgsm_token', token);
+        showDashboard();
+      } else if (res.status === 401) {
+        err.textContent = 'Invalid token. Check the token in WindowsGSM settings.';
+      } else {
+        err.textContent = `Connection failed (HTTP ${res.status}).`;
+      }
+    } catch (e) {
+      err.textContent = 'Could not reach the server. Is the Web API running?';
+    }
+  }
+
+  function logout() {
+    API_TOKEN = '';
+    sessionStorage.removeItem('wgsm_token');
+    clearInterval(refreshTimer);
+    document.getElementById('dashboard').style.display = 'none';
+    document.getElementById('auth-screen').style.display = 'flex';
+    document.getElementById('token-input').value = '';
+    document.getElementById('auth-error').textContent = '';
+  }
+
+  function toggleTokenVis() {
+    const i = document.getElementById('token-input');
+    const b = document.getElementById('show-token');
+    i.type = i.type === 'password' ? 'text' : 'password';
+    b.textContent = i.type === 'password' ? 'Show token' : 'Hide token';
+  }
+
+  // — Dashboard ————————————————————————————————————————————————————————
+  function showDashboard() {
+    document.getElementById('auth-screen').style.display = 'none';
+    const dash = document.getElementById('dashboard');
+    dash.style.display = 'flex';
+    loadServers();
+    refreshTimer = setInterval(loadServers, 10000); // auto-refresh every 10s
+  }
+
+  async function loadServers() {
+    try {
+      const res = await apiFetch('/api/servers');
+      if (!res.ok) { if (res.status === 401) logout(); return; }
+      const servers = await res.json();
+      renderServers(servers);
+    } catch (e) {
+      console.warn('Server list fetch failed:', e);
+    }
+  }
+
+  function renderServers(servers) {
+    const list    = document.getElementById('server-list');
+    const loading = document.getElementById('loading-state');
+    const empty   = document.getElementById('empty-state');
+
+    loading.style.display = 'none';
+
+    if (!servers.length) {
+      list.innerHTML = '';
+      empty.style.display = 'block';
+      return;
+    }
+    empty.style.display = 'none';
+
+    list.innerHTML = servers.map(s => `
+      <div class="server-card" id="card-${s.id}">
+        <div class="card-header">
+          <div>
+            <div class="server-name">${esc(s.name)}</div>
+            <div class="server-game">${esc(s.game)}</div>
+          </div>
+          <span class="status-badge ${statusClass(s.status)}">${esc(s.status)}</span>
+        </div>
+        <div class="card-meta">
+          ${s.serverIp ? `<span>IP: ${esc(s.serverIp)}:${esc(s.serverPort)}</span>` : ''}
+          ${s.queryPort ? `<span>Query: ${esc(s.queryPort)}</span>` : ''}
+          ${s.pid ? `<span>PID: ${s.pid}</span>` : ''}
+        </div>
+        <div class="card-actions">
+          <button class="btn-start"   onclick="action('${s.id}','start')"
+            ${['Started','Starting'].includes(s.status) ? 'disabled' : ''}>Start</button>
+          <button class="btn-stop"    onclick="action('${s.id}','stop')"
+            ${['Stopped','Stopping'].includes(s.status) ? 'disabled' : ''}>Stop</button>
+          <button class="btn-restart" onclick="action('${s.id}','restart')"
+            ${s.status === 'Stopped' ? 'disabled' : ''}>Restart</button>
+        </div>
+        <div class="card-feedback" id="fb-${s.id}"></div>
+      </div>`).join('');
+  }
+
+  async function action(id, cmd) {
+    const fb = document.getElementById(`fb-${id}`);
+    const btns = document.querySelectorAll(`#card-${id} button`);
+    btns.forEach(b => b.disabled = true);
+    if (fb) fb.textContent = `Sending ${cmd}...`;
+
+    try {
+      const res = await apiFetch(`/api/servers/${id}/${cmd}`, null, 'POST');
+      const data = await res.json();
+      if (fb) { fb.textContent = data.message || (res.ok ? 'Done.' : 'Failed.'); }
+    } catch (e) {
+      if (fb) fb.textContent = 'Request failed.';
+    }
+
+    setTimeout(loadServers, 1500);
+  }
+
+  // — Helpers ——————————————————————————————————————————————————————————
+  function apiFetch(path, token, method = 'GET') {
+    return fetch(path, {
+      method,
+      headers: { 'Authorization': `Bearer ${token ?? API_TOKEN}` }
+    });
+  }
+
+  function esc(s) {
+    return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  function statusClass(s) {
+    const m = { Started:'started', Stopped:'stopped', Starting:'starting', Stopping:'stopping' };
+    return 'status-' + (m[s] || 'unknown');
+  }
+
+  // — Auto-connect if token cached ————————————————————————————————————
+  if (API_TOKEN) {
+    document.getElementById('token-input').value = API_TOKEN;
+    connect();
+  }
+
+  // Enter key on token input
+  document.getElementById('token-input')
+    .addEventListener('keydown', e => { if (e.key === 'Enter') connect(); });
+</script>
+</body>
+</html>

@@ -1,0 +1,188 @@
+<UserControl x:Class="WindowsGSM.UI.WebApiSettingsPanel"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             mc:Ignorable="d"
+             d:DesignHeight="600" d:DesignWidth="800">
+
+    <UserControl.Resources>
+        <Style x:Key="SectionHeader" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Margin" Value="0,16,0,6"/>
+            <Setter Property="Foreground" Value="#CCCCCC"/>
+        </Style>
+        <Style x:Key="Label" TargetType="TextBlock">
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Foreground" Value="#AAAAAA"/>
+            <Setter Property="MinWidth" Value="130"/>
+        </Style>
+        <Style x:Key="InputBox" TargetType="TextBox">
+            <Setter Property="Background" Value="#2A2A2A"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderBrush" Value="#444"/>
+            <Setter Property="Padding" Value="6,4"/>
+            <Setter Property="Height" Value="28"/>
+        </Style>
+        <Style x:Key="PrimaryButton" TargetType="Button">
+            <Setter Property="Background" Value="#0078D4"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Padding" Value="14,6"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Height" Value="30"/>
+        </Style>
+        <Style x:Key="DangerButton" TargetType="Button">
+            <Setter Property="Background" Value="#C42B1C"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Padding" Value="14,6"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Height" Value="30"/>
+        </Style>
+    </UserControl.Resources>
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="20,16" MaxWidth="700">
+
+            <!-- — API Token ———————————————————————————————————————— -->
+            <TextBlock Style="{StaticResource SectionHeader}" Text="API Token"/>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Style="{StaticResource Label}" Text="Current token"/>
+                <PasswordBox x:Name="TokenBox" Grid.Column="1" Background="#2A2A2A"
+                             Foreground="White" BorderBrush="#444" Padding="6,4" Height="28"
+                             IsEnabled="False" Margin="0,0,8,0"/>
+                <Button Grid.Column="2" Style="{StaticResource PrimaryButton}"
+                        Content="Generate" Click="OnGenerateToken" Margin="0,0,8,0"/>
+                <Button Grid.Column="3" Style="{StaticResource DangerButton}"
+                        Content="Revoke" Click="OnRevokeToken"/>
+            </Grid>
+
+            <!-- — Port ————————————————————————————————————————————— -->
+            <TextBlock Style="{StaticResource SectionHeader}" Text="Port"/>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="120"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Style="{StaticResource Label}" Text="API port"/>
+                <TextBox x:Name="PortBox" Grid.Column="1" Style="{StaticResource InputBox}"
+                         Text="7876" PreviewTextInput="OnPortPreviewInput"/>
+                <TextBlock Grid.Column="2" Foreground="#666" VerticalAlignment="Center"
+                           Margin="10,0,0,0" FontSize="11"
+                           Text="Default: 7876. Open this port in your firewall for LAN/external access."/>
+            </Grid>
+
+            <!-- — Connection Scope ——————————————————————————————————— -->
+            <TextBlock Style="{StaticResource SectionHeader}" Text="Connection scope"/>
+            <StackPanel>
+                <RadioButton x:Name="ScopeLocal" Content="Local only  (localhost access)"
+                             Foreground="#CCCCCC" Margin="0,2" IsChecked="True"
+                             Checked="OnScopeChanged"/>
+                <RadioButton x:Name="ScopeLan" Content="Allow LAN access  (same network)"
+                             Foreground="#CCCCCC" Margin="0,2"
+                             Checked="OnScopeChanged"/>
+                <RadioButton x:Name="ScopeExternal" Content="Allow external access  (public internet — use HTTPS)"
+                             Foreground="#CCCCCC" Margin="0,2"
+                             Checked="OnScopeChanged"/>
+            </StackPanel>
+
+            <!-- — HTTPS ————————————————————————————————————————————— -->
+            <TextBlock Style="{StaticResource SectionHeader}" Text="HTTPS (optional)"/>
+            <Grid Margin="0,0,0,4">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Style="{StaticResource Label}" Text="Certificate (.pem)"/>
+                <TextBox x:Name="CertPathBox" Grid.Column="1" Style="{StaticResource InputBox}"
+                         IsReadOnly="True" Margin="0,0,8,0" Text="No certificate imported"/>
+                <Button Grid.Column="2" Style="{StaticResource PrimaryButton}"
+                        Content="Import cert" Click="OnImportCert"/>
+            </Grid>
+            <Grid Margin="0,0,0,4">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Style="{StaticResource Label}" Text="Private key (.pem)"/>
+                <TextBox x:Name="KeyPathBox" Grid.Column="1" Style="{StaticResource InputBox}"
+                         IsReadOnly="True" Margin="0,0,8,0" Text="No key imported"/>
+                <Button Grid.Column="2" Style="{StaticResource PrimaryButton}"
+                        Content="Import key" Click="OnImportKey"/>
+            </Grid>
+            <CheckBox x:Name="HttpsCheckBox" Content="Enable HTTPS redirect (HTTP → HTTPS)"
+                      Foreground="#CCCCCC" Margin="130,4,0,0"
+                      Checked="OnHttpsToggled" Unchecked="OnHttpsToggled"/>
+
+            <!-- — Auto-start ——————————————————————————————————————— -->
+            <TextBlock Style="{StaticResource SectionHeader}" Text="Startup"/>
+            <CheckBox x:Name="AutoStartCheckBox" Content="Start Web API automatically when WindowsGSM launches"
+                      Foreground="#CCCCCC" Margin="0,2"
+                      Checked="OnAutoStartToggled" Unchecked="OnAutoStartToggled"/>
+
+            <!-- — Controls ——————————————————————————————————————————— -->
+            <TextBlock Style="{StaticResource SectionHeader}" Text="API server"/>
+            <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                <Button x:Name="StartButton" Style="{StaticResource PrimaryButton}"
+                        Content="Start Web API" Click="OnStartApi" Margin="0,0,10,0"/>
+                <Button x:Name="StopButton" Style="{StaticResource DangerButton}"
+                        Content="Stop Web API" Click="OnStopApi" IsEnabled="False" Margin="0,0,10,0"/>
+                <TextBlock x:Name="StatusLabel" Foreground="#888" VerticalAlignment="Center"
+                           Text="Not running"/>
+            </StackPanel>
+
+            <!-- — Connection URLs ————————————————————————————————————— -->
+            <TextBlock Style="{StaticResource SectionHeader}" Text="Connection URLs"/>
+            <Border Background="#1E1E1E" BorderBrush="#333" BorderThickness="1"
+                    Padding="12,10" CornerRadius="4">
+                <StackPanel>
+                    <Grid Margin="0,2">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="100"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Foreground="#666" Text="Localhost"/>
+                        <TextBlock x:Name="LocalUrlLabel" Grid.Column="1" Foreground="#4EC9B0"
+                                   Text="—" Cursor="Hand" MouseDown="OnUrlClick"/>
+                    </Grid>
+                    <Grid Margin="0,2">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="100"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Foreground="#666" Text="LAN"/>
+                        <TextBlock x:Name="LanUrlLabel" Grid.Column="1" Foreground="#4EC9B0"
+                                   Text="—" Cursor="Hand" MouseDown="OnUrlClick"/>
+                    </Grid>
+                    <Grid Margin="0,2">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="100"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Foreground="#666" Text="Public"/>
+                        <TextBlock x:Name="PublicUrlLabel" Grid.Column="1" Foreground="#4EC9B0"
+                                   Text="—" Cursor="Hand" MouseDown="OnUrlClick"/>
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <!-- — Log output ——————————————————————————————————————— -->
+            <TextBlock Style="{StaticResource SectionHeader}" Text="Log"/>
+            <TextBox x:Name="LogBox" Background="#1A1A1A" Foreground="#888" BorderBrush="#333"
+                     FontFamily="Consolas" FontSize="11" Height="100" IsReadOnly="True"
+                     VerticalScrollBarVisibility="Auto" TextWrapping="Wrap"/>
+
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

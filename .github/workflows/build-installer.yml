@@ -1,0 +1,266 @@
+name: Build & Release Installers
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version override (e.g. 1.2.3). Leave blank to use tag.'
+        required: false
+
+permissions:
+  contents: write
+
+env:
+  DOTNET_VERSION: '8.0.x'
+  PROJECT_PATH:   'WindowsGSM/WindowsGSM.csproj'
+  PUBLISH_DIR:    'publish'
+  DIST_DIR:       'dist'
+
+jobs:
+  # — Job 1: compile the app once, share as artifact ————————————————————
+  build:
+    name: Build & publish exe
+    runs-on: windows-latest
+    outputs:
+      version: ${{ steps.version.outputs.VERSION }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Resolve version
+        id: version
+        shell: pwsh
+        run: |
+          $override = '${{ github.event.inputs.version }}'
+          $tag      = '${{ github.ref_name }}'
+          if ($override -ne '') {
+            $ver = $override
+          } elseif ($tag -match '^v') {
+            $ver = $tag.TrimStart('v')
+          } else {
+            $ver = '0.0.0-dev'
+          }
+          echo "VERSION=$ver" >> $env:GITHUB_OUTPUT
+          Write-Host "Resolved version: $ver"
+
+      - name: Restore NuGet packages
+        run: dotnet restore ${{ env.PROJECT_PATH }}
+
+      - name: Build (error check)
+        run: dotnet build ${{ env.PROJECT_PATH }} --configuration Release --no-restore
+
+      - name: Publish self-contained win-x64
+        run: |
+          dotnet publish ${{ env.PROJECT_PATH }} `
+            --configuration Release `
+            --runtime win-x64 `
+            --self-contained true `
+            -p:PublishSingleFile=true `
+            -p:PublishReadyToRun=true `
+            -p:IncludeNativeLibrariesForSelfExtract=true `
+            --output ${{ env.PUBLISH_DIR }}
+
+      - name: Copy wwwroot alongside exe
+        run: |
+          New-Item -ItemType Directory -Force -Path "${{ env.PUBLISH_DIR }}\WebApi\wwwroot"
+          Copy-Item -Recurse -Force `
+            "WindowsGSM\WebApi\wwwroot\*" `
+            "${{ env.PUBLISH_DIR }}\WebApi\wwwroot\"
+
+      - name: Download NSSM 2.24 for installer
+        shell: pwsh
+        run: |
+          $url  = 'https://nssm.cc/release/nssm-2.24.zip'
+          $zip  = 'nssm.zip'
+          $dest = 'installer\assets'
+          New-Item -ItemType Directory -Force -Path $dest
+          Invoke-WebRequest -Uri $url -OutFile $zip
+          Expand-Archive -Path $zip -DestinationPath 'nssm-tmp' -Force
+          Copy-Item 'nssm-tmp\nssm-2.24\win64\nssm.exe' "$dest\nssm.exe"
+          Remove-Item $zip, 'nssm-tmp' -Recurse -Force
+          Write-Host "NSSM downloaded to $dest\nssm.exe"
+
+      - name: Upload publish artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: publish-output
+          path: ${{ env.PUBLISH_DIR }}
+          if-no-files-found: error
+
+      - name: Upload installer assets artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: installer-assets
+          path: installer/assets/nssm.exe
+          if-no-files-found: error
+
+  # — Job 2: Full installer (WindowsGSM + Web API) ——————————————————————
+  release-full:
+    name: Full installer & release
+    needs: build
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download publish output
+        uses: actions/download-artifact@v4
+        with:
+          name: publish-output
+          path: publish
+
+      - name: Download installer assets (nssm.exe)
+        uses: actions/download-artifact@v4
+        with:
+          name: installer-assets
+          path: installer/assets
+
+      - name: Install Inno Setup 6
+        run: choco install innosetup --no-progress -y
+
+      - name: Compile Full installer
+        shell: pwsh
+        run: |
+          $iscc = "C:\Program Files (x86)\Inno Setup 6\ISCC.exe"
+          New-Item -ItemType Directory -Force -Path dist
+          & $iscc `
+            "/DAppVersion=${{ needs.build.outputs.version }}" `
+            "/DOutputMode=full" `
+            "installer\setup.iss"
+          if ($LASTEXITCODE -ne 0) { throw "ISCC failed with exit code $LASTEXITCODE" }
+          Write-Host "Built: $(Get-ChildItem dist\*.exe | Select -Expand Name)"
+
+      - name: Upload Full installer artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: installer-full
+          path: dist\WindowsGSM-WebAPI-Full-Setup-*.exe
+          if-no-files-found: error
+
+      - name: Create Full GitHub Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: "WindowsGSM + Web API ${{ needs.build.outputs.version }} – Full Install"
+          body: |
+            ## Full Install – WindowsGSM + Web API ${{ needs.build.outputs.version }}
+
+            **Use this if you don't already have WindowsGSM installed.**
+            Installs everything: the game server manager and the Web API remote control together.
+
+            ### What's included
+            - WindowsGSM (game server manager GUI)
+            - Web API – control your servers from any browser
+            - Web UI at `http://localhost:7876/ui`
+            - Windows service via NSSM (auto-start on boot, no login required)
+            - Automatic Windows Firewall rule for port 7876
+            - Auto-start on Windows login (registry Run key)
+            - Desktop & Start Menu shortcuts
+
+            ### Getting started
+            1. Run the installer as **Administrator**
+            2. Open WindowsGSM
+            3. Click **Web API** in the left navigation menu
+            4. Click **Generate** to create your API token
+            5. Click **Start Web API**
+            6. Open `http://localhost:7876/ui` in your browser
+            7. Paste your token and click **Connect**
+
+            ---
+            > Already have WindowsGSM? Use the **[Addon installer](${{ github.server_url }}/${{ github.repository }}/releases/tag/${{ github.ref_name }})** instead.
+          files: dist\WindowsGSM-WebAPI-Full-Setup-*.exe
+          draft: false
+          prerelease: ${{ contains(github.ref_name, '-beta') || contains(github.ref_name, '-rc') }}
+
+  # — Job 3: Addon installer (Web API only) —————————————————————————————
+  release-addon:
+    name: Addon installer & release
+    needs: build
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download publish output
+        uses: actions/download-artifact@v4
+        with:
+          name: publish-output
+          path: publish
+
+      - name: Download installer assets (nssm.exe)
+        uses: actions/download-artifact@v4
+        with:
+          name: installer-assets
+          path: installer/assets
+
+      - name: Install Inno Setup 6
+        run: choco install innosetup --no-progress -y
+
+      - name: Compile Addon installer
+        shell: pwsh
+        run: |
+          $iscc = "C:\Program Files (x86)\Inno Setup 6\ISCC.exe"
+          New-Item -ItemType Directory -Force -Path dist
+          & $iscc `
+            "/DAppVersion=${{ needs.build.outputs.version }}" `
+            "/DOutputMode=apionly" `
+            "installer\setup.iss"
+          if ($LASTEXITCODE -ne 0) { throw "ISCC failed with exit code $LASTEXITCODE" }
+          Write-Host "Built: $(Get-ChildItem dist\*.exe | Select -Expand Name)"
+
+      - name: Upload Addon installer artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: installer-addon
+          path: dist\WindowsGSM-WebAPI-Addon-Setup-*.exe
+          if-no-files-found: error
+
+      - name: Create Addon GitHub Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: "WindowsGSM Web API ${{ needs.build.outputs.version }} – Addon"
+          body: |
+            ## Addon Install – Web API Only ${{ needs.build.outputs.version }}
+
+            **Use this if you already have WindowsGSM installed.**
+            Adds the Web API remote control feature without touching your existing installation or server configs.
+
+            ### What gets added
+            - Web API remote control (drops files into your existing WindowsGSM folder)
+            - Web UI at `http://localhost:7876/ui`
+            - Windows service via NSSM (auto-start on boot, no login required)
+            - Automatic Windows Firewall rule for port 7876
+            - Auto-start on Windows login (registry Run key)
+            - Desktop & Start Menu shortcuts
+
+            ### Getting started
+            1. Run the installer as **Administrator**
+            2. The installer auto-detects your WindowsGSM folder
+            3. Open WindowsGSM
+            4. Click **Web API** in the left navigation menu
+            5. Click **Generate** to create your API token
+            6. Click **Start Web API**
+            7. Open `http://localhost:7876/ui` in your browser
+            8. Paste your token and click **Connect**
+
+            ---
+            > New to WindowsGSM? Use the **[Full installer](${{ github.server_url }}/${{ github.repository }}/releases/tag/${{ github.ref_name }})** instead.
+          files: dist\WindowsGSM-WebAPI-Addon-Setup-*.exe
+          draft: false
+          prerelease: ${{ contains(github.ref_name, '-beta') || contains(github.ref_name, '-rc') }}

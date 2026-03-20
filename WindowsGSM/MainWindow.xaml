@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WindowsGSM"
+        xmlns:webui="clr-namespace:WindowsGSM.UI"
         xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"          
         xmlns:lvc="clr-namespace:LiveCharts.Wpf;assembly=LiveCharts.Wpf"
         mc:Ignorable="d"
@@ -314,6 +315,11 @@
    </mah:MetroWindow.Flyouts>
 
    <Grid>
+      <!-- Web API panel -->
+      <DockPanel Name="hMenu_WebApi" Margin="48,0,0,0" Visibility="Hidden">
+         <webui:WebApiSettingsPanel x:Name="WebApiPanel" DockPanel.Dock="Top"/>
+      </DockPanel>
+
       <DockPanel Name="hMenu_Discordbot" Margin="48,0,0,0" Visibility="Visible">
          <Grid DockPanel.Dock="Top">
             <DockPanel Margin="10,10,10,10" DockPanel.Dock="Top">
@@ -846,6 +852,11 @@
                   <mah:HamburgerMenuImageItem Label="Discord Bot">
                      <mah:HamburgerMenuImageItem.Thumbnail>
                         <BitmapImage UriSource="pack://application:,,,/WindowsGSM;component/Images/HMenu/Discord.ico" />
+                     </mah:HamburgerMenuImageItem.Thumbnail>
+                  </mah:HamburgerMenuImageItem>
+                  <mah:HamburgerMenuImageItem Label="Web API">
+                     <mah:HamburgerMenuImageItem.Thumbnail>
+                        <BitmapImage UriSource="pack://application:,,,/WindowsGSM;component/Images/HMenu/Settings.ico" />
                      </mah:HamburgerMenuImageItem.Thumbnail>
                   </mah:HamburgerMenuImageItem>
                </mah:HamburgerMenuItemCollection>
