@@ -35,7 +35,7 @@ namespace WindowsGSM.WebApi.Controllers
         {
             _config.ApiToken = string.Empty;
             _config.Save();
-            return Ok(new ActionResult { Success = true, Message = "Token revoked. Generate a new token to re-enable access." });
+            return Ok(new ApiActionResult { Success = true, Message = "Token revoked. Generate a new token to re-enable access." });
         }
 
         // GET /api/status  (public — no auth required, used by UI to check connectivity)

@@ -12,7 +12,7 @@ namespace WindowsGSM.WebApi.Models
         public int? Pid { get; set; }
     }
 
-    public class ActionResult
+    public class ApiActionResult
     {
         public bool Success { get; set; }
         public string Message { get; set; } = string.Empty;

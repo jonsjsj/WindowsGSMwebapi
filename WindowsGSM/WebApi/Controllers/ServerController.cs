@@ -30,7 +30,7 @@ namespace WindowsGSM.WebApi.Controllers
         {
             var servers = _manager.GetAllServers();
             var server = servers.Find(s => s.Id == id);
-            if (server == null) return NotFound(new ActionResult { Success = false, Message = $"Server '{id}' not found." });
+            if (server == null) return NotFound(new ApiActionResult { Success = false, Message = $"Server '{id}' not found." });
             return Ok(server);
         }
 
@@ -39,7 +39,7 @@ namespace WindowsGSM.WebApi.Controllers
         public async Task<IActionResult> Start(string id)
         {
             var (success, message) = await _manager.StartAsync(id);
-            var result = new ActionResult { Success = success, Message = message };
+            var result = new ApiActionResult { Success = success, Message = message };
             return success ? Ok(result) : BadRequest(result);
         }
 
@@ -48,7 +48,7 @@ namespace WindowsGSM.WebApi.Controllers
         public async Task<IActionResult> Stop(string id)
         {
             var (success, message) = await _manager.StopAsync(id);
-            var result = new ActionResult { Success = success, Message = message };
+            var result = new ApiActionResult { Success = success, Message = message };
             return success ? Ok(result) : BadRequest(result);
         }
 
@@ -57,7 +57,7 @@ namespace WindowsGSM.WebApi.Controllers
         public async Task<IActionResult> Restart(string id)
         {
             var (success, message) = await _manager.RestartAsync(id);
-            var result = new ActionResult { Success = success, Message = message };
+            var result = new ApiActionResult { Success = success, Message = message };
             return success ? Ok(result) : BadRequest(result);
         }
     }
