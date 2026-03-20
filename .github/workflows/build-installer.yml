@@ -77,18 +77,15 @@ jobs:
             "WindowsGSM\WebApi\wwwroot\*" `
             "${{ env.PUBLISH_DIR }}\WebApi\wwwroot\"
 
-      - name: Download NSSM 2.24 for installer
+      - name: Download NSSM for installer
         shell: pwsh
         run: |
-          $url  = 'https://nssm.cc/release/nssm-2.24.zip'
-          $zip  = 'nssm.zip'
           $dest = 'installer\assets'
           New-Item -ItemType Directory -Force -Path $dest
-          Invoke-WebRequest -Uri $url -OutFile $zip
-          Expand-Archive -Path $zip -DestinationPath 'nssm-tmp' -Force
-          Copy-Item 'nssm-tmp\nssm-2.24\win64\nssm.exe' "$dest\nssm.exe"
-          Remove-Item $zip, 'nssm-tmp' -Recurse -Force
-          Write-Host "NSSM downloaded to $dest\nssm.exe"
+          choco install nssm --no-progress -y
+          $nssmSrc = 'C:\ProgramData\chocolatey\lib\nssm\tools\win64\nssm.exe'
+          Copy-Item $nssmSrc "$dest\nssm.exe"
+          Write-Host "NSSM installed to $dest\nssm.exe"
 
       - name: Upload publish artifact
         uses: actions/upload-artifact@v4
