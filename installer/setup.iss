@@ -80,7 +80,7 @@ Filename: "{app}\tools\nssm.exe"; Parameters: "set {#ServiceName} Description ""
 Filename: "{app}\tools\nssm.exe"; Parameters: "set {#ServiceName} Start SERVICE_AUTO_START"; Flags: runhidden waituntilterminated
 Filename: "{sys}\netsh.exe"; Parameters: "advfirewall firewall add rule name=""{#FirewallRule}"" dir=in action=allow protocol=TCP localport={#DefaultPort} description=""WindowsGSM Web API"""; Flags: runhidden waituntilterminated; StatusMsg: "Adding firewall rule for port {#DefaultPort}..."
 Filename: "{app}\tools\nssm.exe"; Parameters: "start {#ServiceName}"; Flags: runhidden waituntilterminated; StatusMsg: "Starting service..."
-Filename: "{app}\{#AppExe}"; Description: "Launch WindowsGSM now"; Flags: nowait postinstall skipifsilent
+Filename: "{app}\{#AppExe}"; Description: "Launch WindowsGSM now"; Flags: nowait postinstall skipifsilent shellexec runascurrentuser
 
 [UninstallRun]
 Filename: "{app}\tools\nssm.exe"; Parameters: "stop {#ServiceName}"; Flags: runhidden waituntilterminated; RunOnceId: "StopSvc"
