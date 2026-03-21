@@ -57,6 +57,18 @@ jobs:
           echo "VERSION=$ver" >> $env:GITHUB_OUTPUT
           Write-Host "Resolved version: $ver"
 
+      - name: Stamp version into AssemblyInfo.cs
+        shell: pwsh
+        run: |
+          $ver = "${{ steps.version.outputs.VERSION }}"
+          $asmVer = "$ver.0"
+          $path = "WindowsGSM/Properties/AssemblyInfo.cs"
+          (Get-Content $path) `
+            -replace '\[assembly: AssemblyVersion\(".*?"\)\]', "[assembly: AssemblyVersion(`"$asmVer`")]" `
+            -replace '\[assembly: AssemblyFileVersion\(".*?"\)\]', "[assembly: AssemblyFileVersion(`"$asmVer`")]" |
+            Set-Content $path
+          Write-Host "Stamped version $asmVer into $path"
+
       - name: Build & publish self-contained win-x64
         run: |
           msbuild ${{ env.PROJECT_PATH }} `

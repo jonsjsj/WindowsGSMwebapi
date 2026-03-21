@@ -49,7 +49,6 @@
   }
   .auth-card button:hover { background: var(--accent-h); }
   #auth-error { margin-top: 10px; color: var(--red); font-size: 13px; min-height: 18px; }
-  #show-token { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 12px; margin-top: 8px; padding: 0; }
 
   /* — Dashboard ——————————————————————————————————————————— */
   #dashboard { display: none; flex-direction: column; min-height: 100vh; }
@@ -156,8 +155,7 @@
   <p>Remote Control</p>
   <div class="auth-card">
     <label for="token-input">API Token</label>
-    <input type="password" id="token-input" placeholder="Paste your token here" autocomplete="off" spellcheck="false"/>
-    <button id="show-token" onclick="toggleTokenVis()">Show token</button>
+    <input type="text" id="token-input" placeholder="Paste your token here" autocomplete="off" spellcheck="false"/>
     <button onclick="connect()">Connect</button>
     <div id="auth-error"></div>
   </div>
@@ -220,13 +218,6 @@
     document.getElementById('auth-screen').style.display = 'flex';
     document.getElementById('token-input').value = '';
     document.getElementById('auth-error').textContent = '';
-  }
-
-  function toggleTokenVis() {
-    const i = document.getElementById('token-input');
-    const b = document.getElementById('show-token');
-    i.type = i.type === 'password' ? 'text' : 'password';
-    b.textContent = i.type === 'password' ? 'Show token' : 'Hide token';
   }
 
   // — Dashboard ————————————————————————————————————————————————————————

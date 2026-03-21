@@ -135,7 +135,7 @@ namespace WindowsGSM
             Crashed = 13
         }
 
-        public static readonly string WGSM_VERSION = "v" + string.Concat(System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString());
+        public static readonly string WGSM_VERSION = "v" + System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString(3);
         public static readonly int MAX_SERVER = 256;
         public static readonly string WGSM_PATH = Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName);
         public static readonly string DEFAULT_THEME = "Cyan";
@@ -3529,53 +3529,34 @@ namespace WindowsGSM
 
             if (result.ToString().Equals("Affirmative"))
             {
-                string installPath = ServerPath.GetBin();
-                Directory.CreateDirectory(installPath);
+                controller = await this.ShowProgressAsync("Downloading installer...", "Please wait...");
+                controller.SetIndeterminate();
+                string installerPath = await DownloadLatestInstaller(latestVersion);
+                await controller.CloseAsync();
 
-                string filePath = Path.Combine(installPath, "WindowsGSM-Updater.exe");
-
-                if (!File.Exists(filePath))
+                if (installerPath != null)
                 {
-                    //Download WindowsGSM-Updater.exe
-                    controller = await this.ShowProgressAsync("Downloading WindowsGSM-Updater...", "Please wait...");
-                    controller.SetIndeterminate();
-                    bool success = await DownloadWindowsGSMUpdater();
-                    await controller.CloseAsync();
-                }
-
-                if (File.Exists(filePath))
-                {
-                    //Kill all the server
+                    //Kill all the servers
                     for (int i = 0; i <= MAX_SERVER; i++)
                     {
                         if (GetServerMetadata(i) == null || GetServerMetadata(i).Process == null)
-                        {
                             continue;
-                        }
-
                         if (!GetServerMetadata(i).Process.HasExited)
-                        {
                             _serverMetadata[i].Process.Kill();
-                        }
                     }
 
-                    //Run WindowsGSM-Updater.exe
-                    Process updater = new Process
+                    // Run the installer – ShellExecute handles UAC elevation
+                    Process.Start(new ProcessStartInfo
                     {
-                        StartInfo =
-                        {
-                            WorkingDirectory = installPath,
-                            FileName = filePath,
-                            Arguments = "-autostart -forceupdate"
-                        }
-                    };
-                    updater.Start();
+                        FileName = installerPath,
+                        UseShellExecute = true
+                    });
 
                     Close();
                 }
                 else
                 {
-                    await this.ShowMessageAsync("Software Updates", $"Fail to download WindowsGSM-Updater.exe");
+                    await this.ShowMessageAsync("Software Updates", "Failed to download the installer. Please download it manually from GitHub.");
                 }
             }
         }
@@ -3584,7 +3565,7 @@ namespace WindowsGSM
         {
             try
             {
-                var webRequest = WebRequest.Create("https://api.github.com/repos/WindowsGSM/WindowsGSM/releases/latest") as HttpWebRequest;
+                var webRequest = WebRequest.Create("https://api.github.com/repos/jonsjsj/WindowsGSMwebapi/releases/latest") as HttpWebRequest;
                 webRequest.Method = "GET";
                 webRequest.UserAgent = "Anything";
                 webRequest.ServicePoint.Expect100Continue = false;
@@ -3598,23 +3579,26 @@ namespace WindowsGSM
             }
         }
 
-        private async Task<bool> DownloadWindowsGSMUpdater()
+        private async Task<string> DownloadLatestInstaller(string tag)
         {
-            string filePath = ServerPath.GetBin("WindowsGSM-Updater.exe");
+            string version = tag.TrimStart('v');
+            string fileName = $"WindowsGSM-WebAPI-Full-Setup-{version}.exe";
+            string url = $"https://github.com/jonsjsj/WindowsGSMwebapi/releases/download/{tag}/{fileName}";
+            string filePath = Path.Combine(Path.GetTempPath(), fileName);
 
             try
             {
                 using (WebClient webClient = new WebClient())
                 {
-                    await webClient.DownloadFileTaskAsync("https://github.com/WindowsGSM/WindowsGSM-Updater/releases/latest/download/WindowsGSM-Updater.exe", filePath);
+                    await webClient.DownloadFileTaskAsync(url, filePath);
                 }
             }
             catch (Exception e)
             {
-                Debug.WriteLine($"Github.WindowsGSM-Updater.exe {e}");
+                Debug.WriteLine($"DownloadLatestInstaller {e}");
             }
 
-            return File.Exists(filePath);
+            return File.Exists(filePath) ? filePath : null;
         }
 
         private async void Help_AboutWindowsGSM_Click(object sender, RoutedEventArgs e)
