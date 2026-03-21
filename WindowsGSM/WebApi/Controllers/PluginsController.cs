@@ -205,14 +205,17 @@ namespace WindowsGSM.WebApi.Controllers
                 return (parts[0], parts[1], parts[2], file, null);
             }
 
-            // github.com/Owner/Repo/blob/branch/File.cs
-            if (url.Contains("/blob/", StringComparison.OrdinalIgnoreCase))
+            // github.com/Owner/Repo/blob/branch/File.cs  or  /tree/branch/File.cs
+            if (url.Contains("/blob/", StringComparison.OrdinalIgnoreCase) ||
+                url.Contains("/tree/", StringComparison.OrdinalIgnoreCase))
             {
-                var path  = new Uri(url).AbsolutePath.TrimStart('/'); // Owner/Repo/blob/branch/File.cs
+                // path = Owner/Repo/blob/branch/File.cs  or  Owner/Repo/tree/branch/File.cs
+                var path  = new Uri(url).AbsolutePath.TrimStart('/');
                 var parts = path.Split('/');
+                // parts[2] is "blob" or "tree", parts[3] is branch, parts[4+] is file path
                 if (parts.Length < 5)
-                    return (null, null, null, null, "Blob URL must include branch and filename.");
-                var file = string.Join("/", parts[4..]); // support subfolders
+                    return (null, null, null, null, "URL must include branch and filename (e.g. /blob/main/Plugin.cs).");
+                var file     = string.Join("/", parts[4..]);
                 var fileName = Path.GetFileName(file);
                 if (!fileName.EndsWith(".cs", StringComparison.OrdinalIgnoreCase))
                     return (null, null, null, null, $"File '{fileName}' is not a .cs file.");
