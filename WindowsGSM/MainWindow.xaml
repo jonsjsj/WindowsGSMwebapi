@@ -30,59 +30,72 @@
    <mah:MetroWindow.Flyouts>
       <mah:FlyoutsControl>
          <mah:Flyout x:Name="MahAppFlyout_ViewPlugins" Header="Plugins" Position="Right" Width="600" Theme="Dark" IsModal="True">
-            <DockPanel>
-               <StackPanel DockPanel.Dock="Top" Orientation="Vertical">
-                  <StackPanel DockPanel.Dock="Top" Orientation="Horizontal">
-                     <Label Content="Installed:" Margin="12,0,0,10" FontSize="14" FontWeight="SemiBold" Padding="5,5.5,0,5"></Label>
-                     <Label x:Name="Label_PluginInstalled" Content=" 0" Margin="0,0,10,10" FontSize="15" FontWeight="SemiBold" Foreground="Aqua"></Label>
-                     <Label Content="Loaded:" Margin="0,0,0,10" FontSize="14" FontWeight="SemiBold" Padding="5,5.5,0,5"></Label>
-                     <Label x:Name="Label_PluginLoaded" Content="0" Margin="0,0,10,10" FontSize="15" FontWeight="SemiBold" Foreground="GreenYellow"></Label>
-                     <Label Content="Failed:" Margin="0,0,0,10" FontSize="14" FontWeight="SemiBold" Padding="5,5.5,0,5"></Label>
-                     <Label x:Name="Label_PluginFailed" Content="0" Margin="0,0,10,10" FontSize="15" FontWeight="SemiBold" Foreground="Red"></Label>
-                  </StackPanel>
-                  <Button x:Name="Button_ImportPlugin" Content="Import Plugin" Height="29" Width="130" HorizontalAlignment="Right" Click="ImportPlugin_Click" Margin="-20,-50,150,0"></Button>
-                  <Button x:Name="Button_RefreshPlugins" Content="Reload Plugins" Height="29" Width="130" HorizontalAlignment="Right" Margin="-20,-50,12,0" Click="RefreshPlugins_Click"></Button>
-               </StackPanel>
+            <DockPanel Background="{StaticResource WgsmBgBrush}">
 
-               <StackPanel DockPanel.Dock="Top" Orientation="Horizontal">
-                  <Label Content="✔️" Margin="10,0,0,10" FontSize="17" FontWeight="SemiBold" Foreground="GreenYellow"></Label>
-                  <Label Content="Loaded Plugin List" Margin="0,0,10,10" FontSize="17" FontWeight="SemiBold"></Label>
-               </StackPanel>
+               <!-- ── Stats + action bar ─────────────────────────────────── -->
+               <Border DockPanel.Dock="Top"
+                       Background="{StaticResource WgsmSurfaceBrush}"
+                       BorderBrush="{StaticResource WgsmBorderBrush}"
+                       BorderThickness="0,0,0,1"
+                       Padding="16,10">
+                  <Grid>
+                     <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                     </Grid.ColumnDefinitions>
 
-               <mah:MetroProgressBar x:Name="ProgressRing_LoadPlugins" IsIndeterminate="True" Foreground="{DynamicResource MahApps.Brushes.AccentBase}" Margin="10,0,10,10" DockPanel.Dock="Top" Visibility="Collapsed"/>
+                     <!-- Stats pills -->
+                     <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock Text="Installed" Foreground="{StaticResource WgsmMutedBrush}" FontSize="11" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                        <Label x:Name="Label_PluginInstalled" Content="0" Padding="0"
+                               FontSize="14" FontWeight="SemiBold"
+                               Foreground="{StaticResource WgsmAccentBrush}"
+                               VerticalContentAlignment="Center" Margin="0,0,16,0"/>
+                        <TextBlock Text="Loaded" Foreground="{StaticResource WgsmMutedBrush}" FontSize="11" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                        <Label x:Name="Label_PluginLoaded" Content="0" Padding="0"
+                               FontSize="14" FontWeight="SemiBold"
+                               Foreground="{StaticResource WgsmGreenBrush}"
+                               VerticalContentAlignment="Center" Margin="0,0,16,0"/>
+                        <TextBlock Text="Failed" Foreground="{StaticResource WgsmMutedBrush}" FontSize="11" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                        <Label x:Name="Label_PluginFailed" Content="0" Padding="0"
+                               FontSize="14" FontWeight="SemiBold"
+                               Foreground="{StaticResource WgsmRedBrush}"
+                               VerticalContentAlignment="Center"/>
+                     </StackPanel>
 
+                     <!-- Buttons -->
+                     <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                        <Button x:Name="Button_RefreshPlugins"
+                                Style="{StaticResource WgsmActionButton}"
+                                Content="Reload" Height="28" Padding="12,4"
+                                Margin="0,0,8,0" Click="RefreshPlugins_Click"/>
+                        <Button x:Name="Button_ImportPlugin"
+                                Style="{StaticResource WgsmActionButton}"
+                                Content="Import Plugin" Height="28" Padding="12,4"
+                                Click="ImportPlugin_Click"/>
+                     </StackPanel>
+                  </Grid>
+               </Border>
+
+               <!-- ── Progress bar ───────────────────────────────────────── -->
+               <mah:MetroProgressBar x:Name="ProgressRing_LoadPlugins"
+                                     IsIndeterminate="True"
+                                     Foreground="{StaticResource WgsmAccentBrush}"
+                                     DockPanel.Dock="Top"
+                                     Visibility="Collapsed"/>
+
+               <!-- ── Section label ──────────────────────────────────────── -->
+               <Border DockPanel.Dock="Top" Padding="16,10,16,6">
+                  <TextBlock Text="LOADED PLUGINS"
+                             Foreground="{StaticResource WgsmMutedBrush}"
+                             FontSize="11" FontWeight="SemiBold"/>
+               </Border>
+
+               <!-- ── Plugin list ─────────────────────────────────────────── -->
                <ScrollViewer VerticalScrollBarVisibility="Auto">
-                  <StackPanel x:Name="StackPanel_PluginList">
-                     <!--
-                            <Border BorderBrush="GreenYellow" Background="SlateGray" BorderThickness="1.5" CornerRadius="5" Padding="6" Margin="10,0,10,10">
-                                <DockPanel>
-                                    <Border BorderBrush="White" BorderThickness="0" CornerRadius="5" Padding="10" Width="61" Height="61" Margin="0,0,10,0">
-                                        <Border.Background><ImageBrush Stretch="Fill" ImageSource="Images/Games/arma3.png"></ImageBrush></Border.Background>
-                                    </Border>
-
-                                    <DockPanel DockPanel.Dock="Top" Margin="0,0,3,0">
-                                        <Label Content="v1.0" DockPanel.Dock="Right" Padding="0"></Label>
-                                        <Label Content="WindowsGSM.ARMA3" DockPanel.Dock="Left" FontSize="14" FontWeight="Bold" Padding="0"></Label>
-                                    </DockPanel>
-
-                                    <TextBlock Text="WindowsGSM Plugin - Arma 3 Dedicated Server" DockPanel.Dock="Top"></TextBlock>
-
-                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Bottom">
-                                        <Border BorderBrush="DimGray" BorderThickness="0" CornerRadius="30" Padding="10" Width="25" Height="25" Margin="0,0,5,0">
-                                            <Border.Background><ImageBrush Stretch="Fill" ImageSource="Images/Games/tf2.png"></ImageBrush></Border.Background>
-                                        </Border>
-                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                            <Label Content="BattlefieldDuck" DockPanel.Dock="Top" Padding="0" ></Label>
-                                            <Label Content="•" DockPanel.Dock="Top" Padding="0" Margin="5,0,5,0" ></Label>
-                                            <TextBlock><Hyperlink Foreground="GreenYellow">https://github.com/BattlefieldDuck</Hyperlink></TextBlock>
-                                        </StackPanel>
-                                    </StackPanel>
-                                </DockPanel>
-                            </Border>
-                            -->
-
-                  </StackPanel>
+                  <StackPanel x:Name="StackPanel_PluginList" Margin="12,0,12,12"/>
                </ScrollViewer>
+
             </DockPanel>
          </mah:Flyout>
          <mah:Flyout x:Name="MahAppFlyout_Settings" Header="WGSM Settings" Position="Right" Width="300" Theme="Dark" IsModal="True">
@@ -856,7 +869,7 @@
                   </mah:HamburgerMenuImageItem>
                   <mah:HamburgerMenuImageItem Label="Web API">
                      <mah:HamburgerMenuImageItem.Thumbnail>
-                        <BitmapImage UriSource="pack://application:,,,/WindowsGSM;component/Images/HMenu/Settings.ico" />
+                        <BitmapImage UriSource="pack://application:,,,/WindowsGSM;component/Images/HMenu/WebApi.ico" />
                      </mah:HamburgerMenuImageItem.Thumbnail>
                   </mah:HamburgerMenuImageItem>
                </mah:HamburgerMenuItemCollection>

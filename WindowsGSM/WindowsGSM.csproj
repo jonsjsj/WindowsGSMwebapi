@@ -295,6 +295,7 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Images\HMenu\ViewPlugins.ico" />
+    <Resource Include="Images\HMenu\WebApi.ico" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Images\Plugins\User.png" />

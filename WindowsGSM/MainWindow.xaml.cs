@@ -575,7 +575,7 @@ namespace WindowsGSM
                     var borderBase = new Border
                     {
                         BorderBrush = brush,
-                        Background = Brushes.SlateGray,
+                        Background = new SolidColorBrush(Color.FromRgb(0x1A, 0x1A, 0x1A)),
                         BorderThickness = new Thickness(1.5),
                         CornerRadius = new CornerRadius(5),
                         Padding = new Thickness(6),
