@@ -348,19 +348,23 @@ async function fetchInstance(inst) {
         proxyGet(inst.id, 'api/resources/summary'),
         proxyGet(inst.id, 'api/update/check'),
     ]);
-    d.servers   = sv.status  === 'fulfilled' ? (sv.value  ?? []) : [];
-    d.resources = rs.status  === 'fulfilled' ? rs.value  : null;
+    d.servers        = sv.status === 'fulfilled' ? (sv.value?.data  ?? []) : [];
+    d.resources      = rs.status === 'fulfilled' ? (rs.value?.data ?? null) : null;
+    d.serverLoadErr  = sv.status === 'fulfilled' && !sv.value?.ok ? sv.value?.status : null;
 
-    if (upd.status === 'fulfilled' && upd.value?.hasUpdate)
-        state.updateData[inst.id] = upd.value;
+    if (upd.status === 'fulfilled' && upd.value?.data?.hasUpdate)
+        state.updateData[inst.id] = upd.value.data;
     else
         delete state.updateData[inst.id];
 }
 
 async function proxyGet(instanceId, path) {
-    const r = await fetch(`/api/proxy/${instanceId}/${path}`);
-    if (!r.ok) return null;
-    return r.json();
+    try {
+        const r = await fetch(`/api/proxy/${instanceId}/${path}`);
+        return { ok: r.ok, status: r.status, data: r.ok ? await r.json().catch(() => null) : null };
+    } catch {
+        return { ok: false, status: 0, data: null };
+    }
 }
 
 async function proxyPost(instanceId, path, body) {
@@ -524,13 +528,32 @@ function renderServers() {
         (state.instData[inst.id]?.servers ?? []).forEach(s =>
             cards.push({ inst, server: s, d: state.instData[inst.id] }));
 
+    // Collect error hints for online instances that failed to load servers
+    const hints = [];
+    for (const inst of insts) {
+        const d = state.instData[inst.id];
+        if (!d || d.status !== 'online' || d.servers.length) continue;
+        const code = d.serverLoadErr;
+        if (code === 401)
+            hints.push(`<div class="empty" style="color:var(--orange)">⚠ <b>${esc(inst.name)}</b>: token rejected (401) — paste the correct API token in the Instances page.</div>`);
+        else if (code === 503)
+            hints.push(`<div class="empty" style="color:var(--orange)">⚠ <b>${esc(inst.name)}</b>: Web API not started (503) — click Start Web API inside WGSM.</div>`);
+        else if (code === 408 || code === 0)
+            hints.push(`<div class="empty" style="color:var(--orange)">⚠ <b>${esc(inst.name)}</b>: connection timed out — set Connection Scope to <b>LAN</b> or <b>External</b> in WGSM › Web API settings (currently may be Local Only).</div>`);
+        else if (code)
+            hints.push(`<div class="empty" style="color:var(--orange)">⚠ <b>${esc(inst.name)}</b>: server list failed (HTTP ${code}).</div>`);
+        else if (d.info?.totalServers === 0)
+            hints.push(`<div class="empty" style="color:var(--muted)">ℹ <b>${esc(inst.name)}</b>: no servers installed yet.</div>`);
+    }
+
     return `
 <div class="section-row">
   <span class="section-title">All servers (${cards.length})</span>
   <button class="btn-sm" onclick="refreshAll()">↻ Refresh</button>
 </div>
+${hints.join('')}
 <div class="server-grid">
-  ${cards.length ? cards.map(({inst,server,d}) => serverCard(inst, server, d)).join('') : '<div class="empty">No servers found.</div>'}
+  ${cards.length ? cards.map(({inst,server,d}) => serverCard(inst, server, d)).join('') : hints.length ? '' : '<div class="empty">No servers found.</div>'}
 </div>`;
 }
 
@@ -627,7 +650,7 @@ function renderBackup() {
 async function loadBackupList(instanceId) {
     const el = document.getElementById(`bklist-${instanceId}`);
     if (!el) return;
-    const data = await proxyGet(instanceId, 'api/backup/list');
+    const { data } = await proxyGet(instanceId, 'api/backup/list');
     if (!Array.isArray(data) || !data.length) { el.textContent = '(no local backups)'; return; }
     el.innerHTML = data.slice(0, 10).map(f =>
         `<div class="backup-item">${esc(f.name)} <span style="color:var(--muted)">${(f.size/1024/1024).toFixed(1)} MB</span></div>`
@@ -753,7 +776,7 @@ async function loadLogs() {
     const { instanceId, serverId } = state.logCtx;
     const body = document.getElementById('log-modal-body');
     body.textContent = 'Loading…';
-    const data = await proxyGet(instanceId, `api/servers/${serverId}/logs?count=500`);
+    const { data } = await proxyGet(instanceId, `api/servers/${serverId}/logs?count=500`);
     body.textContent = Array.isArray(data) && data.length
         ? data.join('\n')
         : '(no log output available)';
