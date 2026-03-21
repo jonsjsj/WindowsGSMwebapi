@@ -329,11 +329,11 @@
 
    <Grid>
       <!-- Web API panel -->
-      <DockPanel Name="hMenu_WebApi" Margin="48,0,0,0" Visibility="Hidden">
+      <DockPanel Name="hMenu_WebApi" Margin="200,0,0,0" Visibility="Hidden">
          <webui:WebApiSettingsPanel x:Name="WebApiPanel" DockPanel.Dock="Top"/>
       </DockPanel>
 
-      <DockPanel Name="hMenu_Discordbot" Margin="48,0,0,0" Visibility="Visible">
+      <DockPanel Name="hMenu_Discordbot" Margin="200,0,0,0" Visibility="Visible">
          <Grid DockPanel.Dock="Top">
             <DockPanel Margin="10,10,10,10" DockPanel.Dock="Top">
                <DockPanel>
@@ -411,7 +411,7 @@
          </Grid>
       </DockPanel>
 
-      <DockPanel Name="hMenu_Dashboard" Margin="48,0,0,0" Visibility="Hidden">
+      <DockPanel Name="hMenu_Dashboard" Margin="200,0,0,0" Visibility="Hidden">
          <Grid Margin="10,10,10,10">
             <DockPanel>
                <Label DockPanel.Dock="Top" Content="SYSTEM METRICS" FontWeight="SemiBold" Foreground="Gray"/>
@@ -536,7 +536,7 @@
          </Grid>
       </DockPanel>
 
-      <DockPanel Name="hMenu_Home" Margin="48,0,0,0" Visibility="Hidden">
+      <DockPanel Name="hMenu_Home" Margin="200,0,0,0" Visibility="Hidden">
          <Grid DockPanel.Dock="Top">
             <Menu x:Name="menu" Height="30" DockPanel.Dock="Top" Margin="1,0,0,0">
                <MenuItem Header="Servers" Height="30">
@@ -837,7 +837,8 @@
          </Grid.Resources>
          <mah:HamburgerMenu x:Name="HamburgerMenuControl"
                                     DisplayMode="CompactInline"
-                                    IsPaneOpen="False"
+                                    IsPaneOpen="True"
+                                    OpenPaneLength="200"
                                     ItemTemplate="{StaticResource MenuItemTemplate}"
                                     OptionsItemTemplate="{StaticResource OptionsMenuItemTemplate}"
                                     ItemClick="HamburgerMenu_ItemClick"

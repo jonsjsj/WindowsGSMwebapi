@@ -18,6 +18,7 @@ namespace WindowsGSM.UI
     {
         private WebApiServer? _server;
         private WebApiConfig  _config = WebApiConfig.Load();
+        private bool          _loading;
 
         // Cached download URL from the last update check
         private string? _pendingUpdateUrl;
@@ -58,21 +59,26 @@ namespace WindowsGSM.UI
 
         private void LoadConfigToUi()
         {
-            InstanceNameBox.Text      = _config.InstanceName;
-            PortBox.Text              = _config.Port.ToString();
-            BackupLocalPathBox.Text   = _config.BackupLocalPath;
-            BackupOnedrivPathBox.Text = _config.BackupOnedrivePath;
-            BackupGdrivePathBox.Text  = _config.BackupGdrivePath;
-            CertPathBox.Text     = string.IsNullOrEmpty(_config.CertPath) ? "No certificate imported" : _config.CertPath;
-            KeyPathBox.Text      = string.IsNullOrEmpty(_config.KeyPath)  ? "No key imported"          : _config.KeyPath;
-            HttpsCheckBox.IsChecked    = _config.HttpsEnabled;
-            AutoStartCheckBox.IsChecked = _config.AutoStart;
+            _loading = true;
+            try
+            {
+                InstanceNameBox.Text      = _config.InstanceName;
+                PortBox.Text              = _config.Port.ToString();
+                BackupLocalPathBox.Text   = _config.BackupLocalPath;
+                BackupOnedrivPathBox.Text = _config.BackupOnedrivePath;
+                BackupGdrivePathBox.Text  = _config.BackupGdrivePath;
+                CertPathBox.Text     = string.IsNullOrEmpty(_config.CertPath) ? "No certificate imported" : _config.CertPath;
+                KeyPathBox.Text      = string.IsNullOrEmpty(_config.KeyPath)  ? "No key imported"          : _config.KeyPath;
+                HttpsCheckBox.IsChecked    = _config.HttpsEnabled;
+                AutoStartCheckBox.IsChecked = _config.AutoStart;
 
-            ScopeLocal.IsChecked    = _config.Scope == ConnectionScope.LocalOnly;
-            ScopeLan.IsChecked      = _config.Scope == ConnectionScope.LAN;
-            ScopeExternal.IsChecked = _config.Scope == ConnectionScope.External;
+                ScopeLocal.IsChecked    = _config.Scope == ConnectionScope.LocalOnly;
+                ScopeLan.IsChecked      = _config.Scope == ConnectionScope.LAN;
+                ScopeExternal.IsChecked = _config.Scope == ConnectionScope.External;
 
-            RefreshKeysList();
+                RefreshKeysList();
+            }
+            finally { _loading = false; }
         }
 
         // — Instance name ————————————————————————————————————————————————————
@@ -212,6 +218,7 @@ namespace WindowsGSM.UI
 
         private void OnScopeChanged(object sender, RoutedEventArgs e)
         {
+            if (_loading) return;
             _config.Scope = ScopeLocal.IsChecked == true ? ConnectionScope.LocalOnly
                           : ScopeLan.IsChecked == true   ? ConnectionScope.LAN
                                                          : ConnectionScope.External;
@@ -244,6 +251,7 @@ namespace WindowsGSM.UI
 
         private void OnHttpsToggled(object sender, RoutedEventArgs e)
         {
+            if (_loading) return;
             _config.HttpsEnabled = HttpsCheckBox.IsChecked == true;
             _config.Save();
         }
@@ -252,6 +260,7 @@ namespace WindowsGSM.UI
 
         private void OnAutoStartToggled(object sender, RoutedEventArgs e)
         {
+            if (_loading) return;
             _config.AutoStart = AutoStartCheckBox.IsChecked == true;
             _config.Save();
         }

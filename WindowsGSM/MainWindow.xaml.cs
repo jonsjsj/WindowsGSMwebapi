@@ -317,7 +317,7 @@ namespace WindowsGSM
 
             RenderOptions.ProcessRenderMode = MahAppSwitch_HardWareAcceleration.IsOn ? System.Windows.Interop.RenderMode.SoftwareOnly : System.Windows.Interop.RenderMode.Default;
             WindowTransitionsEnabled = MahAppSwitch_UIAnimation.IsOn;
-            ThemeManager.Current.ChangeTheme(this, $"{(MahAppSwitch_DarkTheme.IsOn ? "Dark" : "Light")}.{comboBox_Themes.SelectedItem}");
+            ThemeHelper.Apply(MahAppSwitch_DarkTheme.IsOn);
             //Not required - it is set in windows settings
             //SetStartOnBoot(MahAppSwitch_StartOnBoot.IsChecked ?? false);
             if (MahAppSwitch_DiscordBotAutoStart.IsOn)
@@ -3325,7 +3325,7 @@ namespace WindowsGSM
                 key?.SetValue(RegistryKeyName.DarkTheme, MahAppSwitch_DarkTheme.IsOn.ToString());
             }
 
-            ThemeManager.Current.ChangeTheme(this, $"{(MahAppSwitch_DarkTheme.IsOn ? "Dark" : "Light")}.{comboBox_Themes.SelectedItem ?? DEFAULT_THEME}");
+            ThemeHelper.Apply(MahAppSwitch_DarkTheme.IsOn);
         }
 
         private void StartOnLogin_IsCheckedChanged(object sender, EventArgs e)
@@ -3385,8 +3385,7 @@ namespace WindowsGSM
                 comboBox_Themes.SelectedItem = DEFAULT_THEME;
                 comboBox_Themes.IsEnabled = false;
 
-                //Set theme
-                ThemeManager.Current.ChangeTheme(this, $"{(MahAppSwitch_DarkTheme.IsOn ? "Dark" : "Light")}.{comboBox_Themes.SelectedItem}");
+                ThemeHelper.Apply(MahAppSwitch_DarkTheme.IsOn);
 
                 key.SetValue(RegistryKeyName.DonorTheme, MahAppSwitch_DonorConnect.IsOn.ToString());
                 key.SetValue(RegistryKeyName.DonorColor, DEFAULT_THEME);
@@ -3455,15 +3454,14 @@ namespace WindowsGSM
                         g_DiscordBot.SetDonorType(g_DonorType);
                         comboBox_Themes.IsEnabled = true;
 
-                        ThemeManager.Current.ChangeTheme(this, $"{(MahAppSwitch_DarkTheme.IsOn ? "Dark" : "Light")}.{comboBox_Themes.SelectedItem}");
+                        ThemeHelper.Apply(MahAppSwitch_DarkTheme.IsOn);
 
                         return (true, name);
                     }
 
                     MahAppSwitch_DonorConnect.IsOn = false;
 
-                    //Set theme
-                    ThemeManager.Current.ChangeTheme(this, $"{(MahAppSwitch_DarkTheme.IsOn ? "Dark" : "Light")}.{comboBox_Themes.SelectedItem}");
+                    ThemeHelper.Apply(MahAppSwitch_DarkTheme.IsOn);
                 }
             }
             catch
@@ -3471,8 +3469,7 @@ namespace WindowsGSM
                 // ignore
             }
 
-            //Set theme
-            ThemeManager.Current.ChangeTheme(this, $"{(MahAppSwitch_DarkTheme.IsOn ? "Dark" : "Light")}.{comboBox_Themes.SelectedItem}");
+            ThemeHelper.Apply(MahAppSwitch_DarkTheme.IsOn);
 
             return (false, string.Empty);
         }
@@ -3484,8 +3481,7 @@ namespace WindowsGSM
                 key?.SetValue(RegistryKeyName.DonorColor, comboBox_Themes.SelectedItem.ToString());
             }
 
-            //Set theme
-            ThemeManager.Current.ChangeTheme(this, $"{(MahAppSwitch_DarkTheme.IsOn ? "Dark" : "Light")}.{comboBox_Themes.SelectedItem}");
+            ThemeHelper.Apply(MahAppSwitch_DarkTheme.IsOn);
         }
         #endregion
 
@@ -4415,8 +4411,6 @@ namespace WindowsGSM
 
         private void HamburgerMenu_ItemClick(object sender, ItemClickEventArgs e)
         {
-            HamburgerMenuControl.IsPaneOpen = false;
-
             hMenu_Home.Visibility = (HamburgerMenuControl.SelectedIndex == 0) ? Visibility.Visible : Visibility.Hidden;
             hMenu_Dashboard.Visibility = (HamburgerMenuControl.SelectedIndex == 1) ? Visibility.Visible : Visibility.Hidden;
             hMenu_Discordbot.Visibility = (HamburgerMenuControl.SelectedIndex == 2) ? Visibility.Visible : Visibility.Hidden;

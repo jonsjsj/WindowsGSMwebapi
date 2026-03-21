@@ -308,7 +308,7 @@
                             <RadioButton x:Name="ScopeLocal"
                                          Content="Local only  (localhost access)"
                                          Foreground="#CCCCCC" Margin="0,4"
-                                         IsChecked="True" Checked="OnScopeChanged"/>
+                                         Checked="OnScopeChanged"/>
                             <RadioButton x:Name="ScopeLan"
                                          Content="Allow LAN access  (same network)"
                                          Foreground="#CCCCCC" Margin="0,4"

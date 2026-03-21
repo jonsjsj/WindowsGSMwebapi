@@ -10,73 +10,50 @@
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Controls.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Fonts.xaml" />
-                <!-- Dark theme with teal accent matching the web dashboard -->
+                <!-- MahApps base theme — swapped at runtime by ThemeHelper -->
                 <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Themes/Dark.Teal.xaml" />
+                <!-- WGSM colour palette — swapped at runtime by ThemeHelper -->
+                <ResourceDictionary Source="Themes/WgsmDark.xaml" />
             </ResourceDictionary.MergedDictionaries>
 
-            <!-- Brand colours — match the web dashboard exactly -->
-            <Color x:Key="WgsmAccent">#00D4AA</Color>
-            <Color x:Key="WgsmBg">#0D0D0D</Color>
-            <Color x:Key="WgsmSurface">#111111</Color>
-            <Color x:Key="WgsmSurface2">#1A1A1A</Color>
-            <Color x:Key="WgsmBorder">#222222</Color>
-            <Color x:Key="WgsmMuted">#888888</Color>
-            <Color x:Key="WgsmGreen">#00D4AA</Color>
-            <Color x:Key="WgsmRed">#FF4D4D</Color>
-            <Color x:Key="WgsmOrange">#FF9F43</Color>
-
-            <SolidColorBrush x:Key="WgsmAccentBrush"   Color="{StaticResource WgsmAccent}"/>
-            <SolidColorBrush x:Key="WgsmBgBrush"       Color="{StaticResource WgsmBg}"/>
-            <SolidColorBrush x:Key="WgsmSurfaceBrush"  Color="{StaticResource WgsmSurface}"/>
-            <SolidColorBrush x:Key="WgsmSurface2Brush" Color="{StaticResource WgsmSurface2}"/>
-            <SolidColorBrush x:Key="WgsmBorderBrush"   Color="{StaticResource WgsmBorder}"/>
-            <SolidColorBrush x:Key="WgsmMutedBrush"    Color="{StaticResource WgsmMuted}"/>
-            <SolidColorBrush x:Key="WgsmGreenBrush"    Color="{StaticResource WgsmGreen}"/>
-            <SolidColorBrush x:Key="WgsmRedBrush"      Color="{StaticResource WgsmRed}"/>
-            <SolidColorBrush x:Key="WgsmOrangeBrush"   Color="{StaticResource WgsmOrange}"/>
-
-            <!-- Override MahApps accent to our teal -->
-            <SolidColorBrush x:Key="MahApps.Brushes.Accent"     Color="{StaticResource WgsmAccent}"/>
-            <SolidColorBrush x:Key="MahApps.Brushes.AccentBase" Color="{StaticResource WgsmAccent}"/>
-
-            <!-- Action button styles -->
+            <!-- Action button styles — use DynamicResource so colours swap with theme -->
             <Style x:Key="WgsmStartButton" TargetType="Button" BasedOn="{StaticResource MahApps.Styles.Button}">
-                <Setter Property="Background"   Value="#0D2A1F"/>
-                <Setter Property="Foreground"   Value="{StaticResource WgsmGreenBrush}"/>
-                <Setter Property="BorderBrush"  Value="#1A4033"/>
-                <Setter Property="FontWeight"   Value="SemiBold"/>
+                <Setter Property="Background"  Value="{DynamicResource WgsmStartBg}"/>
+                <Setter Property="Foreground"  Value="{DynamicResource WgsmStartFg}"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource WgsmStartBorder}"/>
+                <Setter Property="FontWeight"  Value="SemiBold"/>
             </Style>
             <Style x:Key="WgsmStopButton" TargetType="Button" BasedOn="{StaticResource MahApps.Styles.Button}">
-                <Setter Property="Background"   Value="#2D1215"/>
-                <Setter Property="Foreground"   Value="{StaticResource WgsmRedBrush}"/>
-                <Setter Property="BorderBrush"  Value="#5A1E1E"/>
-                <Setter Property="FontWeight"   Value="SemiBold"/>
+                <Setter Property="Background"  Value="{DynamicResource WgsmStopBg}"/>
+                <Setter Property="Foreground"  Value="{DynamicResource WgsmStopFg}"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource WgsmStopBorder}"/>
+                <Setter Property="FontWeight"  Value="SemiBold"/>
             </Style>
             <Style x:Key="WgsmRestartButton" TargetType="Button" BasedOn="{StaticResource MahApps.Styles.Button}">
-                <Setter Property="Background"   Value="#2A1E0D"/>
-                <Setter Property="Foreground"   Value="{StaticResource WgsmOrangeBrush}"/>
-                <Setter Property="BorderBrush"  Value="#4A3515"/>
-                <Setter Property="FontWeight"   Value="SemiBold"/>
+                <Setter Property="Background"  Value="{DynamicResource WgsmRestartBg}"/>
+                <Setter Property="Foreground"  Value="{DynamicResource WgsmRestartFg}"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource WgsmRestartBorder}"/>
+                <Setter Property="FontWeight"  Value="SemiBold"/>
             </Style>
             <Style x:Key="WgsmActionButton" TargetType="Button" BasedOn="{StaticResource MahApps.Styles.Button}">
-                <Setter Property="Background"   Value="{StaticResource WgsmSurface2Brush}"/>
-                <Setter Property="Foreground"   Value="{StaticResource WgsmMutedBrush}"/>
-                <Setter Property="BorderBrush"  Value="{StaticResource WgsmBorderBrush}"/>
-                <Setter Property="FontWeight"   Value="SemiBold"/>
+                <Setter Property="Background"  Value="{DynamicResource WgsmActionBg}"/>
+                <Setter Property="Foreground"  Value="{DynamicResource WgsmActionFg}"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource WgsmActionBorder}"/>
+                <Setter Property="FontWeight"  Value="SemiBold"/>
             </Style>
 
-            <!-- Dark input box -->
+            <!-- Input box -->
             <Style x:Key="WgsmInputBox" TargetType="TextBox" BasedOn="{StaticResource MahApps.Styles.TextBox}">
-                <Setter Property="Background"  Value="{StaticResource WgsmBgBrush}"/>
-                <Setter Property="BorderBrush" Value="{StaticResource WgsmBorderBrush}"/>
-                <Setter Property="Foreground"  Value="#E0E0E0"/>
+                <Setter Property="Background"  Value="{DynamicResource WgsmInputBg}"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource WgsmInputBorder}"/>
+                <Setter Property="Foreground"  Value="{DynamicResource WgsmInputFg}"/>
             </Style>
 
             <!-- Section header label -->
             <Style x:Key="WgsmSectionHeader" TargetType="TextBlock">
                 <Setter Property="FontSize"   Value="11"/>
                 <Setter Property="FontWeight" Value="SemiBold"/>
-                <Setter Property="Foreground" Value="{StaticResource WgsmMutedBrush}"/>
+                <Setter Property="Foreground" Value="{DynamicResource WgsmMutedBrush}"/>
                 <Setter Property="Margin"     Value="0,14,0,6"/>
             </Style>
         </ResourceDictionary>
