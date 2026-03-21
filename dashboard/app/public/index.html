@@ -7,260 +7,283 @@
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:       #0d1117;
-  --sb:       #161b22;
-  --surface:  #21262d;
-  --surface2: #2d333b;
-  --border:   #30363d;
-  --text:     #e6edf3;
-  --muted:    #7d8590;
-  --green:    #3fb950;
-  --green-bg: #0d2218;
-  --red:      #f85149;
+  --bg:       #0d0d0d;
+  --sb:       #111111;
+  --surface:  #111111;
+  --surface2: #1a1a1a;
+  --border:   #222222;
+  --text:     #e0e0e0;
+  --muted:    #888888;
+  --green:    #00d4aa;
+  --green-bg: #0d2a1f;
+  --red:      #ff4d4d;
   --red-bg:   #2d1215;
-  --orange:   #d29922;
-  --blue:     #58a6ff;
-  --accent:   #1f6feb;
-  --accent-h: #388bfd;
+  --orange:   #ff9f43;
+  --orange-bg:#2a1e0d;
+  --accent:   #00d4aa;
   --r:        8px;
 }
-body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:14px;display:flex;height:100vh;overflow:hidden}
+body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,-apple-system,sans-serif;font-size:13px;display:flex;height:100vh;overflow:hidden}
 
-/* ── Sidebar ─────────────────────────────────────────────────────────── */
-#sidebar{width:220px;min-width:220px;background:var(--sb);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow-y:auto;overflow-x:hidden}
-.sb-head{padding:20px 16px 12px;border-bottom:1px solid var(--border)}
-.sb-tag{font-size:10px;color:var(--muted);letter-spacing:.12em;font-family:'Courier New',monospace}
-.sb-title{font-size:18px;font-weight:700;color:var(--text);letter-spacing:.03em;margin-top:2px}
-.sb-section{font-size:10px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;padding:16px 16px 4px;font-weight:600}
-.nav-item{display:flex;align-items:center;gap:10px;padding:7px 16px;cursor:pointer;border-radius:0;color:var(--muted);font-size:13px;transition:background .1s,color .1s;user-select:none;border:none;background:none;width:100%;text-align:left}
-.nav-item:hover{background:var(--surface);color:var(--text)}
-.nav-item.active{background:var(--surface);color:var(--text);border-left:2px solid var(--accent)}
+/* ── Sidebar ───────────────────────────────────────────────────────────── */
+#sidebar{width:210px;min-width:210px;background:var(--sb);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow-y:auto;overflow-x:hidden}
+.sb-head{padding:18px 16px 14px;border-bottom:1px solid var(--border)}
+.logo-text{font-size:20px;font-weight:700;color:var(--accent);letter-spacing:1px}
+.logo-sub{font-size:10px;color:#444;margin-top:2px;letter-spacing:.3px}
+.sb-section{font-size:10px;color:#444;letter-spacing:.08em;text-transform:uppercase;padding:14px 16px 4px;font-weight:600}
+.nav-item{display:flex;align-items:center;gap:9px;padding:7px 14px;cursor:pointer;color:var(--muted);font-size:12px;transition:background .1s,color .1s;user-select:none;border:none;background:none;width:100%;text-align:left;border-left:2px solid transparent}
+.nav-item:hover{background:var(--surface2);color:#ccc}
+.nav-item.active{background:var(--surface2);color:var(--text);border-left-color:var(--accent)}
 .nav-icon{width:16px;text-align:center;font-size:13px;flex-shrink:0}
-.sb-spacer{flex:1}
+.nav-badge{margin-left:auto;font-size:10px;padding:1px 6px;border-radius:10px;font-weight:600}
+.nav-badge.teal{background:#00d4aa22;color:var(--accent)}
+.nav-badge.red{background:#ff4d4d22;color:var(--red)}
+.sb-bottom{margin-top:auto;border-top:1px solid var(--border);padding:6px 0}
 
-/* ── Instance list in sidebar ───────────────────────────────────────── */
+/* ── Instance list ─────────────────────────────────────────────────────── */
 .inst-section{border-top:1px solid var(--border);padding-bottom:8px}
-.inst-item{padding:6px 16px;cursor:pointer;border-left:2px solid transparent;transition:.1s}
-.inst-item:hover{background:var(--surface)}
-.inst-item.active{background:var(--surface);border-left-color:var(--accent)}
+.inst-item{padding:5px 14px;cursor:pointer;border-left:2px solid transparent;transition:.1s}
+.inst-item:hover{background:var(--surface2)}
+.inst-item.active{background:var(--surface2);border-left-color:var(--accent)}
 .inst-row{display:flex;align-items:center;gap:8px}
 .inst-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;background:var(--muted)}
 .inst-dot.online{background:var(--green)}
 .inst-dot.offline{background:var(--red)}
 .inst-name{font-size:12px;color:var(--text);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .inst-count{font-size:10px;color:var(--muted)}
-.inst-expand{font-size:10px;color:var(--muted);cursor:pointer;padding:0 4px;background:none;border:none;color:var(--muted)}
+.inst-expand{font-size:10px;color:var(--muted);cursor:pointer;padding:0 4px;background:none;border:none}
 .inst-log{display:none;background:var(--bg);border-top:1px solid var(--border);padding:6px 10px;font-family:'Courier New',monospace;font-size:10px;color:var(--muted);max-height:100px;overflow-y:auto;white-space:pre-wrap;word-break:break-all}
 .inst-log.open{display:block}
 
-/* ── Main area ───────────────────────────────────────────────────────── */
-#main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+/* ── Main area ─────────────────────────────────────────────────────────── */
+#main{flex:1;display:flex;flex-direction:column;overflow:hidden;background:var(--bg)}
 
-/* ── Topbar ──────────────────────────────────────────────────────────── */
-#topbar{background:var(--sb);border-bottom:1px solid var(--border);padding:0 24px;height:48px;display:flex;align-items:center;gap:24px;flex-shrink:0}
-.tb-title{font-size:15px;font-weight:600;color:var(--text)}
+/* ── Topbar ────────────────────────────────────────────────────────────── */
+#topbar{background:var(--sb);border-bottom:1px solid var(--border);padding:0 20px;height:38px;display:flex;align-items:center;gap:20px;flex-shrink:0}
+.tb-title{font-size:13px;font-weight:600;color:var(--text)}
 .tb-spacer{flex:1}
-.tb-stat{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted)}
-.tb-stat-label{color:var(--muted);font-size:11px}
-.tb-bar{width:50px;height:5px;background:var(--surface2);border-radius:3px;overflow:hidden}
-.tb-bar-fill{height:100%;border-radius:3px;transition:width .5s}
+.tb-sep{width:1px;height:16px;background:var(--border)}
+.tb-stat{display:flex;align-items:center;gap:6px;font-size:11px}
+.tb-label{color:#444;font-size:10px}
+.tb-bar{width:50px;height:3px;background:var(--surface2);border-radius:2px;overflow:hidden}
+.tb-bar-fill{height:100%;border-radius:2px;transition:width .5s}
 .tb-bar-fill.cpu{background:var(--orange)}
-.tb-bar-fill.ram{background:var(--blue)}
-.tb-time{font-size:12px;color:var(--muted);font-family:'Courier New',monospace}
+.tb-bar-fill.ram{background:var(--accent)}
+.tb-val{color:var(--muted);min-width:30px;font-size:11px}
+.tb-time{font-size:11px;color:#444;font-variant-numeric:tabular-nums}
+.upd-badge{background:var(--orange-bg);border:1px solid var(--orange);color:var(--orange);border-radius:4px;padding:2px 8px;font-size:10px;font-weight:600;cursor:pointer}
+.upd-badge:hover{filter:brightness(1.2)}
 
-/* ── Content ─────────────────────────────────────────────────────────── */
-#content{flex:1;overflow-y:auto;padding:24px}
+/* ── Content ───────────────────────────────────────────────────────────── */
+#content{flex:1;overflow-y:auto;padding:20px}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--surface2);border-radius:3px}
 
-/* ── Summary cards ───────────────────────────────────────────────────── */
-.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px}
+/* ── Stats grid ────────────────────────────────────────────────────────── */
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
 @media(max-width:900px){.stat-grid{grid-template-columns:repeat(2,1fr)}}
-.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px}
-.stat-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px}
-.stat-value{font-size:28px;font-weight:700;line-height:1.1}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px}
+.stat-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+.stat-value{font-size:24px;font-weight:700;line-height:1.1;color:var(--text)}
 .stat-value.green{color:var(--green)}
 .stat-value.red{color:var(--red)}
-.stat-value.blue{color:var(--blue)}
-.stat-sub{font-size:11px;color:var(--muted);margin-top:2px}
+.stat-value.accent{color:var(--accent)}
+.stat-sub{font-size:10px;color:#444;margin-top:3px}
 
-/* ── Section header ──────────────────────────────────────────────────── */
+/* ── Section header ────────────────────────────────────────────────────── */
 .section-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
-.section-title{font-size:13px;font-weight:600;color:var(--text);display:flex;align-items:center;gap:8px}
-.section-title::before{content:'';display:block;width:3px;height:14px;background:var(--accent);border-radius:2px}
-.btn-sm{background:var(--surface2);border:1px solid var(--border);color:var(--muted);border-radius:6px;padding:5px 12px;cursor:pointer;font-size:12px;transition:.15s}
+.section-title{font-size:13px;font-weight:600;color:#ccc;border-left:2px solid var(--accent);padding-left:8px}
+.btn-sm{background:var(--surface2);border:1px solid var(--border);color:var(--muted);border-radius:6px;padding:5px 12px;cursor:pointer;font-size:11px;transition:.15s;font-family:inherit}
 .btn-sm:hover{border-color:var(--accent);color:var(--text)}
 
-/* ── Server grid ─────────────────────────────────────────────────────── */
-.server-grid{display:grid;gap:12px;grid-template-columns:repeat(auto-fill,minmax(300px,1fr))}
-.server-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px;display:flex;flex-direction:column;gap:10px;transition:border-color .15s}
-.server-card:hover{border-color:#484f58}
-.card-game{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:2px}
-.card-header{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
-.card-name{font-weight:600;font-size:15px;color:var(--text)}
-.card-inst{font-size:10px;color:var(--muted);margin-top:1px}
-.badge{font-size:10px;font-weight:600;padding:3px 8px;border-radius:10px;white-space:nowrap;flex-shrink:0;display:flex;align-items:center;gap:4px}
-.badge::before{content:'';width:5px;height:5px;border-radius:50%;display:inline-block}
-.badge.started{background:var(--green-bg);color:var(--green);border:1px solid #1a4a28}.badge.started::before{background:var(--green)}
-.badge.stopped{background:var(--red-bg);color:var(--red);border:1px solid #5a1e1e}.badge.stopped::before{background:var(--red)}
-.badge.starting,.badge.restarting{background:#2a2a0d;color:var(--orange);border:1px solid #4a4a1a}.badge.starting::before,.badge.restarting::before{background:var(--orange)}
-.badge.stopping{background:#2a1a0d;color:#e07b39;border:1px solid #4a3a1a}.badge.stopping::before{background:#e07b39}
-.badge.unknown{background:var(--surface2);color:var(--muted);border:1px solid var(--border)}.badge.unknown::before{background:var(--muted)}
+/* ── Server grid ───────────────────────────────────────────────────────── */
+.server-grid{display:grid;gap:12px;grid-template-columns:repeat(auto-fill,minmax(290px,1fr))}
+.server-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px;display:flex;flex-direction:column;gap:10px;transition:border-color .15s}
+.server-card:hover{border-color:#333}
 
-/* ── Resource bars ───────────────────────────────────────────────────── */
+/* card header row */
+.card-header{display:flex;align-items:center;gap:8px}
+.status-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.dot-green{background:var(--green)}
+.dot-red{background:var(--red)}
+.dot-orange{background:var(--orange)}
+.dot-grey{background:#444}
+.card-name{font-weight:600;font-size:13px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text)}
+
+/* badge */
+.badge{font-size:10px;font-weight:600;padding:2px 8px;border-radius:10px;white-space:nowrap;flex-shrink:0}
+.badge.started{background:var(--green-bg);color:var(--green)}
+.badge.stopped{background:var(--red-bg);color:var(--red)}
+.badge.starting,.badge.restarting{background:var(--orange-bg);color:var(--orange)}
+.badge.stopping{background:#2a1a0d;color:#e07b39}
+.badge.unknown{background:var(--surface2);color:var(--muted)}
+
+/* game label */
+.card-game{font-size:11px;color:#444}
+
+/* resource bars */
 .res-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.res-block{}
-.res-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px}
-.res-value{font-size:16px;font-weight:700;margin-bottom:4px}
-.res-bar{height:4px;background:var(--surface2);border-radius:2px;overflow:hidden}
+.res-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.3px;margin-bottom:3px}
+.res-value{font-size:14px;font-weight:700;margin-bottom:4px;color:var(--text)}
+.res-bar{height:3px;background:var(--surface2);border-radius:2px;overflow:hidden}
 .res-bar-fill{height:100%;border-radius:2px;transition:width .6s}
-.res-bar-fill.cpu{background:linear-gradient(90deg,var(--orange),#e8a838)}
-.res-bar-fill.ram{background:linear-gradient(90deg,var(--blue),#79c0ff)}
+.res-bar-fill.cpu{background:var(--orange)}
+.res-bar-fill.ram{background:var(--accent)}
 
-/* ── Card meta ───────────────────────────────────────────────────────── */
-.card-meta{font-size:11px;color:var(--muted);display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+/* meta / ports */
+.card-meta{font-size:11px;color:var(--muted);display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .meta-chip{background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:2px 6px;font-family:'Courier New',monospace;font-size:10px}
-
-/* ── Card actions ────────────────────────────────────────────────────── */
-.card-actions{display:flex;gap:6px;flex-wrap:wrap}
-.btn-action{border:none;border-radius:5px;padding:5px 10px;font-size:11px;font-weight:600;cursor:pointer;transition:filter .15s,opacity .15s;white-space:nowrap}
-.btn-action:disabled{opacity:.35;cursor:not-allowed;filter:none}
-.btn-start   {background:#0d2a0d;color:var(--green)}
-.btn-stop    {background:#2d1215;color:var(--red)}
-.btn-restart {background:#2a2a0d;color:var(--orange)}
-.btn-logs    {background:var(--surface2);color:var(--muted);border:1px solid var(--border)}
-.btn-action:not(:disabled):hover{filter:brightness(1.3)}
-.card-fb{font-size:11px;color:var(--muted);min-height:14px}
-
-/* ── Logs modal ──────────────────────────────────────────────────────── */
-#log-modal{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center;z-index:100}
-#log-modal.open{display:flex}
-.log-panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);width:min(900px,95vw);max-height:85vh;display:flex;flex-direction:column}
-.log-header{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
-.log-title{font-size:14px;font-weight:600}
-.log-close{background:none;border:none;color:var(--muted);cursor:pointer;font-size:18px;line-height:1;padding:2px 6px}
-.log-close:hover{color:var(--red)}
-.log-body{flex:1;overflow-y:auto;padding:12px 16px;font-family:'Courier New',monospace;font-size:12px;color:#adbac7;line-height:1.5;white-space:pre-wrap;word-break:break-all;background:var(--bg)}
-.log-toolbar{padding:8px 16px;border-top:1px solid var(--border);display:flex;gap:8px}
-
-/* ── Config modal ────────────────────────────────────────────────────── */
-#cfg-modal{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center;z-index:100}
-#cfg-modal.open{display:flex}
-.cfg-panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);width:min(700px,95vw);max-height:85vh;display:flex;flex-direction:column}
-.cfg-header{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
-.cfg-body{flex:1;overflow-y:auto;padding:16px}
-.cfg-footer{padding:10px 16px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px}
-.cfg-field{margin-bottom:12px}
-.cfg-field label{display:block;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px}
-.cfg-field input,.cfg-field textarea{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:5px;color:var(--text);padding:7px 10px;font-size:13px;outline:none;transition:border-color .15s}
-.cfg-field input:focus,.cfg-field textarea:focus{border-color:var(--accent)}
-.cfg-field textarea{font-family:'Courier New',monospace;font-size:11px;resize:vertical;min-height:200px}
-
-/* ── Instances settings view ─────────────────────────────────────────── */
-.inst-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:10px;display:flex;align-items:center;gap:12px}
-.inst-card-info{flex:1}
-.inst-card-name{font-weight:600;font-size:14px}
-.inst-card-url{font-size:11px;color:var(--muted);font-family:'Courier New',monospace;margin-top:2px}
-.inst-card-status{font-size:11px;margin-top:4px}
-
-/* ── Add instance form ────────────────────────────────────────────────── */
-.add-form{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:20px;margin-top:16px}
-.add-form h3{font-size:13px;font-weight:600;margin-bottom:14px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
-.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-@media(max-width:600px){.form-grid{grid-template-columns:1fr}}
-.form-field label{display:block;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px}
-.form-field input{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:5px;color:var(--text);padding:7px 10px;font-size:13px;outline:none;transition:border-color .15s}
-.form-field input:focus{border-color:var(--accent)}
-.form-full{grid-column:1/-1}
-.btn-primary{background:var(--accent);color:#fff;border:none;border-radius:6px;padding:8px 18px;font-size:13px;cursor:pointer;font-weight:500;transition:background .15s}
-.btn-primary:hover{background:var(--accent-h)}
-.btn-danger{background:#2d1215;color:var(--red);border:1px solid #5a1e1e;border-radius:6px;padding:6px 12px;font-size:12px;cursor:pointer;transition:.15s}
-.btn-danger:hover{background:var(--red-bg);border-color:var(--red)}
-
-/* ── Port status indicators ──────────────────────────────────────────── */
 .port-chip{background:var(--surface2);border-radius:4px;padding:2px 6px;font-family:'Courier New',monospace;font-size:10px;display:inline-flex;align-items:center;gap:4px}
 .port-dot{width:5px;height:5px;border-radius:50%;display:inline-block;flex-shrink:0}
 .port-dot.ok{background:var(--green)}.port-dot.fail{background:var(--red)}.port-dot.unknown{background:var(--muted)}
 
-/* ── Update badge ────────────────────────────────────────────────────── */
-.upd-badge{background:#2a1d0a;border:1px solid var(--orange);color:var(--orange);border-radius:4px;padding:2px 7px;font-size:10px;font-weight:600;cursor:pointer;margin-left:6px}
-.upd-badge:hover{background:#3a2d1a}
+/* actions */
+.card-actions{display:flex;gap:6px;flex-wrap:wrap}
+.btn-action{border:none;border-radius:5px;padding:4px 10px;font-size:11px;font-weight:600;cursor:pointer;transition:filter .15s;white-space:nowrap;font-family:inherit}
+.btn-action:disabled{opacity:.35;cursor:not-allowed;filter:none}
+.btn-start   {background:var(--green-bg);color:var(--green)}
+.btn-stop    {background:var(--red-bg);color:var(--red)}
+.btn-restart {background:var(--orange-bg);color:var(--orange)}
+.btn-logs    {background:var(--surface2);color:var(--muted);border:1px solid var(--border)}
+.btn-action:not(:disabled):hover{filter:brightness(1.3)}
+.card-fb{font-size:11px;color:var(--muted);min-height:14px}
+.card-inst{font-size:10px;color:#444;margin-top:1px}
 
-/* ── Backup view ─────────────────────────────────────────────────────── */
-.backup-inst-section{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:12px}
+/* ── Log modal ─────────────────────────────────────────────────────────── */
+#log-modal{position:fixed;inset:0;background:rgba(0,0,0,.75);display:none;align-items:center;justify-content:center;z-index:100}
+#log-modal.open{display:flex}
+.log-panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);width:min(900px,95vw);max-height:85vh;display:flex;flex-direction:column}
+.log-header{padding:12px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.log-title{font-size:13px;font-weight:600;color:var(--text)}
+.log-close{background:none;border:none;color:var(--muted);cursor:pointer;font-size:18px;line-height:1;padding:2px 6px}
+.log-close:hover{color:var(--red)}
+.log-body{flex:1;overflow-y:auto;padding:12px 16px;font-family:'Courier New',monospace;font-size:12px;color:#aaa;line-height:1.5;white-space:pre-wrap;word-break:break-all;background:var(--bg)}
+.log-toolbar{padding:8px 16px;border-top:1px solid var(--border);display:flex;gap:8px}
+
+/* ── Config modal ──────────────────────────────────────────────────────── */
+#cfg-modal{position:fixed;inset:0;background:rgba(0,0,0,.75);display:none;align-items:center;justify-content:center;z-index:100}
+#cfg-modal.open{display:flex}
+.cfg-panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);width:min(700px,95vw);max-height:85vh;display:flex;flex-direction:column}
+.cfg-header{padding:12px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.cfg-body{flex:1;overflow-y:auto;padding:16px}
+.cfg-footer{padding:10px 16px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px}
+.cfg-field{margin-bottom:12px}
+.cfg-field label{display:block;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px}
+.cfg-field input,.cfg-field textarea{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:5px;color:var(--text);padding:7px 10px;font-size:12px;outline:none;transition:border-color .15s;font-family:inherit}
+.cfg-field input:focus,.cfg-field textarea:focus{border-color:var(--accent)}
+.cfg-field textarea{font-family:'Courier New',monospace;font-size:11px;resize:vertical;min-height:200px}
+
+/* ── Instances view ────────────────────────────────────────────────────── */
+.inst-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;margin-bottom:10px;display:flex;align-items:center;gap:12px}
+.inst-card-info{flex:1}
+.inst-card-name{font-weight:600;font-size:13px;color:var(--text)}
+.inst-card-url{font-size:11px;color:var(--muted);font-family:'Courier New',monospace;margin-top:2px}
+.inst-card-status{font-size:11px;margin-top:3px}
+.add-form{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:18px;margin-top:16px}
+.add-form-title{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:14px}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:600px){.form-grid{grid-template-columns:1fr}}
+.form-field label{display:block;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px}
+.form-field input{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:5px;color:var(--text);padding:7px 10px;font-size:12px;outline:none;transition:border-color .15s;font-family:inherit}
+.form-field input:focus{border-color:var(--accent)}
+.form-full{grid-column:1/-1}
+.btn-primary{background:var(--accent);color:#000;border:none;border-radius:6px;padding:7px 18px;font-size:12px;cursor:pointer;font-weight:600;transition:filter .15s;font-family:inherit}
+.btn-primary:hover{filter:brightness(.9)}
+.btn-danger{background:var(--red-bg);color:var(--red);border:1px solid #5a1e1e;border-radius:6px;padding:5px 12px;font-size:11px;cursor:pointer;transition:.15s;font-family:inherit}
+.btn-danger:hover{filter:brightness(1.2)}
+
+/* ── Backup view ───────────────────────────────────────────────────────── */
+.backup-inst-section{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;margin-bottom:12px}
 .backup-inst-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
-.backup-inst-name{font-weight:600;font-size:14px}
+.backup-inst-name{font-weight:600;font-size:13px;color:var(--text)}
 .backup-list{margin-top:8px;font-size:11px;color:var(--muted);font-family:'Courier New',monospace}
-.backup-item{padding:2px 0;border-bottom:1px solid var(--border)}
+.backup-item{padding:3px 0;border-bottom:1px solid var(--border)}
 
-/* ── Empty / loading ─────────────────────────────────────────────────── */
-.empty{text-align:center;padding:60px 20px;color:var(--muted)}
-.spinner{width:28px;height:28px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .6s linear infinite;margin:0 auto 12px}
+/* ── Plugin cards ──────────────────────────────────────────────────────── */
+.plugin-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:12px}
+.plugin-info{flex:1}
+.plugin-name{font-weight:600;font-size:13px;color:var(--text)}
+.plugin-desc{font-size:11px;color:var(--muted);margin-top:2px}
+.plugin-repo{font-size:10px;color:#444;margin-top:2px;font-family:'Courier New',monospace}
+
+/* ── Empty / loading ───────────────────────────────────────────────────── */
+.empty{text-align:center;padding:48px 20px;color:var(--muted)}
+.hint{padding:10px 14px;border-radius:6px;font-size:12px;margin-bottom:10px;border:1px solid}
+.hint-orange{background:var(--orange-bg);border-color:#4a3515;color:var(--orange)}
+.hint-muted{background:var(--surface);border-color:var(--border);color:var(--muted)}
+.spinner{width:24px;height:24px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .6s linear infinite;margin:0 auto 12px}
 @keyframes spin{to{transform:rotate(360deg)}}
 </style>
 </head>
 <body>
 
-<!-- ── Sidebar ─────────────────────────────────────────────────────────── -->
+<!-- ── Sidebar ──────────────────────────────────────────────────────────── -->
 <aside id="sidebar">
   <div class="sb-head">
-    <div class="sb-tag">// PANEL</div>
-    <div class="sb-title">WGSM.WEB</div>
+    <div class="logo-text">WGSM</div>
+    <div class="logo-sub">Game Server Manager</div>
   </div>
 
-  <div class="sb-section">Main</div>
+  <div class="sb-section">Manage</div>
   <button class="nav-item active" id="nav-dashboard" onclick="showView('dashboard')">
     <span class="nav-icon">▦</span> Dashboard
   </button>
   <button class="nav-item" id="nav-servers" onclick="showView('servers')">
     <span class="nav-icon">▤</span> Servers
+    <span class="nav-badge teal" id="nav-servers-badge" style="display:none">0</span>
+  </button>
+  <button class="nav-item" id="nav-plugins" onclick="showView('plugins')">
+    <span class="nav-icon">⊞</span> Plugins
+  </button>
+
+  <div class="sb-section">System</div>
+  <button class="nav-item" id="nav-instances" onclick="showView('instances')">
+    <span class="nav-icon">⊕</span> Instances
   </button>
   <button class="nav-item" id="nav-logs" onclick="showView('logs')">
     <span class="nav-icon">≡</span> Logs
   </button>
-
-  <div class="sb-section">System</div>
-  <button class="nav-item" id="nav-plugins" onclick="showView('plugins')">
-    <span class="nav-icon">⬡</span> Plugins
-  </button>
-  <button class="nav-item" id="nav-instances" onclick="showView('instances')">
-    <span class="nav-icon">⊞</span> Instances
-  </button>
   <button class="nav-item" id="nav-backup" onclick="showView('backup')">
-    <span class="nav-icon">⊟</span> Backup
-  </button>
-  <button class="nav-item" onclick="refreshAll()">
-    <span class="nav-icon">↻</span> Refresh
-  </button>
-  <button class="nav-item" onclick="selfUpdate(this)" title="Pull latest dashboard from GitHub">
-    <span class="nav-icon">⬆</span> Update dashboard
+    <span class="nav-icon">⊟</span> Backup &amp; Update
   </button>
 
-  <div class="sb-spacer"></div>
+  <div class="sb-bottom">
+    <button class="nav-item" onclick="refreshAll()" style="color:#444">
+      <span class="nav-icon">↻</span> Refresh
+    </button>
+    <button class="nav-item" onclick="selfUpdate(this)" title="Pull latest dashboard from GitHub" style="color:#444">
+      <span class="nav-icon">⬆</span> Update dashboard
+    </button>
+  </div>
 
   <div class="inst-section" id="inst-sidebar"></div>
 </aside>
 
-<!-- ── Main ────────────────────────────────────────────────────────────── -->
+<!-- ── Main ─────────────────────────────────────────────────────────────── -->
 <div id="main">
   <div id="topbar">
     <span class="tb-title" id="tb-title">Dashboard</span>
     <span class="tb-spacer"></span>
     <span class="tb-stat">
-      <span class="tb-stat-label">CPU</span>
+      <span class="tb-label">CPU</span>
       <div class="tb-bar"><div class="tb-bar-fill cpu" id="tb-cpu-bar" style="width:0%"></div></div>
-      <span id="tb-cpu-val">—</span>
+      <span class="tb-val" id="tb-cpu-val">—</span>
     </span>
+    <div class="tb-sep"></div>
     <span class="tb-stat">
-      <span class="tb-stat-label">RAM</span>
+      <span class="tb-label">RAM</span>
       <div class="tb-bar"><div class="tb-bar-fill ram" id="tb-ram-bar" style="width:0%"></div></div>
-      <span id="tb-ram-val">—</span>
+      <span class="tb-val" id="tb-ram-val">—</span>
     </span>
-    <span id="tb-update-badge" style="display:none" class="upd-badge" onclick="showView('instances')" title="Click to view instances with updates">Update available</span>
+    <div class="tb-sep"></div>
+    <span id="tb-update-badge" style="display:none" class="upd-badge" onclick="showView('backup')" title="Click to view instances with updates">⬆ Update available</span>
     <span class="tb-time" id="tb-time"></span>
   </div>
   <div id="content"><div class="empty"><div class="spinner"></div>Loading…</div></div>
 </div>
 
-<!-- ── Log modal ───────────────────────────────────────────────────────── -->
+<!-- ── Log modal ────────────────────────────────────────────────────────── -->
 <div id="log-modal" onclick="closeLogModal(event)">
   <div class="log-panel" onclick="event.stopPropagation()">
     <div class="log-header">
@@ -275,7 +298,7 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
   </div>
 </div>
 
-<!-- ── Config modal ────────────────────────────────────────────────────── -->
+<!-- ── Config modal ──────────────────────────────────────────────────────── -->
 <div id="cfg-modal" onclick="closeCfgModal(event)">
   <div class="cfg-panel" onclick="event.stopPropagation()">
     <div class="cfg-header">
@@ -290,18 +313,18 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
 </div>
 
 <script>
-// ── State ─────────────────────────────────────────────────────────────────
+// ── State ──────────────────────────────────────────────────────────────────
 const state = {
     view:       'dashboard',
-    instances:  [],           // [{id,name,url,token}]
-    instData:   {},           // {id: {info, servers, resources, status}}
-    updateData: {},           // {id: {hasUpdate, latestTag, downloadUrl}}
-    selInst:    null,         // selected instance id (null = all)
-    logCtx:     null,         // {instanceId, serverId, serverName}
+    instances:  [],
+    instData:   {},
+    updateData: {},
+    selInst:    null,
+    logCtx:     null,
     refreshId:  null,
 };
 
-// ── Boot ──────────────────────────────────────────────────────────────────
+// ── Boot ───────────────────────────────────────────────────────────────────
 (async function boot() {
     tickClock();
     setInterval(tickClock, 1000);
@@ -311,13 +334,13 @@ const state = {
     renderView();
 })();
 
-// ── Clock ─────────────────────────────────────────────────────────────────
+// ── Clock ──────────────────────────────────────────────────────────────────
 function tickClock() {
     document.getElementById('tb-time').textContent =
         new Date().toLocaleTimeString('en-GB', { hour12: false });
 }
 
-// ── Data loading ──────────────────────────────────────────────────────────
+// ── Data loading ───────────────────────────────────────────────────────────
 async function loadInstances() {
     try {
         const r = await fetch('/api/instances');
@@ -335,7 +358,6 @@ async function refreshAll() {
 async function fetchInstance(inst) {
     const d = state.instData[inst.id] ??= { status: 'unknown', info: null, servers: [], resources: null };
 
-    // Ping (public, no auth)
     try {
         const r = await fetch(`/api/ping/${inst.id}`);
         const j = await r.json();
@@ -345,15 +367,14 @@ async function fetchInstance(inst) {
 
     if (d.status !== 'online') { d.servers = []; d.resources = null; return; }
 
-    // Servers + resources + update check in parallel
     const [sv, rs, upd] = await Promise.allSettled([
         proxyGet(inst.id, 'api/servers'),
         proxyGet(inst.id, 'api/resources/summary'),
         proxyGet(inst.id, 'api/update/check'),
     ]);
-    d.servers        = sv.status === 'fulfilled' ? (sv.value?.data  ?? []) : [];
-    d.resources      = rs.status === 'fulfilled' ? (rs.value?.data ?? null) : null;
-    d.serverLoadErr  = sv.status === 'fulfilled' && !sv.value?.ok ? sv.value?.status : null;
+    d.servers       = sv.status === 'fulfilled' ? (sv.value?.data  ?? []) : [];
+    d.resources     = rs.status === 'fulfilled' ? (rs.value?.data ?? null) : null;
+    d.serverLoadErr = sv.status === 'fulfilled' && !sv.value?.ok ? sv.value?.status : null;
 
     if (upd.status === 'fulfilled' && upd.value?.data?.hasUpdate)
         state.updateData[inst.id] = upd.value.data;
@@ -384,7 +405,7 @@ async function proxyDelete(instanceId, path) {
     return { ok: r.ok, data: await r.json().catch(() => null) };
 }
 
-// ── Topbar stats ──────────────────────────────────────────────────────────
+// ── Topbar stats ───────────────────────────────────────────────────────────
 function updateTopbarStats() {
     let totCpu = 0, totRam = 0, count = 0;
     for (const inst of state.instances) {
@@ -402,12 +423,17 @@ function updateTopbarStats() {
     document.getElementById('tb-ram-bar').style.width = Math.min(100, ramGb / 32 * 100) + '%';
     document.getElementById('tb-ram-val').textContent  = count ? ramGb.toFixed(1) + ' GB' : '—';
 
-    // Show update badge if any instance has an available update
     const anyUpdate = Object.keys(state.updateData).length > 0;
     document.getElementById('tb-update-badge').style.display = anyUpdate ? '' : 'none';
+
+    // Update server badge count in nav
+    const totalOnline = state.instances.reduce((n, i) =>
+        n + (state.instData[i.id]?.servers?.filter(s => s.status === 'Started').length ?? 0), 0);
+    const badge = document.getElementById('nav-servers-badge');
+    if (badge) { badge.textContent = totalOnline; badge.style.display = totalOnline ? '' : 'none'; }
 }
 
-// ── Sidebar ───────────────────────────────────────────────────────────────
+// ── Sidebar ────────────────────────────────────────────────────────────────
 function renderSidebar() {
     const el = document.getElementById('inst-sidebar');
     if (!state.instances.length) { el.innerHTML = ''; return; }
@@ -435,7 +461,7 @@ function renderSidebar() {
 function getInstLogHtml(id) {
     const d = state.instData[id];
     if (!d || d.status !== 'online') return '<span style="color:var(--red)">Offline</span>';
-    const s = d.servers?.slice(0,5).map(s =>
+    const s = d.servers?.slice(0, 5).map(s =>
         `[${s.status === 'Started' ? '▶' : '■'}] ${esc(s.name)}`).join('\n') ?? '';
     return s || '(no servers)';
 }
@@ -451,12 +477,14 @@ function selectInstance(id) {
     renderView();
 }
 
-// ── Views ─────────────────────────────────────────────────────────────────
+// ── Views ──────────────────────────────────────────────────────────────────
 function showView(v) {
     state.view = v;
     document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
     document.getElementById('nav-' + v)?.classList.add('active');
-    document.getElementById('tb-title').textContent = v.charAt(0).toUpperCase() + v.slice(1);
+    const titles = { dashboard:'Dashboard', servers:'Servers', logs:'Logs',
+                     plugins:'Plugins', instances:'Instances', backup:'Backup & Update' };
+    document.getElementById('tb-title').textContent = titles[v] ?? v;
     renderView();
 }
 
@@ -474,7 +502,7 @@ function renderView() {
     bindCardButtons();
 }
 
-// ── Dashboard ─────────────────────────────────────────────────────────────
+// ── Dashboard ──────────────────────────────────────────────────────────────
 function renderDashboard() {
     const insts = filteredInstances();
     let total = 0, online = 0, offline = 0, cpuSum = 0, cpuCount = 0;
@@ -511,7 +539,7 @@ function renderDashboard() {
   </div>
   <div class="stat-card">
     <div class="stat-label">Aggregate CPU</div>
-    <div class="stat-value blue">${cpuAvg}${cpuCount ? '%' : ''}</div>
+    <div class="stat-value accent">${cpuAvg}${cpuCount ? '%' : ''}</div>
     <div class="stat-sub">All instances</div>
   </div>
 </div>
@@ -520,11 +548,13 @@ function renderDashboard() {
   <button class="btn-sm" onclick="showView('servers')">View all →</button>
 </div>
 <div class="server-grid">
-  ${preview.length ? preview.map(({inst,server,d}) => serverCard(inst, server, d)).join('') : '<div class="empty">No servers found.</div>'}
+  ${preview.length
+    ? preview.map(({inst, server, d}) => serverCard(inst, server, d)).join('')
+    : '<div class="empty">No servers found. Add a WGSM instance in the Instances page.</div>'}
 </div>`;
 }
 
-// ── Servers ───────────────────────────────────────────────────────────────
+// ── Servers ────────────────────────────────────────────────────────────────
 function renderServers() {
     const insts = filteredInstances();
     const cards = [];
@@ -532,22 +562,21 @@ function renderServers() {
         (state.instData[inst.id]?.servers ?? []).forEach(s =>
             cards.push({ inst, server: s, d: state.instData[inst.id] }));
 
-    // Collect error hints for online instances that failed to load servers
     const hints = [];
     for (const inst of insts) {
         const d = state.instData[inst.id];
         if (!d || d.status !== 'online' || d.servers.length) continue;
         const code = d.serverLoadErr;
         if (code === 401)
-            hints.push(`<div class="empty" style="color:var(--orange)">⚠ <b>${esc(inst.name)}</b>: token rejected (401) — paste the correct API token in the Instances page.</div>`);
+            hints.push(`<div class="hint hint-orange">⚠ <b>${esc(inst.name)}</b>: token rejected (401) — paste the correct API token in the Instances page.</div>`);
         else if (code === 503)
-            hints.push(`<div class="empty" style="color:var(--orange)">⚠ <b>${esc(inst.name)}</b>: Web API not started (503) — click Start Web API inside WGSM.</div>`);
+            hints.push(`<div class="hint hint-orange">⚠ <b>${esc(inst.name)}</b>: Web API not started (503) — click Start Web API inside WGSM.</div>`);
         else if (code === 408 || code === 0)
-            hints.push(`<div class="empty" style="color:var(--orange)">⚠ <b>${esc(inst.name)}</b>: connection timed out — set Connection Scope to <b>LAN</b> or <b>External</b> in WGSM › Web API settings (currently may be Local Only).</div>`);
+            hints.push(`<div class="hint hint-orange">⚠ <b>${esc(inst.name)}</b>: connection timed out — set Connection Scope to <b>LAN</b> or <b>External</b> in WGSM › Web API › Connection.</div>`);
         else if (code)
-            hints.push(`<div class="empty" style="color:var(--orange)">⚠ <b>${esc(inst.name)}</b>: server list failed (HTTP ${code}).</div>`);
+            hints.push(`<div class="hint hint-orange">⚠ <b>${esc(inst.name)}</b>: server list failed (HTTP ${code}).</div>`);
         else if (d.info?.totalServers === 0)
-            hints.push(`<div class="empty" style="color:var(--muted)">ℹ <b>${esc(inst.name)}</b>: no servers installed yet.</div>`);
+            hints.push(`<div class="hint hint-muted">ℹ <b>${esc(inst.name)}</b>: no servers installed yet.</div>`);
     }
 
     return `
@@ -557,11 +586,13 @@ function renderServers() {
 </div>
 ${hints.join('')}
 <div class="server-grid">
-  ${cards.length ? cards.map(({inst,server,d}) => serverCard(inst, server, d)).join('') : hints.length ? '' : '<div class="empty">No servers found.</div>'}
+  ${cards.length
+    ? cards.map(({inst, server, d}) => serverCard(inst, server, d)).join('')
+    : hints.length ? '' : '<div class="empty">No servers found.</div>'}
 </div>`;
 }
 
-// ── Logs view ─────────────────────────────────────────────────────────────
+// ── Logs view ──────────────────────────────────────────────────────────────
 function renderLogsView() {
     const insts = filteredInstances();
     const rows  = [];
@@ -580,21 +611,21 @@ function renderLogsView() {
 ${rows.length ? rows.join('') : '<div class="empty">No servers found.</div>'}`;
 }
 
-// ── Instances settings ────────────────────────────────────────────────────
+// ── Instances ──────────────────────────────────────────────────────────────
 function renderInstances() {
     const cards = state.instances.map(inst => {
         const d      = state.instData[inst.id] ?? {};
         const status = d.status ?? 'unknown';
-        const color  = status === 'online' ? 'var(--green)' : status === 'offline' ? 'var(--red)' : 'var(--muted)';
+        const dotCls = status === 'online' ? 'dot-green' : status === 'offline' ? 'dot-red' : 'dot-grey';
         const info   = d.info ? ` · ${d.info.instanceName} · ${d.info.onlineServers}/${d.info.totalServers} online` : '';
-        const upd  = state.updateData[inst.id];
-        const updBadge = upd ? `<span class="upd-badge" title="${esc(upd.latestTag)} available">⬆ ${esc(upd.latestTag)}</span>` : '';
+        const upd    = state.updateData[inst.id];
+        const updBadge = upd ? `<span class="badge started" style="font-size:10px;margin-left:6px">⬆ ${esc(upd.latestTag)}</span>` : '';
         return `<div class="inst-card">
-  <span class="inst-dot ${status}" style="width:9px;height:9px;border-radius:50%;flex-shrink:0;display:inline-block;background:${color}"></span>
+  <span class="status-dot ${dotCls}" style="flex-shrink:0"></span>
   <div class="inst-card-info">
     <div class="inst-card-name">${esc(inst.name)}${updBadge}</div>
     <div class="inst-card-url">${esc(inst.url)}</div>
-    <div class="inst-card-status" style="color:${color}">${status}${info}</div>
+    <div class="inst-card-status" style="color:${status === 'online' ? 'var(--green)' : status === 'offline' ? 'var(--red)' : 'var(--muted)'}">${status}${info}</div>
   </div>
   <button class="btn-sm" onclick="pingInstance('${inst.id}')">Ping</button>
   <button class="btn-danger" onclick="removeInstance('${inst.id}')">Remove</button>
@@ -603,41 +634,41 @@ function renderInstances() {
 
     return `
 <div class="section-row"><span class="section-title">WGSM instances (${state.instances.length})</span></div>
-${cards || '<div class="empty" style="padding:20px">No instances added yet.</div>'}
+${cards || '<div class="empty" style="padding:20px 0">No instances added yet.</div>'}
 <div class="add-form">
-  <h3>Add instance</h3>
+  <div class="add-form-title">Add instance</div>
   <div class="form-grid">
     <div class="form-field"><label>Name</label><input id="af-name" placeholder="Gaming Rig #1"/></div>
     <div class="form-field"><label>URL (with port)</label><input id="af-url" placeholder="http://192.168.1.100:7876"/></div>
-    <div class="form-field form-full"><label>API Token</label><input id="af-token" placeholder="Paste token from WGSM Web API settings"/></div>
+    <div class="form-field form-full"><label>API Token</label><input id="af-token" placeholder="Paste token from WGSM › Web API › API Keys"/></div>
   </div>
-  <div style="margin-top:12px">
+  <div style="margin-top:14px">
     <button class="btn-primary" onclick="addInstance()">Add instance</button>
   </div>
 </div>`;
 }
 
-// ── Backup view ───────────────────────────────────────────────────────────
+// ── Backup & Update ────────────────────────────────────────────────────────
 function renderBackup() {
     const insts = filteredInstances().filter(i => state.instData[i.id]?.status === 'online');
     if (!insts.length)
-        return `<div class="section-row"><span class="section-title">Backup</span></div>
+        return `<div class="section-row"><span class="section-title">Backup &amp; Update</span></div>
 <div class="empty">No online instances.</div>`;
 
     const sections = insts.map(inst => {
         const upd = state.updateData[inst.id];
         const updHtml = upd
-            ? `<span style="color:var(--orange);font-size:11px">Update available: ${esc(upd.latestTag)}</span>`
-            : `<span style="color:var(--green);font-size:11px">Up to date</span>`;
+            ? `<span style="color:var(--orange);font-size:11px">⬆ Update available: ${esc(upd.latestTag)}</span>`
+            : `<span style="color:var(--green);font-size:11px">✓ Up to date</span>`;
 
         return `<div class="backup-inst-section">
   <div class="backup-inst-header">
     <div>
       <div class="backup-inst-name">${esc(inst.name)}</div>
-      <div style="font-size:11px;color:var(--muted);margin-top:2px">${updHtml}</div>
+      <div style="font-size:11px;color:var(--muted);margin-top:3px">${updHtml}</div>
     </div>
     <div style="display:flex;gap:8px;align-items:center">
-      ${upd?.downloadUrl ? `<button class="btn-sm upd-badge" onclick="applyUpdate('${inst.id}','${esc(upd.downloadUrl)}')">⬆ Apply update</button>` : ''}
+      ${upd?.downloadUrl ? `<button class="btn-sm" style="color:var(--orange);border-color:var(--orange-bg)" onclick="applyUpdate('${inst.id}','${esc(upd.downloadUrl)}')">⬆ Apply update</button>` : ''}
       <button class="btn-sm" onclick="createBackup('${inst.id}',this)">⊟ Create backup</button>
     </div>
   </div>
@@ -645,10 +676,8 @@ function renderBackup() {
 </div>`;
     }).join('');
 
-    // Trigger list load after render
     setTimeout(() => insts.forEach(i => loadBackupList(i.id)), 50);
-
-    return `<div class="section-row"><span class="section-title">Backup & Update</span></div>${sections}`;
+    return `<div class="section-row"><span class="section-title">Backup &amp; Update</span></div>${sections}`;
 }
 
 async function loadBackupList(instanceId) {
@@ -662,8 +691,7 @@ async function loadBackupList(instanceId) {
 }
 
 async function createBackup(instanceId, btn) {
-    btn.disabled = true;
-    btn.textContent = 'Creating…';
+    btn.disabled = true; btn.textContent = 'Creating…';
     const r = await proxyPost(instanceId, 'api/backup/create');
     btn.textContent = r.ok ? '✓ Done' : '✗ Failed';
     setTimeout(() => { btn.textContent = '⊟ Create backup'; btn.disabled = false; }, 3000);
@@ -676,57 +704,55 @@ async function applyUpdate(instanceId, downloadUrl) {
     alert(r.data?.message ?? (r.ok ? 'Update started.' : 'Failed.'));
 }
 
-// ── Plugins view ─────────────────────────────────────────────────────────
+// ── Plugins ────────────────────────────────────────────────────────────────
 const pluginState = { installed: [], available: [], loading: false, query: '', instanceId: null };
 
 function renderPlugins() {
-    // Pick the first online instance for API calls
     const inst = filteredInstances().find(i => state.instData[i.id]?.status === 'online');
     pluginState.instanceId = inst?.id ?? null;
     return `
 <div class="section-row">
   <span class="section-title">Plugin Browser</span>
-  <span style="font-size:11px;color:var(--muted)">Searches GitHub for <code style="background:var(--surface2);padding:2px 5px;border-radius:3px">topic:windowsgsm</code> repos</span>
+  <span style="font-size:11px;color:var(--muted)">topic:windowsgsm on GitHub</span>
 </div>
-${!inst ? '<div class="empty" style="color:var(--orange)">⚠ No online WGSM instance — add one in Instances first.</div>' : ''}
+${!inst ? '<div class="hint hint-orange">⚠ No online WGSM instance — add one in Instances first.</div>' : ''}
 <div style="display:flex;gap:8px;margin-bottom:4px">
-  <input id="plugin-search" placeholder="Search (e.g. Rust)  or paste github.com/Owner/Repo to install"
+  <input id="plugin-search"
+    placeholder="Search plugins  or paste github.com/Owner/Repo to install"
     value="${esc(pluginState.query)}"
-    style="flex:1;background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:7px 12px;font-size:13px"
+    style="flex:1;background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:7px 12px;font-size:12px;outline:none;transition:border-color .15s;font-family:inherit"
+    onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'"
     onkeydown="if(event.key==='Enter')pluginSearchOrInstall()"/>
   <button class="btn-primary" id="plugin-search-btn" onclick="pluginSearchOrInstall()">Go</button>
 </div>
-<div id="plugin-search-status" style="font-size:12px;color:var(--muted);min-height:18px;margin-bottom:10px"></div>
-<div id="plugin-installed-section">
-  <div class="section-row" style="margin-top:0"><span class="section-title" style="font-size:12px">Installed</span></div>
-  <div id="plugin-installed-list"><div class="empty" style="color:var(--muted)">Loading…</div></div>
-</div>
+<div id="plugin-search-status" style="font-size:12px;color:var(--muted);min-height:18px;margin-bottom:12px"></div>
+<div class="section-row" style="margin-top:4px"><span class="section-title" style="font-size:12px">Installed</span></div>
+<div id="plugin-installed-list"><div class="empty" style="color:var(--muted);padding:12px 0">Loading…</div></div>
 <div class="section-row" style="margin-top:16px"><span class="section-title" style="font-size:12px">Available on GitHub</span></div>
-<div id="plugin-available-list"><div class="empty" style="color:var(--muted)">Loading…</div></div>`;
+<div id="plugin-available-list"><div class="empty" style="color:var(--muted);padding:12px 0">Loading…</div></div>`;
 }
 
 async function loadPlugins() {
     const iid = pluginState.instanceId;
     if (!iid) return;
-
-    // Load installed list
     const { data: installed } = await proxyGet(iid, 'api/plugins/installed');
     pluginState.installed = installed ?? [];
     renderInstalledPlugins();
-
-    // Load available list
     await searchPlugins();
 }
 
 function renderInstalledPlugins() {
     const el = document.getElementById('plugin-installed-list');
     if (!el) return;
-    if (!pluginState.installed.length) { el.innerHTML = '<div class="empty" style="color:var(--muted)">No plugins installed.</div>'; return; }
+    if (!pluginState.installed.length) {
+        el.innerHTML = '<div class="empty" style="color:var(--muted);padding:12px 0">No plugins installed.</div>';
+        return;
+    }
     el.innerHTML = pluginState.installed.map(p => `
-<div class="inst-card">
-  <div class="inst-card-info">
-    <div class="inst-card-name">${esc(p.folder)}</div>
-    <div class="inst-card-url" style="color:${p.hasFile ? 'var(--green)' : 'var(--red)'}">
+<div class="plugin-card">
+  <div class="plugin-info">
+    <div class="plugin-name">${esc(p.folder)}</div>
+    <div class="plugin-desc" style="color:${p.hasFile ? 'var(--green)' : 'var(--red)'}">
       ${p.hasFile ? '● loaded' : '● missing .cs file'}
     </div>
   </div>
@@ -740,17 +766,11 @@ function isGithubUrl(s) {
            s.startsWith('https://raw.githubusercontent.com/');
 }
 
-// Resolve any GitHub input into { owner, repo, branch, fileName } using the browser.
-// Accepts: full URL with file, bare repo URL, or Owner/Repo shorthand.
-// Always verifies the file exists via GitHub Contents API.
 async function resolveGithubUrl(input) {
     let owner, repo, branch, hintFile;
-
-    // Strip trailing slashes / .git
     input = input.trim().replace(/\.git$/, '').replace(/\/$/, '');
 
     if (input.startsWith('https://raw.githubusercontent.com/')) {
-        // raw.githubusercontent.com/Owner/Repo/branch/File.cs
         const parts = input.replace('https://raw.githubusercontent.com/', '').split('/');
         if (parts.length < 4) return { error: 'Raw URL needs: /Owner/Repo/branch/File.cs' };
         if (!parts[3].endsWith('.cs')) return { error: `'${parts[3]}' is not a .cs file.` };
@@ -762,20 +782,16 @@ async function resolveGithubUrl(input) {
         owner = path[0]; repo = path[1];
         if (!owner || !repo) return { error: 'URL must contain Owner and Repo.' };
         if ((path[2] === 'blob' || path[2] === 'tree') && path.length >= 5) {
-            // Direct file link — use it as a hint but still verify via API
             hintFile = path.slice(4).pop();
             branch   = path[3];
         }
     } else {
-        // Owner/Repo shorthand
         const parts = input.split('/');
         owner = parts[0]; repo = parts[1];
         if (!owner || !repo) return { error: 'Enter Owner/Repo or a GitHub URL.' };
     }
 
-    // Fetch repo contents to find the .cs file
     try {
-        // Try default branch first, fall back to main/master
         const branches = branch ? [branch] : ['master', 'main'];
         let csFiles = [], usedBranch = branches[0];
         for (const br of branches) {
@@ -788,7 +804,6 @@ async function resolveGithubUrl(input) {
         }
         if (!csFiles.length) return { error: `No .cs files found in root of ${owner}/${repo}.` };
 
-        // Pick: hint file > name matching repo > first found
         const preferred = repo.startsWith('WindowsGSM.') ? repo.slice('WindowsGSM.'.length) + '.cs' : repo + '.cs';
         const fileName  = (hintFile && csFiles.find(f => f.toLowerCase() === hintFile.toLowerCase()))
                        ?? csFiles.find(f => f.toLowerCase() === preferred.toLowerCase())
@@ -800,11 +815,14 @@ async function resolveGithubUrl(input) {
 }
 
 async function pluginSearchOrInstall() {
-    const val = document.getElementById('plugin-search')?.value?.trim() ?? '';
+    const val    = document.getElementById('plugin-search')?.value?.trim() ?? '';
     const status = document.getElementById('plugin-search-status');
     if (!val) return;
     if (isGithubUrl(val)) {
-        if (!pluginState.instanceId) { if (status) { status.style.color='var(--red)'; status.textContent = '⚠ No online instance.'; } return; }
+        if (!pluginState.instanceId) {
+            if (status) { status.style.color = 'var(--red)'; status.textContent = '⚠ No online instance.'; }
+            return;
+        }
         const btn = document.getElementById('plugin-search-btn');
         if (btn) btn.disabled = true;
         if (status) { status.style.color = 'var(--muted)'; status.textContent = 'Resolving…'; }
@@ -817,15 +835,19 @@ async function pluginSearchOrInstall() {
         }
 
         if (status) status.textContent = `Downloading ${resolved.fileName}…`;
-        // Download the raw .cs content in the browser, then send content+filename to WGSM.
-        // This works with any WGSM version — no server-side URL parsing needed.
         let content;
         try {
             const rawUrl = `https://raw.githubusercontent.com/${resolved.owner}/${resolved.repo}/${resolved.branch}/${resolved.fileName}`;
             const dlr = await fetch(rawUrl);
-            if (!dlr.ok) { if (status) { status.style.color='var(--red)'; status.textContent=`✗ Could not download file (HTTP ${dlr.status})`; } if (btn) btn.disabled=false; return; }
+            if (!dlr.ok) {
+                if (status) { status.style.color = 'var(--red)'; status.textContent = `✗ Could not download file (HTTP ${dlr.status})`; }
+                if (btn) btn.disabled = false; return;
+            }
             content = await dlr.text();
-        } catch (e) { if (status) { status.style.color='var(--red)'; status.textContent='✗ Download error: '+e.message; } if (btn) btn.disabled=false; return; }
+        } catch (e) {
+            if (status) { status.style.color = 'var(--red)'; status.textContent = '✗ Download error: ' + e.message; }
+            if (btn) btn.disabled = false; return;
+        }
 
         if (status) status.textContent = `Installing ${resolved.fileName}…`;
         const r = await proxyPost(pluginState.instanceId, 'api/plugins/save', { fileName: resolved.fileName, content });
@@ -848,28 +870,28 @@ async function pluginSearchOrInstall() {
 }
 
 async function searchPlugins() {
-    const q = document.getElementById('plugin-search')?.value ?? '';
+    const q  = document.getElementById('plugin-search')?.value ?? '';
     pluginState.query = q;
     const el = document.getElementById('plugin-available-list');
     if (!el || !pluginState.instanceId) return;
-    el.innerHTML = '<div class="empty" style="color:var(--muted)">Searching…</div>';
+    el.innerHTML = '<div class="empty" style="color:var(--muted);padding:12px 0">Searching…</div>';
 
     const { data } = await proxyGet(pluginState.instanceId, `api/plugins/available${q ? '?q=' + encodeURIComponent(q) : ''}`);
-    if (!data?.items?.length) { el.innerHTML = '<div class="empty">No plugins found.</div>'; return; }
+    if (!data?.items?.length) { el.innerHTML = '<div class="empty" style="padding:12px 0">No plugins found.</div>'; return; }
 
     const installedFiles = new Set(pluginState.installed.map(p => p.folder.toLowerCase()));
     el.innerHTML = data.items.map(p => {
         const isInst = installedFiles.has(p.fileName.toLowerCase());
         return `
-<div class="inst-card" id="plugcard-${esc(p.fileName)}">
-  <div class="inst-card-info">
-    <div class="inst-card-name">${esc(p.pluginName)} <span style="color:var(--muted);font-size:11px">★ ${p.stars}</span></div>
-    <div class="inst-card-url">${esc(p.description ?? p.repo)}</div>
-    <div style="font-size:11px;color:var(--muted);margin-top:2px">${esc(p.owner)}/${esc(p.repo)}</div>
+<div class="plugin-card" id="plugcard-${esc(p.fileName)}">
+  <div class="plugin-info">
+    <div class="plugin-name">${esc(p.pluginName)} <span style="color:var(--muted);font-size:11px;font-weight:400">★ ${p.stars}</span></div>
+    <div class="plugin-desc">${esc(p.description ?? p.repo)}</div>
+    <div class="plugin-repo">${esc(p.owner)}/${esc(p.repo)}</div>
   </div>
   ${isInst
     ? '<span style="color:var(--green);font-size:12px;white-space:nowrap">✓ installed</span>'
-    : `<button class="btn-primary" style="font-size:12px;padding:5px 12px" onclick="installPlugin(${JSON.stringify(p)},this)">Install</button>`
+    : `<button class="btn-primary" style="font-size:11px;padding:5px 12px;white-space:nowrap" onclick="installPlugin(${JSON.stringify(p)},this)">Install</button>`
   }
   <a href="${esc(p.htmlUrl)}" target="_blank" class="btn-sm" style="text-decoration:none;display:flex;align-items:center">↗</a>
 </div>`;
@@ -877,23 +899,19 @@ async function searchPlugins() {
 }
 
 async function installPlugin(p, btn) {
-    btn.disabled = true;
-    btn.textContent = 'Installing…';
+    btn.disabled = true; btn.textContent = 'Installing…';
     const r = await proxyPost(pluginState.instanceId, 'api/plugins/install', {
         owner: p.owner, repo: p.repo, fileName: p.fileName, branch: p.branch
     });
     if (r.ok) {
         btn.textContent = '✓ Installed';
-        btn.style.background = '#0d2a0d';
-        btn.style.color = 'var(--green)';
+        btn.style.cssText = 'background:var(--green-bg);color:var(--green);font-size:11px;padding:5px 12px;border:none;border-radius:6px;cursor:default';
         alert(r.data?.message ?? 'Installed! Restart WGSM to load the plugin.');
-        // Refresh installed list
         const { data: installed } = await proxyGet(pluginState.instanceId, 'api/plugins/installed');
         pluginState.installed = installed ?? [];
         renderInstalledPlugins();
     } else {
-        btn.textContent = '✗ Failed';
-        btn.disabled = false;
+        btn.textContent = '✗ Failed'; btn.disabled = false;
         alert('Install failed: ' + (r.data?.error ?? r.status));
     }
 }
@@ -912,8 +930,7 @@ async function uninstallPlugin(fileName, btn) {
     }
 }
 
-
-// ── Server card ───────────────────────────────────────────────────────────
+// ── Server card ────────────────────────────────────────────────────────────
 function serverCard(inst, s, d) {
     const running  = s.status === 'Started';
     const starting = ['Starting','Restarting'].includes(s.status);
@@ -921,19 +938,21 @@ function serverCard(inst, s, d) {
     const stopped  = s.status === 'Stopped';
     const busy     = starting || stopping;
 
-    const totalRam  = d.resources?.totalRamMb ?? 0;
-    const cpuPct    = s.cpuPercent != null ? s.cpuPercent.toFixed(1) : null;
-    const cpuBar    = cpuPct != null ? Math.min(100, parseFloat(cpuPct)) : 0;
-    const ramMb     = s.ramMb != null ? s.ramMb.toFixed(0) : null;
-    const ramBar    = (ramMb && totalRam) ? Math.min(100, (parseFloat(ramMb) / totalRam) * 100) : 0;
+    const totalRam = d.resources?.totalRamMb ?? 0;
+    const cpuPct   = s.cpuPercent != null ? s.cpuPercent.toFixed(1) : null;
+    const cpuBar   = cpuPct != null ? Math.min(100, parseFloat(cpuPct)) : 0;
+    const ramMb    = s.ramMb != null ? s.ramMb.toFixed(0) : null;
+    const ramBar   = (ramMb && totalRam) ? Math.min(100, (parseFloat(ramMb) / totalRam) * 100) : 0;
 
-    const players   = s.playersCurrent != null
+    const dotCls = running ? 'dot-green' : stopping || starting ? 'dot-orange' : 'dot-red';
+
+    const players = s.playersCurrent != null
         ? `<span class="meta-chip">👥 ${s.playersCurrent}/${s.playersMax ?? '?'}</span>` : '';
 
     function portChip(label, portNum, reachable) {
         if (!portNum) return '';
         const cls = reachable == null ? 'unknown' : reachable ? 'ok' : 'fail';
-        return `<span class="port-chip"><span class="port-dot ${cls}"></span>${label}:${esc(portNum)}</span>`;
+        return `<span class="port-chip"><span class="port-dot ${cls}"></span>${label ? label + ':' : ''}${esc(portNum)}</span>`;
     }
     const port      = portChip('', s.serverPort, s.gamePortReachable);
     const queryPort = (s.queryPort && s.queryPort !== s.serverPort)
@@ -942,21 +961,22 @@ function serverCard(inst, s, d) {
         ? `<div class="card-inst">${esc(inst.name)}</div>` : '';
 
     return `<div class="server-card" id="card-${inst.id}-${s.id}">
-  <div class="card-game">${esc(s.game)}</div>
   <div class="card-header">
-    <div>
+    <span class="status-dot ${dotCls}"></span>
+    <div style="flex:1;overflow:hidden">
       <div class="card-name">${esc(s.name)}</div>
       ${multiInst}
     </div>
     <span class="badge ${statusClass(s.status)}">${esc(s.status)}</span>
   </div>
+  <div class="card-game">${esc(s.game)}</div>
   ${running ? `<div class="res-grid">
-    <div class="res-block">
+    <div>
       <div class="res-label">CPU</div>
       <div class="res-value">${cpuPct != null ? cpuPct + '%' : '—'}</div>
       <div class="res-bar"><div class="res-bar-fill cpu" style="width:${cpuBar}%"></div></div>
     </div>
-    <div class="res-block">
+    <div>
       <div class="res-label">RAM</div>
       <div class="res-value">${ramMb != null ? fmtMb(parseFloat(ramMb)) : '—'}</div>
       <div class="res-bar"><div class="res-bar-fill ram" style="width:${ramBar}%"></div></div>
@@ -986,21 +1006,19 @@ function bindCardButtons() {
 }
 
 async function serverAction(instanceId, serverId, cmd) {
-    const fb = document.getElementById(`fb-${instanceId}-${serverId}`);
+    const fb   = document.getElementById(`fb-${instanceId}-${serverId}`);
     const card = document.getElementById(`card-${instanceId}-${serverId}`);
     card?.querySelectorAll('[data-cmd]').forEach(b => b.disabled = true);
     if (fb) fb.textContent = `Sending ${cmd}…`;
-
     const { ok, data } = await proxyPost(instanceId, `api/servers/${serverId}/${cmd}`);
     if (fb) fb.textContent = data?.message ?? (ok ? 'Done.' : 'Failed.');
-
     setTimeout(async () => {
         await fetchInstance(state.instances.find(i => i.id === instanceId));
         renderView();
     }, 1500);
 }
 
-// ── Log modal ─────────────────────────────────────────────────────────────
+// ── Log modal ──────────────────────────────────────────────────────────────
 function openLogModal(instanceId, serverId, serverName) {
     state.logCtx = { instanceId, serverId, serverName };
     document.getElementById('log-modal-title').textContent = `Logs — ${serverName}`;
@@ -1018,9 +1036,7 @@ async function loadLogs() {
     const body = document.getElementById('log-modal-body');
     body.textContent = 'Loading…';
     const { data } = await proxyGet(instanceId, `api/servers/${serverId}/logs?count=500`);
-    body.textContent = Array.isArray(data) && data.length
-        ? data.join('\n')
-        : '(no log output available)';
+    body.textContent = Array.isArray(data) && data.length ? data.join('\n') : '(no log output available)';
     scrollLogToBottom();
 }
 function refreshLogModal() { loadLogs(); }
@@ -1029,19 +1045,18 @@ function scrollLogToBottom() {
     b.scrollTop = b.scrollHeight;
 }
 
-// ── Config modal (placeholder) ────────────────────────────────────────────
+// ── Config modal ───────────────────────────────────────────────────────────
 function closeCfgModal(e) {
     if (e && e.target !== document.getElementById('cfg-modal')) return;
     document.getElementById('cfg-modal').classList.remove('open');
 }
 
-// ── Instances management ──────────────────────────────────────────────────
+// ── Instance management ────────────────────────────────────────────────────
 async function addInstance() {
     const name  = document.getElementById('af-name')?.value?.trim();
     const url   = document.getElementById('af-url')?.value?.trim();
     const token = document.getElementById('af-token')?.value?.trim();
     if (!name || !url || !token) { alert('All fields required.'); return; }
-
     await fetch('/api/instances', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -1069,7 +1084,7 @@ async function pingInstance(id) {
         : '✗ Offline or unreachable');
 }
 
-// ── Helpers ───────────────────────────────────────────────────────────────
+// ── Helpers ────────────────────────────────────────────────────────────────
 function filteredInstances() {
     return state.selInst
         ? state.instances.filter(i => i.id === state.selInst)
@@ -1094,8 +1109,8 @@ async function selfUpdate(btn) {
     btn.disabled = true;
     btn.querySelector('.nav-icon').textContent = '…';
     try {
-        const r  = await fetch('/api/self-update', { method: 'POST' });
-        const d  = await r.json();
+        const r = await fetch('/api/self-update', { method: 'POST' });
+        const d = await r.json();
         if (r.ok) { alert(d.message); location.reload(); }
         else      { alert('Update failed: ' + (d.error ?? r.status)); }
     } catch (e) { alert('Update failed: ' + e.message); }
