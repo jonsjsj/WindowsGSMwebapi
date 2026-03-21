@@ -3,7 +3,6 @@
 #define AppURL       "https://github.com/jonsjsj/WindowsGSMwebapi"
 #define AppExe       "WindowsGSM.exe"
 #define RegKey       "Software\WindowsGSM"
-#define ServiceName  "WindowsGSMWebAPI"
 #define FirewallRule "WindowsGSM Web API"
 #define DefaultPort  "7876"
 
@@ -58,12 +57,10 @@ Name: "default"; Description: "Default installation"; Flags: iscustom
 [Components]
 Name: "core";   Description: "WindowsGSM application";      Types: default; Check: IsFullMode
 Name: "webapi"; Description: "Web API + remote control UI";  Types: default; Flags: fixed
-Name: "nssm";   Description: "Windows service (NSSM)";       Types: default; Flags: fixed
 
 [Files]
 Source: "..\publish\WindowsGSM.exe"; DestDir: "{app}"; Components: core; Flags: ignoreversion; Check: IsFullMode
 Source: "..\publish\WebApi\wwwroot\*"; DestDir: "{app}\WebApi\wwwroot"; Components: webapi; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "assets\nssm.exe"; DestDir: "{app}\tools"; Components: nssm; Flags: ignoreversion
 
 [Icons]
 Name: "{autodesktop}\WindowsGSM"; Filename: "{app}\{#AppExe}"; IconFilename: "{app}\{#AppExe}"; Comment: "WindowsGSM Game Server Manager"
@@ -75,16 +72,10 @@ Root: HKLM; Subkey: "{#RegKey}"; ValueType: string; ValueName: "InstallPath"; Va
 Root: HKCU; Subkey: "Software\Microsoft\Windows\CurrentVersion\Run"; ValueType: string; ValueName: "WindowsGSM"; ValueData: """{app}\{#AppExe}"""; Flags: uninsdeletevalue
 
 [Run]
-Filename: "{app}\tools\nssm.exe"; Parameters: "install {#ServiceName} ""{app}\{#AppExe}"""; Flags: runhidden waituntilterminated; StatusMsg: "Registering Windows service..."
-Filename: "{app}\tools\nssm.exe"; Parameters: "set {#ServiceName} Description ""WindowsGSM Web API remote control service"""; Flags: runhidden waituntilterminated
-Filename: "{app}\tools\nssm.exe"; Parameters: "set {#ServiceName} Start SERVICE_AUTO_START"; Flags: runhidden waituntilterminated
 Filename: "{sys}\netsh.exe"; Parameters: "advfirewall firewall add rule name=""{#FirewallRule}"" dir=in action=allow protocol=TCP localport={#DefaultPort} description=""WindowsGSM Web API"""; Flags: runhidden waituntilterminated; StatusMsg: "Adding firewall rule for port {#DefaultPort}..."
-Filename: "{app}\tools\nssm.exe"; Parameters: "start {#ServiceName}"; Flags: runhidden waituntilterminated; StatusMsg: "Starting service..."
 Filename: "{app}\{#AppExe}"; Description: "Launch WindowsGSM now"; Flags: nowait postinstall skipifsilent shellexec runascurrentuser
 
 [UninstallRun]
-Filename: "{app}\tools\nssm.exe"; Parameters: "stop {#ServiceName}"; Flags: runhidden waituntilterminated; RunOnceId: "StopSvc"
-Filename: "{app}\tools\nssm.exe"; Parameters: "remove {#ServiceName} confirm"; Flags: runhidden waituntilterminated; RunOnceId: "RemoveSvc"
 Filename: "{sys}\netsh.exe"; Parameters: "advfirewall firewall delete rule name=""{#FirewallRule}"""; Flags: runhidden waituntilterminated; RunOnceId: "RemoveFW"
 
 [Code]
@@ -152,5 +143,5 @@ begin
       '  4. Click "Start Web API"' + #13#10 +
       '  5. Open http://localhost:{#DefaultPort}/ui' + #13#10 + #13#10 +
       'Firewall rule added for port {#DefaultPort}.' + #13#10 +
-      'Windows service registered to start app on boot.';
+      'WindowsGSM added to Windows startup (runs on login).';
 end;
