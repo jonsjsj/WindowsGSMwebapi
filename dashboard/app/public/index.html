@@ -690,7 +690,7 @@ function renderPlugins() {
 </div>
 ${!inst ? '<div class="empty" style="color:var(--orange)">⚠ No online WGSM instance — add one in Instances first.</div>' : ''}
 <div style="display:flex;gap:8px;margin-bottom:4px">
-  <input id="plugin-search" placeholder="Search plugins (e.g. Rust) or paste a GitHub URL to install directly"
+  <input id="plugin-search" placeholder="Search (e.g. Rust)  or paste github.com/Owner/Repo to install"
     value="${esc(pluginState.query)}"
     style="flex:1;background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:7px 12px;font-size:13px"
     onkeydown="if(event.key==='Enter')pluginSearchOrInstall()"/>
@@ -740,46 +740,62 @@ function isGithubUrl(s) {
            s.startsWith('https://raw.githubusercontent.com/');
 }
 
-// Resolve a GitHub URL into { owner, repo, branch, fileName } entirely in the browser.
-// For repo-only URLs, calls the GitHub Contents API directly (no auth, 60 req/hr limit).
-async function resolveGithubUrl(url) {
-    // raw.githubusercontent.com/Owner/Repo/branch/File.cs
-    if (url.startsWith('https://raw.githubusercontent.com/')) {
-        const parts = url.replace('https://raw.githubusercontent.com/', '').split('/');
-        if (parts.length < 4) return { error: 'Raw URL must be: raw.githubusercontent.com/Owner/Repo/branch/File.cs' };
-        const fileName = parts[3];
-        if (!fileName.endsWith('.cs')) return { error: `'${fileName}' is not a .cs file.` };
-        return { owner: parts[0], repo: parts[1], branch: parts[2], fileName };
+// Resolve any GitHub input into { owner, repo, branch, fileName } using the browser.
+// Accepts: full URL with file, bare repo URL, or Owner/Repo shorthand.
+// Always verifies the file exists via GitHub Contents API.
+async function resolveGithubUrl(input) {
+    let owner, repo, branch, hintFile;
+
+    // Strip trailing slashes / .git
+    input = input.trim().replace(/\.git$/, '').replace(/\/$/, '');
+
+    if (input.startsWith('https://raw.githubusercontent.com/')) {
+        // raw.githubusercontent.com/Owner/Repo/branch/File.cs
+        const parts = input.replace('https://raw.githubusercontent.com/', '').split('/');
+        if (parts.length < 4) return { error: 'Raw URL needs: /Owner/Repo/branch/File.cs' };
+        if (!parts[3].endsWith('.cs')) return { error: `'${parts[3]}' is not a .cs file.` };
+        return { owner: parts[0], repo: parts[1], branch: parts[2], fileName: parts[3] };
     }
 
-    // github.com/Owner/Repo/blob-or-tree/branch/File.cs
-    if (url.includes('/blob/') || url.includes('/tree/')) {
-        const path  = url.replace(/^https?:\/\/github\.com\//, '').split('/');
-        // path = [Owner, Repo, blob|tree, branch, ...file]
-        if (path.length < 5) return { error: 'URL must include branch and filename.' };
-        const fileName = path.slice(4).join('/').split('/').pop();
-        if (!fileName.endsWith('.cs')) return { error: `'${fileName}' is not a .cs file.` };
-        return { owner: path[0], repo: path[1], branch: path[3], fileName };
+    if (input.startsWith('https://github.com/') || input.startsWith('http://github.com/')) {
+        const path  = input.replace(/^https?:\/\/github\.com\//, '').split('/');
+        owner = path[0]; repo = path[1];
+        if (!owner || !repo) return { error: 'URL must contain Owner and Repo.' };
+        if ((path[2] === 'blob' || path[2] === 'tree') && path.length >= 5) {
+            // Direct file link — use it as a hint but still verify via API
+            hintFile = path.slice(4).pop();
+            branch   = path[3];
+        }
+    } else {
+        // Owner/Repo shorthand
+        const parts = input.split('/');
+        owner = parts[0]; repo = parts[1];
+        if (!owner || !repo) return { error: 'Enter Owner/Repo or a GitHub URL.' };
     }
 
-    // github.com/Owner/Repo  — scan root via Contents API
-    const path  = url.replace(/^https?:\/\/github\.com\//, '').replace(/\/$/, '');
-    const parts = path.split('/');
-    if (parts.length < 2) return { error: 'GitHub URL must be: github.com/Owner/Repo' };
-    const [owner, repo] = parts;
+    // Fetch repo contents to find the .cs file
     try {
-        const r = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/`, {
-            headers: { Accept: 'application/vnd.github+json' }
-        });
-        if (!r.ok) return { error: `GitHub API returned ${r.status} — is the repo public?` };
-        const files = await r.json();
-        const csFiles = files.filter(f => f.type === 'file' && f.name.endsWith('.cs')).map(f => f.name);
+        // Try default branch first, fall back to main/master
+        const branches = branch ? [branch] : ['master', 'main'];
+        let csFiles = [], usedBranch = branches[0];
+        for (const br of branches) {
+            const r = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/?ref=${br}`,
+                { headers: { Accept: 'application/vnd.github+json' } });
+            if (!r.ok) continue;
+            const files = await r.json();
+            csFiles = files.filter(f => f.type === 'file' && f.name.endsWith('.cs')).map(f => f.name);
+            if (csFiles.length) { usedBranch = br; break; }
+        }
         if (!csFiles.length) return { error: `No .cs files found in root of ${owner}/${repo}.` };
+
+        // Pick: hint file > name matching repo > first found
         const preferred = repo.startsWith('WindowsGSM.') ? repo.slice('WindowsGSM.'.length) + '.cs' : repo + '.cs';
-        const fileName = csFiles.find(f => f.toLowerCase() === preferred.toLowerCase()) ?? csFiles[0];
-        return { owner, repo, branch: 'master', fileName };
+        const fileName  = (hintFile && csFiles.find(f => f.toLowerCase() === hintFile.toLowerCase()))
+                       ?? csFiles.find(f => f.toLowerCase() === preferred.toLowerCase())
+                       ?? csFiles[0];
+        return { owner, repo, branch: usedBranch, fileName };
     } catch (e) {
-        return { error: 'Failed to contact GitHub API: ' + e.message };
+        return { error: 'GitHub API error: ' + e.message };
     }
 }
 
