@@ -674,14 +674,14 @@
             <Label x:Name="label_select" Content="Select or Install or Import a server" HorizontalAlignment="Left" Margin="11,4,0,2" VerticalAlignment="Center" Height="34"/>
             <DockPanel x:Name="grid_action">
                <!--<Button x:Name="button_Crash" Cursor="Hand" Content="CRASH" HorizontalAlignment="Left" Margin="10,5,0,5" Width="112" Height="26" Background="Purple" Foreground="White" Click="Actions_Crash_Click"/>-->
-               <Button x:Name="button_Start" Cursor="Hand" Content="START" HorizontalAlignment="Left" Margin="10,5,0,5" Width="112" Height="26" Click="Actions_Start_Click" Background="LimeGreen" Foreground="White"/>
-               <Button x:Name="button_Stop" Cursor="Hand" Content="STOP" HorizontalAlignment="Left" Margin="5,5,0,5" Width="112" Height="26" Click="Actions_Stop_Click" Background="Orange" Foreground="White"/>
-               <Button x:Name="button_Restart" Cursor="Hand" Content="RESTART" HorizontalAlignment="Left" Margin="5,5,0,5" Width="112" Height="26" Click="Actions_Restart_Click" Background="DeepSkyBlue" Foreground="White"/>
-               <Button x:Name="button_Kill" Cursor="Hand" Content="KILL" HorizontalAlignment="Left" Margin="5,5,0,5" Width="112" Height="26" Click="Actions_Kill_Click" Background="OrangeRed" Foreground="White"/>
-               <Button x:Name="button_Console" Cursor="Hand" Content="TOGGLE CONSOLE" HorizontalAlignment="Left" Margin="5,5,0,5" Width="112" Height="26" Click="Actions_ToggleConsole_Click"/>
-               <Button x:Name="button_Update" Cursor="Hand" Content="UPDATE" HorizontalAlignment="Left" Margin="5,5,0,5" Width="112" Height="26" Click="Actions_Update_Click"/>
-               <Button x:Name="button_Backup" Cursor="Hand" Content="BACKUP" HorizontalAlignment="Left" Margin="5,5,0,5" Width="112" Height="26" Click="Actions_Backup_Click"/>
-               <Button x:Name="button_ManageAddons" Cursor="Hand" Content="MANAGE ADDONS" HorizontalAlignment="Left" Margin="5,5,0,5" Width="112" Height="26" Click="Actions_ManageAddons_Click"/>
+               <Button x:Name="button_Start"       Style="{StaticResource WgsmStartButton}"   Cursor="Hand" Content="START"          Margin="10,5,0,5" Width="112" Height="26" Click="Actions_Start_Click"/>
+               <Button x:Name="button_Stop"        Style="{StaticResource WgsmStopButton}"    Cursor="Hand" Content="STOP"           Margin="5,5,0,5"  Width="112" Height="26" Click="Actions_Stop_Click"/>
+               <Button x:Name="button_Restart"     Style="{StaticResource WgsmRestartButton}" Cursor="Hand" Content="RESTART"        Margin="5,5,0,5"  Width="112" Height="26" Click="Actions_Restart_Click"/>
+               <Button x:Name="button_Kill"        Style="{StaticResource WgsmStopButton}"    Cursor="Hand" Content="KILL"           Margin="5,5,0,5"  Width="112" Height="26" Click="Actions_Kill_Click"/>
+               <Button x:Name="button_Console"     Style="{StaticResource WgsmActionButton}"  Cursor="Hand" Content="TOGGLE CONSOLE" Margin="5,5,0,5"  Width="112" Height="26" Click="Actions_ToggleConsole_Click"/>
+               <Button x:Name="button_Update"      Style="{StaticResource WgsmActionButton}"  Cursor="Hand" Content="UPDATE"         Margin="5,5,0,5"  Width="112" Height="26" Click="Actions_Update_Click"/>
+               <Button x:Name="button_Backup"      Style="{StaticResource WgsmActionButton}"  Cursor="Hand" Content="BACKUP"         Margin="5,5,0,5"  Width="112" Height="26" Click="Actions_Backup_Click"/>
+               <Button x:Name="button_ManageAddons" Style="{StaticResource WgsmActionButton}" Cursor="Hand" Content="MANAGE ADDONS"  Margin="5,5,0,5"  Width="112" Height="26" Click="Actions_ManageAddons_Click"/>
             </DockPanel>
          </Grid>
          <Grid Height="1" Background="Black" DockPanel.Dock="Top"/>

@@ -2,19 +2,83 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="clr-namespace:WindowsGSM"
-             xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls" xmlns:mah1="http://metro.mahapps.com/winfx/xaml/shared" x:Class="WindowsGSM.App">
+             xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
+             xmlns:mah1="http://metro.mahapps.com/winfx/xaml/shared"
+             x:Class="WindowsGSM.App">
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <!-- MahApps.Metro resource dictionaries. Make sure that all file names are Case Sensitive! -->
                 <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Controls.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Fonts.xaml" />
-                <!-- Accent and AppTheme setting -->
-                <!--<ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Accents/Teal.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Accents/BaseLight.xaml" />-->
-
-                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Themes/Light.Teal.xaml" />
+                <!-- Dark theme with teal accent matching the web dashboard -->
+                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Themes/Dark.Teal.xaml" />
             </ResourceDictionary.MergedDictionaries>
+
+            <!-- Brand colours — match the web dashboard exactly -->
+            <Color x:Key="WgsmAccent">#00D4AA</Color>
+            <Color x:Key="WgsmBg">#0D0D0D</Color>
+            <Color x:Key="WgsmSurface">#111111</Color>
+            <Color x:Key="WgsmSurface2">#1A1A1A</Color>
+            <Color x:Key="WgsmBorder">#222222</Color>
+            <Color x:Key="WgsmMuted">#888888</Color>
+            <Color x:Key="WgsmGreen">#00D4AA</Color>
+            <Color x:Key="WgsmRed">#FF4D4D</Color>
+            <Color x:Key="WgsmOrange">#FF9F43</Color>
+
+            <SolidColorBrush x:Key="WgsmAccentBrush"   Color="{StaticResource WgsmAccent}"/>
+            <SolidColorBrush x:Key="WgsmBgBrush"       Color="{StaticResource WgsmBg}"/>
+            <SolidColorBrush x:Key="WgsmSurfaceBrush"  Color="{StaticResource WgsmSurface}"/>
+            <SolidColorBrush x:Key="WgsmSurface2Brush" Color="{StaticResource WgsmSurface2}"/>
+            <SolidColorBrush x:Key="WgsmBorderBrush"   Color="{StaticResource WgsmBorder}"/>
+            <SolidColorBrush x:Key="WgsmMutedBrush"    Color="{StaticResource WgsmMuted}"/>
+            <SolidColorBrush x:Key="WgsmGreenBrush"    Color="{StaticResource WgsmGreen}"/>
+            <SolidColorBrush x:Key="WgsmRedBrush"      Color="{StaticResource WgsmRed}"/>
+            <SolidColorBrush x:Key="WgsmOrangeBrush"   Color="{StaticResource WgsmOrange}"/>
+
+            <!-- Override MahApps accent to our teal -->
+            <SolidColorBrush x:Key="MahApps.Brushes.Accent"     Color="{StaticResource WgsmAccent}"/>
+            <SolidColorBrush x:Key="MahApps.Brushes.AccentBase" Color="{StaticResource WgsmAccent}"/>
+
+            <!-- Action button styles -->
+            <Style x:Key="WgsmStartButton" TargetType="Button" BasedOn="{StaticResource MahApps.Styles.Button}">
+                <Setter Property="Background"   Value="#0D2A1F"/>
+                <Setter Property="Foreground"   Value="{StaticResource WgsmGreenBrush}"/>
+                <Setter Property="BorderBrush"  Value="#1A4033"/>
+                <Setter Property="FontWeight"   Value="SemiBold"/>
+            </Style>
+            <Style x:Key="WgsmStopButton" TargetType="Button" BasedOn="{StaticResource MahApps.Styles.Button}">
+                <Setter Property="Background"   Value="#2D1215"/>
+                <Setter Property="Foreground"   Value="{StaticResource WgsmRedBrush}"/>
+                <Setter Property="BorderBrush"  Value="#5A1E1E"/>
+                <Setter Property="FontWeight"   Value="SemiBold"/>
+            </Style>
+            <Style x:Key="WgsmRestartButton" TargetType="Button" BasedOn="{StaticResource MahApps.Styles.Button}">
+                <Setter Property="Background"   Value="#2A1E0D"/>
+                <Setter Property="Foreground"   Value="{StaticResource WgsmOrangeBrush}"/>
+                <Setter Property="BorderBrush"  Value="#4A3515"/>
+                <Setter Property="FontWeight"   Value="SemiBold"/>
+            </Style>
+            <Style x:Key="WgsmActionButton" TargetType="Button" BasedOn="{StaticResource MahApps.Styles.Button}">
+                <Setter Property="Background"   Value="{StaticResource WgsmSurface2Brush}"/>
+                <Setter Property="Foreground"   Value="{StaticResource WgsmMutedBrush}"/>
+                <Setter Property="BorderBrush"  Value="{StaticResource WgsmBorderBrush}"/>
+                <Setter Property="FontWeight"   Value="SemiBold"/>
+            </Style>
+
+            <!-- Dark input box -->
+            <Style x:Key="WgsmInputBox" TargetType="TextBox" BasedOn="{StaticResource MahApps.Styles.TextBox}">
+                <Setter Property="Background"  Value="{StaticResource WgsmBgBrush}"/>
+                <Setter Property="BorderBrush" Value="{StaticResource WgsmBorderBrush}"/>
+                <Setter Property="Foreground"  Value="#E0E0E0"/>
+            </Style>
+
+            <!-- Section header label -->
+            <Style x:Key="WgsmSectionHeader" TargetType="TextBlock">
+                <Setter Property="FontSize"   Value="11"/>
+                <Setter Property="FontWeight" Value="SemiBold"/>
+                <Setter Property="Foreground" Value="{StaticResource WgsmMutedBrush}"/>
+                <Setter Property="Margin"     Value="0,14,0,6"/>
+            </Style>
         </ResourceDictionary>
     </Application.Resources>
 </Application>

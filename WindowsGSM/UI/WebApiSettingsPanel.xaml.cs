@@ -28,6 +28,19 @@ namespace WindowsGSM.UI
             LoadConfigToUi();
         }
 
+        // — Sub-nav tab switching ————————————————————————————————————————————
+
+        private void OnTabChanged(object sender, RoutedEventArgs e)
+        {
+            if (PanelGeneral == null) return; // called before InitializeComponent completes
+            PanelGeneral.Visibility    = TabGeneral.IsChecked    == true ? Visibility.Visible : Visibility.Collapsed;
+            PanelKeys.Visibility       = TabKeys.IsChecked       == true ? Visibility.Visible : Visibility.Collapsed;
+            PanelConnection.Visibility = TabConnection.IsChecked == true ? Visibility.Visible : Visibility.Collapsed;
+            PanelBackup.Visibility     = TabBackup.IsChecked     == true ? Visibility.Visible : Visibility.Collapsed;
+            PanelUpdates.Visibility    = TabUpdates.IsChecked    == true ? Visibility.Visible : Visibility.Collapsed;
+            PanelLog.Visibility        = TabLog.IsChecked        == true ? Visibility.Visible : Visibility.Collapsed;
+        }
+
         // Called by MainWindow after it has set up ServerManagerService
         public void Initialize(WebApiServer server)
         {
@@ -124,7 +137,7 @@ namespace WindowsGSM.UI
                 var copyBtn = new Button
                 {
                     Content = "Copy",
-                    Style   = (Style)FindResource("GhostButton"),
+                    Style   = (Style)FindResource("GhostBtn"),
                     Margin  = new Thickness(0, 0, 4, 0),
                     Tag     = key.Token
                 };
@@ -137,7 +150,7 @@ namespace WindowsGSM.UI
                 var removeBtn = new Button
                 {
                     Content = "Remove",
-                    Style   = (Style)FindResource("DangerButton"),
+                    Style   = (Style)FindResource("DangerBtn"),
                     Tag     = key
                 };
                 removeBtn.Click += (_, _) =>

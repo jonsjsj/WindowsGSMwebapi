@@ -4,269 +4,460 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              mc:Ignorable="d"
-             d:DesignHeight="700" d:DesignWidth="800">
+             d:DesignHeight="700" d:DesignWidth="860"
+             Background="{StaticResource WgsmBgBrush}">
 
     <UserControl.Resources>
-        <Style x:Key="SectionHeader" TargetType="TextBlock">
-            <Setter Property="FontSize" Value="13"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="Margin" Value="0,16,0,6"/>
-            <Setter Property="Foreground" Value="#CCCCCC"/>
+
+        <!-- ── Sub-nav tab button ─────────────────────────────────────── -->
+        <Style x:Key="TabNavButton" TargetType="RadioButton">
+            <Setter Property="Background"         Value="Transparent"/>
+            <Setter Property="Foreground"         Value="{StaticResource WgsmMutedBrush}"/>
+            <Setter Property="BorderThickness"    Value="0,0,0,2"/>
+            <Setter Property="BorderBrush"        Value="Transparent"/>
+            <Setter Property="FontSize"           Value="12"/>
+            <Setter Property="FontWeight"         Value="SemiBold"/>
+            <Setter Property="Padding"            Value="16,10"/>
+            <Setter Property="Cursor"             Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RadioButton">
+                        <Border x:Name="bd"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="bd" Property="BorderBrush"
+                                        Value="{StaticResource WgsmAccentBrush}"/>
+                                <Setter Property="Foreground"
+                                        Value="{StaticResource WgsmAccentBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Foreground" Value="#E0E0E0"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
-        <Style x:Key="Label" TargetType="TextBlock">
+
+        <!-- ── Card surface ──────────────────────────────────────────── -->
+        <Style x:Key="Card" TargetType="Border">
+            <Setter Property="Background"       Value="{StaticResource WgsmSurfaceBrush}"/>
+            <Setter Property="BorderBrush"      Value="{StaticResource WgsmBorderBrush}"/>
+            <Setter Property="BorderThickness"  Value="1"/>
+            <Setter Property="CornerRadius"     Value="6"/>
+            <Setter Property="Padding"          Value="16,12"/>
+            <Setter Property="Margin"           Value="0,0,0,10"/>
+        </Style>
+
+        <!-- ── Field row label ───────────────────────────────────────── -->
+        <Style x:Key="FieldLabel" TargetType="TextBlock">
             <Setter Property="VerticalAlignment" Value="Center"/>
-            <Setter Property="Foreground" Value="#AAAAAA"/>
-            <Setter Property="MinWidth" Value="130"/>
+            <Setter Property="Foreground"        Value="{StaticResource WgsmMutedBrush}"/>
+            <Setter Property="MinWidth"          Value="140"/>
+            <Setter Property="FontSize"          Value="12"/>
         </Style>
-        <Style x:Key="InputBox" TargetType="TextBox">
-            <Setter Property="Background" Value="#2A2A2A"/>
-            <Setter Property="Foreground" Value="White"/>
-            <Setter Property="BorderBrush" Value="#444"/>
-            <Setter Property="Padding" Value="6,4"/>
-            <Setter Property="Height" Value="28"/>
+
+        <!-- ── Hint text ─────────────────────────────────────────────── -->
+        <Style x:Key="HintText" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="#555"/>
+            <Setter Property="FontSize"   Value="11"/>
+            <Setter Property="Margin"     Value="0,0,0,8"/>
+            <Setter Property="TextWrapping" Value="Wrap"/>
         </Style>
-        <Style x:Key="PrimaryButton" TargetType="Button">
-            <Setter Property="Background" Value="#0078D4"/>
-            <Setter Property="Foreground" Value="White"/>
-            <Setter Property="Padding" Value="14,6"/>
+
+        <!-- ── Primary action button ─────────────────────────────────── -->
+        <Style x:Key="PrimaryBtn" TargetType="Button">
+            <Setter Property="Background"    Value="{StaticResource WgsmAccentBrush}"/>
+            <Setter Property="Foreground"    Value="#0D0D0D"/>
+            <Setter Property="FontWeight"    Value="SemiBold"/>
+            <Setter Property="FontSize"      Value="12"/>
+            <Setter Property="Padding"       Value="18,7"/>
             <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="Height" Value="30"/>
+            <Setter Property="Cursor"        Value="Hand"/>
+            <Setter Property="Height"        Value="32"/>
         </Style>
-        <Style x:Key="DangerButton" TargetType="Button">
-            <Setter Property="Background" Value="#C42B1C"/>
-            <Setter Property="Foreground" Value="White"/>
-            <Setter Property="Padding" Value="14,6"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="Height" Value="30"/>
+
+        <!-- ── Ghost action button ───────────────────────────────────── -->
+        <Style x:Key="GhostBtn" TargetType="Button">
+            <Setter Property="Background"    Value="{StaticResource WgsmSurface2Brush}"/>
+            <Setter Property="Foreground"    Value="{StaticResource WgsmMutedBrush}"/>
+            <Setter Property="FontSize"      Value="12"/>
+            <Setter Property="Padding"       Value="14,7"/>
+            <Setter Property="BorderBrush"   Value="{StaticResource WgsmBorderBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Cursor"        Value="Hand"/>
+            <Setter Property="Height"        Value="32"/>
         </Style>
-        <Style x:Key="GhostButton" TargetType="Button">
-            <Setter Property="Background" Value="#333"/>
-            <Setter Property="Foreground" Value="#CCC"/>
-            <Setter Property="Padding" Value="10,4"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="Height" Value="26"/>
-            <Setter Property="FontSize" Value="11"/>
+
+        <!-- ── Danger button ─────────────────────────────────────────── -->
+        <Style x:Key="DangerBtn" TargetType="Button">
+            <Setter Property="Background"    Value="#2D1215"/>
+            <Setter Property="Foreground"    Value="{StaticResource WgsmRedBrush}"/>
+            <Setter Property="FontWeight"    Value="SemiBold"/>
+            <Setter Property="FontSize"      Value="12"/>
+            <Setter Property="Padding"       Value="18,7"/>
+            <Setter Property="BorderBrush"   Value="#5A1E1E"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Cursor"        Value="Hand"/>
+            <Setter Property="Height"        Value="32"/>
         </Style>
+
+        <!-- ── Status pill ───────────────────────────────────────────── -->
+        <Style x:Key="StatusPill" TargetType="Border">
+            <Setter Property="CornerRadius"    Value="10"/>
+            <Setter Property="Padding"         Value="10,3"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+        </Style>
+
+        <!-- ── Section label inside a card ──────────────────────────── -->
+        <Style x:Key="CardSectionHeader" TargetType="TextBlock">
+            <Setter Property="FontSize"   Value="11"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="{StaticResource WgsmMutedBrush}"/>
+            <Setter Property="Margin"     Value="0,10,0,4"/>
+        </Style>
+
     </UserControl.Resources>
 
-    <ScrollViewer VerticalScrollBarVisibility="Auto">
-        <StackPanel Margin="20,16" MaxWidth="700">
+    <DockPanel Background="{StaticResource WgsmBgBrush}">
 
-            <!-- — Instance identity ————————————————————————————————————— -->
-            <TextBlock Style="{StaticResource SectionHeader}" Text="Instance identity"/>
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
-                <TextBlock Grid.Column="0" Style="{StaticResource Label}" Text="Instance name"/>
-                <TextBox x:Name="InstanceNameBox" Grid.Column="1" Style="{StaticResource InputBox}"
-                         Margin="0,0,8,0" ToolTip="Shown on the WGSM.WEB dashboard to identify this instance"/>
-                <Button Grid.Column="2" Style="{StaticResource PrimaryButton}"
-                        Content="Save" Click="OnSaveInstanceName"/>
-            </Grid>
-
-            <!-- — API Keys ————————————————————————————————————————————— -->
-            <TextBlock Style="{StaticResource SectionHeader}" Text="API keys"/>
-            <TextBlock Foreground="#666" FontSize="11" Margin="0,0,0,6"
-                       Text="Each key lets one client (e.g. WGSM.WEB dashboard) connect. Use separate keys per device so you can revoke individually."/>
-
-            <!-- Keys list — populated in code-behind via RefreshKeysList() -->
-            <Border Background="#1E1E1E" BorderBrush="#333" BorderThickness="1"
-                    CornerRadius="4" Padding="4" MinHeight="36">
-                <StackPanel x:Name="KeysPanel"/>
-            </Border>
-
-            <!-- Add new key -->
-            <Grid Margin="0,6,0,0">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
-                <TextBlock Grid.Column="0" Style="{StaticResource Label}" Text="New key name"/>
-                <TextBox x:Name="NewKeyNameBox" Grid.Column="1" Style="{StaticResource InputBox}"
-                         Margin="0,0,8,0" Text="Dashboard"/>
-                <Button Grid.Column="2" Style="{StaticResource PrimaryButton}"
-                        Content="Add key" Click="OnAddKey"/>
-            </Grid>
-
-            <!-- — Port ————————————————————————————————————————————————— -->
-            <TextBlock Style="{StaticResource SectionHeader}" Text="Port"/>
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="120"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
-                <TextBlock Grid.Column="0" Style="{StaticResource Label}" Text="API port"/>
-                <TextBox x:Name="PortBox" Grid.Column="1" Style="{StaticResource InputBox}"
-                         Text="7876" PreviewTextInput="OnPortPreviewInput"/>
-                <TextBlock Grid.Column="2" Foreground="#666" VerticalAlignment="Center"
-                           Margin="10,0,0,0" FontSize="11"
-                           Text="Default: 7876. Open this port in your firewall for LAN/external access."/>
-            </Grid>
-
-            <!-- — Connection Scope ——————————————————————————————————————— -->
-            <TextBlock Style="{StaticResource SectionHeader}" Text="Connection scope"/>
-            <StackPanel>
-                <RadioButton x:Name="ScopeLocal" Content="Local only  (localhost access)"
-                             Foreground="#CCCCCC" Margin="0,2" IsChecked="True"
-                             Checked="OnScopeChanged"/>
-                <RadioButton x:Name="ScopeLan" Content="Allow LAN access  (same network)"
-                             Foreground="#CCCCCC" Margin="0,2"
-                             Checked="OnScopeChanged"/>
-                <RadioButton x:Name="ScopeExternal" Content="Allow external access  (public internet — use HTTPS)"
-                             Foreground="#CCCCCC" Margin="0,2"
-                             Checked="OnScopeChanged"/>
+        <!-- ══ Sub-navigation bar ══════════════════════════════════════ -->
+        <Border DockPanel.Dock="Top"
+                Background="{StaticResource WgsmSurfaceBrush}"
+                BorderBrush="{StaticResource WgsmBorderBrush}"
+                BorderThickness="0,0,0,1">
+            <StackPanel Orientation="Horizontal" Margin="12,0">
+                <RadioButton x:Name="TabGeneral"    Style="{StaticResource TabNavButton}" Content="General"    GroupName="WebApiTabs" IsChecked="True" Checked="OnTabChanged"/>
+                <RadioButton x:Name="TabKeys"       Style="{StaticResource TabNavButton}" Content="API Keys"   GroupName="WebApiTabs" Checked="OnTabChanged"/>
+                <RadioButton x:Name="TabConnection" Style="{StaticResource TabNavButton}" Content="Connection" GroupName="WebApiTabs" Checked="OnTabChanged"/>
+                <RadioButton x:Name="TabBackup"     Style="{StaticResource TabNavButton}" Content="Backup"     GroupName="WebApiTabs" Checked="OnTabChanged"/>
+                <RadioButton x:Name="TabUpdates"    Style="{StaticResource TabNavButton}" Content="Updates"    GroupName="WebApiTabs" Checked="OnTabChanged"/>
+                <RadioButton x:Name="TabLog"        Style="{StaticResource TabNavButton}" Content="Log"        GroupName="WebApiTabs" Checked="OnTabChanged"/>
             </StackPanel>
+        </Border>
 
-            <!-- — HTTPS ————————————————————————————————————————————————— -->
-            <TextBlock Style="{StaticResource SectionHeader}" Text="HTTPS (optional)"/>
-            <Grid Margin="0,0,0,4">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
-                <TextBlock Grid.Column="0" Style="{StaticResource Label}" Text="Certificate (.pem)"/>
-                <TextBox x:Name="CertPathBox" Grid.Column="1" Style="{StaticResource InputBox}"
-                         IsReadOnly="True" Margin="0,0,8,0" Text="No certificate imported"/>
-                <Button Grid.Column="2" Style="{StaticResource PrimaryButton}"
-                        Content="Import cert" Click="OnImportCert"/>
-            </Grid>
-            <Grid Margin="0,0,0,4">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
-                <TextBlock Grid.Column="0" Style="{StaticResource Label}" Text="Private key (.pem)"/>
-                <TextBox x:Name="KeyPathBox" Grid.Column="1" Style="{StaticResource InputBox}"
-                         IsReadOnly="True" Margin="0,0,8,0" Text="No key imported"/>
-                <Button Grid.Column="2" Style="{StaticResource PrimaryButton}"
-                        Content="Import key" Click="OnImportKey"/>
-            </Grid>
-            <CheckBox x:Name="HttpsCheckBox" Content="Enable HTTPS redirect (HTTP → HTTPS)"
-                      Foreground="#CCCCCC" Margin="130,4,0,0"
-                      Checked="OnHttpsToggled" Unchecked="OnHttpsToggled"/>
+        <!-- ══ Tab content ═════════════════════════════════════════════ -->
+        <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="20,16">
+            <Grid>
 
-            <!-- — Auto-start ——————————————————————————————————————————— -->
-            <TextBlock Style="{StaticResource SectionHeader}" Text="Startup"/>
-            <CheckBox x:Name="AutoStartCheckBox" Content="Start Web API automatically when WGSM launches"
-                      Foreground="#CCCCCC" Margin="0,2"
-                      Checked="OnAutoStartToggled" Unchecked="OnAutoStartToggled"/>
+                <!-- ── General tab ─────────────────────────────────────────── -->
+                <StackPanel x:Name="PanelGeneral" MaxWidth="680">
 
-            <!-- — Controls ——————————————————————————————————————————————— -->
-            <TextBlock Style="{StaticResource SectionHeader}" Text="API server"/>
-            <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
-                <Button x:Name="StartButton" Style="{StaticResource PrimaryButton}"
-                        Content="Start Web API" Click="OnStartApi" Margin="0,0,10,0"/>
-                <Button x:Name="StopButton" Style="{StaticResource DangerButton}"
-                        Content="Stop Web API" Click="OnStopApi" IsEnabled="False" Margin="0,0,10,0"/>
-                <TextBlock x:Name="StatusLabel" Foreground="#888" VerticalAlignment="Center"
-                           Text="Not running"/>
-            </StackPanel>
+                    <!-- Server running status card -->
+                    <Border Style="{StaticResource Card}">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                <TextBlock Text="Web API Server" FontSize="14" FontWeight="SemiBold"
+                                           Foreground="#E0E0E0" Margin="0,0,0,2"/>
+                                <TextBlock x:Name="StatusLabel" Text="Not running"
+                                           Foreground="{StaticResource WgsmMutedBrush}" FontSize="12"/>
+                            </StackPanel>
+                            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                <Button x:Name="StartButton" Style="{StaticResource PrimaryBtn}"
+                                        Content="Start" Click="OnStartApi" Margin="0,0,8,0"/>
+                                <Button x:Name="StopButton" Style="{StaticResource DangerBtn}"
+                                        Content="Stop" Click="OnStopApi" IsEnabled="False"/>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
 
-            <!-- — Connection URLs ————————————————————————————————————————— -->
-            <TextBlock Style="{StaticResource SectionHeader}" Text="Connection URLs"/>
-            <Border Background="#1E1E1E" BorderBrush="#333" BorderThickness="1"
-                    Padding="12,10" CornerRadius="4">
-                <StackPanel>
-                    <Grid Margin="0,2">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="100"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Column="0" Foreground="#666" Text="Localhost"/>
-                        <TextBlock x:Name="LocalUrlLabel" Grid.Column="1" Foreground="#4EC9B0"
-                                   Text="—" Cursor="Hand" MouseDown="OnUrlClick"/>
-                    </Grid>
-                    <Grid Margin="0,2">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="100"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Column="0" Foreground="#666" Text="LAN"/>
-                        <TextBlock x:Name="LanUrlLabel" Grid.Column="1" Foreground="#4EC9B0"
-                                   Text="—" Cursor="Hand" MouseDown="OnUrlClick"/>
-                    </Grid>
-                    <Grid Margin="0,2">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="100"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Column="0" Foreground="#666" Text="Public"/>
-                        <TextBlock x:Name="PublicUrlLabel" Grid.Column="1" Foreground="#4EC9B0"
-                                   Text="—" Cursor="Hand" MouseDown="OnUrlClick"/>
-                    </Grid>
+                    <!-- Instance identity -->
+                    <Border Style="{StaticResource Card}">
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource WgsmSectionHeader}" Text="INSTANCE IDENTITY"/>
+                            <TextBlock Style="{StaticResource HintText}"
+                                       Text="Name shown on the WGSM.WEB dashboard to identify this machine."/>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Style="{StaticResource FieldLabel}" Text="Instance name"/>
+                                <TextBox x:Name="InstanceNameBox" Grid.Column="1"
+                                         Style="{StaticResource WgsmInputBox}"
+                                         Margin="0,0,8,0"/>
+                                <Button Grid.Column="2" Style="{StaticResource PrimaryBtn}"
+                                        Content="Save" Click="OnSaveInstanceName"/>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Startup -->
+                    <Border Style="{StaticResource Card}">
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource WgsmSectionHeader}" Text="STARTUP"/>
+                            <CheckBox x:Name="AutoStartCheckBox"
+                                      Content="Start Web API automatically when WGSM launches"
+                                      Foreground="#CCCCCC"
+                                      Checked="OnAutoStartToggled" Unchecked="OnAutoStartToggled"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Connection URLs -->
+                    <Border Style="{StaticResource Card}">
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource WgsmSectionHeader}" Text="CONNECTION URLS"/>
+                            <Grid Margin="0,4,0,3">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="80"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Style="{StaticResource FieldLabel}" Text="Localhost"/>
+                                <TextBlock x:Name="LocalUrlLabel" Grid.Column="1"
+                                           Foreground="{StaticResource WgsmAccentBrush}"
+                                           Text="—" Cursor="Hand" MouseDown="OnUrlClick"/>
+                            </Grid>
+                            <Grid Margin="0,3">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="80"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Style="{StaticResource FieldLabel}" Text="LAN"/>
+                                <TextBlock x:Name="LanUrlLabel" Grid.Column="1"
+                                           Foreground="{StaticResource WgsmAccentBrush}"
+                                           Text="—" Cursor="Hand" MouseDown="OnUrlClick"/>
+                            </Grid>
+                            <Grid Margin="0,3,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="80"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Style="{StaticResource FieldLabel}" Text="Public"/>
+                                <TextBlock x:Name="PublicUrlLabel" Grid.Column="1"
+                                           Foreground="{StaticResource WgsmAccentBrush}"
+                                           Text="—" Cursor="Hand" MouseDown="OnUrlClick"/>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+
                 </StackPanel>
-            </Border>
 
-            <!-- — Backup ————————————————————————————————————————————————— -->
-            <TextBlock Style="{StaticResource SectionHeader}" Text="Backup"/>
-            <TextBlock Foreground="#666" FontSize="11" Margin="0,0,0,6"
-                       Text="ZIP server configs and saves. Leave paths empty to store backups in the WGSM folder."/>
-            <Grid Margin="0,0,0,4">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
-                <TextBlock Grid.Column="0" Style="{StaticResource Label}" Text="Local path"/>
-                <TextBox x:Name="BackupLocalPathBox" Grid.Column="1" Style="{StaticResource InputBox}"
-                         Margin="0,0,8,0" ToolTip="e.g. C:\Backups\WGSM"/>
-                <Button Grid.Column="2" Style="{StaticResource GhostButton}"
-                        Content="Browse" Click="OnBrowseBackupLocal"/>
+                <!-- ── API Keys tab ─────────────────────────────────────────── -->
+                <StackPanel x:Name="PanelKeys" MaxWidth="680" Visibility="Collapsed">
+
+                    <Border Style="{StaticResource Card}">
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource WgsmSectionHeader}" Text="API KEYS"/>
+                            <TextBlock Style="{StaticResource HintText}"
+                                       Text="Each key allows one client (e.g. WGSM.WEB dashboard) to connect. Use separate keys per device so you can revoke individually."/>
+                            <!-- Keys list — populated by RefreshKeysList() in code-behind -->
+                            <Border Background="{StaticResource WgsmBgBrush}"
+                                    BorderBrush="{StaticResource WgsmBorderBrush}"
+                                    BorderThickness="1" CornerRadius="4"
+                                    Padding="4" MinHeight="40" Margin="0,0,0,12">
+                                <StackPanel x:Name="KeysPanel"/>
+                            </Border>
+
+                            <TextBlock Style="{StaticResource WgsmSectionHeader}" Text="ADD NEW KEY"/>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Style="{StaticResource FieldLabel}" Text="Key name"/>
+                                <TextBox x:Name="NewKeyNameBox" Grid.Column="1"
+                                         Style="{StaticResource WgsmInputBox}"
+                                         Margin="0,0,8,0" Text="Dashboard"/>
+                                <Button Grid.Column="2" Style="{StaticResource PrimaryBtn}"
+                                        Content="Add key" Click="OnAddKey"/>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+
+                </StackPanel>
+
+                <!-- ── Connection tab ───────────────────────────────────────── -->
+                <StackPanel x:Name="PanelConnection" MaxWidth="680" Visibility="Collapsed">
+
+                    <!-- Port -->
+                    <Border Style="{StaticResource Card}">
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource WgsmSectionHeader}" Text="PORT"/>
+                            <TextBlock Style="{StaticResource HintText}"
+                                       Text="Default: 7876. Open this port in your firewall for LAN or external access."/>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="120"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Style="{StaticResource FieldLabel}" Text="API port"/>
+                                <TextBox x:Name="PortBox" Grid.Column="1"
+                                         Style="{StaticResource WgsmInputBox}"
+                                         Text="7876" PreviewTextInput="OnPortPreviewInput"/>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Scope -->
+                    <Border Style="{StaticResource Card}">
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource WgsmSectionHeader}" Text="ACCESS SCOPE"/>
+                            <RadioButton x:Name="ScopeLocal"
+                                         Content="Local only  (localhost access)"
+                                         Foreground="#CCCCCC" Margin="0,4"
+                                         IsChecked="True" Checked="OnScopeChanged"/>
+                            <RadioButton x:Name="ScopeLan"
+                                         Content="Allow LAN access  (same network)"
+                                         Foreground="#CCCCCC" Margin="0,4"
+                                         Checked="OnScopeChanged"/>
+                            <RadioButton x:Name="ScopeExternal"
+                                         Content="Allow external access  (public internet — use HTTPS)"
+                                         Foreground="#CCCCCC" Margin="0,4"
+                                         Checked="OnScopeChanged"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- HTTPS -->
+                    <Border Style="{StaticResource Card}">
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource WgsmSectionHeader}" Text="HTTPS (OPTIONAL)"/>
+                            <TextBlock Style="{StaticResource HintText}"
+                                       Text="Import a certificate and private key (.pem) to enable HTTPS."/>
+                            <Grid Margin="0,0,0,8">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Style="{StaticResource FieldLabel}" Text="Certificate (.pem)"/>
+                                <TextBox x:Name="CertPathBox" Grid.Column="1"
+                                         Style="{StaticResource WgsmInputBox}"
+                                         IsReadOnly="True" Margin="0,0,8,0"
+                                         Text="No certificate imported"/>
+                                <Button Grid.Column="2" Style="{StaticResource GhostBtn}"
+                                        Content="Import cert" Click="OnImportCert"/>
+                            </Grid>
+                            <Grid Margin="0,0,0,8">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Style="{StaticResource FieldLabel}" Text="Private key (.pem)"/>
+                                <TextBox x:Name="KeyPathBox" Grid.Column="1"
+                                         Style="{StaticResource WgsmInputBox}"
+                                         IsReadOnly="True" Margin="0,0,8,0"
+                                         Text="No key imported"/>
+                                <Button Grid.Column="2" Style="{StaticResource GhostBtn}"
+                                        Content="Import key" Click="OnImportKey"/>
+                            </Grid>
+                            <CheckBox x:Name="HttpsCheckBox"
+                                      Content="Enable HTTPS redirect  (HTTP → HTTPS)"
+                                      Foreground="#CCCCCC"
+                                      Checked="OnHttpsToggled" Unchecked="OnHttpsToggled"/>
+                        </StackPanel>
+                    </Border>
+
+                </StackPanel>
+
+                <!-- ── Backup tab ────────────────────────────────────────────── -->
+                <StackPanel x:Name="PanelBackup" MaxWidth="680" Visibility="Collapsed">
+
+                    <Border Style="{StaticResource Card}">
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource WgsmSectionHeader}" Text="BACKUP DESTINATIONS"/>
+                            <TextBlock Style="{StaticResource HintText}"
+                                       Text="ZIP server configs and saves. Leave a path empty to skip that destination."/>
+
+                            <Grid Margin="0,0,0,8">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Style="{StaticResource FieldLabel}" Text="Local path"/>
+                                <TextBox x:Name="BackupLocalPathBox" Grid.Column="1"
+                                         Style="{StaticResource WgsmInputBox}"
+                                         Margin="0,0,8,0"
+                                         ToolTip="e.g. C:\Backups\WGSM"/>
+                                <Button Grid.Column="2" Style="{StaticResource GhostBtn}"
+                                        Content="Browse" Click="OnBrowseBackupLocal"/>
+                            </Grid>
+                            <Grid Margin="0,0,0,8">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Style="{StaticResource FieldLabel}" Text="OneDrive path"/>
+                                <TextBox x:Name="BackupOnedrivPathBox" Grid.Column="1"
+                                         Style="{StaticResource WgsmInputBox}"
+                                         ToolTip="e.g. C:\Users\You\OneDrive\WGSM Backups"/>
+                            </Grid>
+                            <Grid Margin="0,0,0,8">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Style="{StaticResource FieldLabel}" Text="Google Drive path"/>
+                                <TextBox x:Name="BackupGdrivePathBox" Grid.Column="1"
+                                         Style="{StaticResource WgsmInputBox}"
+                                         ToolTip="e.g. G:\My Drive\WGSM Backups"/>
+                            </Grid>
+
+                            <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                                <Button Style="{StaticResource PrimaryBtn}"
+                                        Content="Save paths" Click="OnSaveBackupPaths"
+                                        Margin="0,0,10,0"/>
+                                <Button Style="{StaticResource GhostBtn}"
+                                        Content="Create backup now" Click="OnCreateBackup"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+
+                </StackPanel>
+
+                <!-- ── Updates tab ──────────────────────────────────────────── -->
+                <StackPanel x:Name="PanelUpdates" MaxWidth="680" Visibility="Collapsed">
+
+                    <Border Style="{StaticResource Card}">
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource WgsmSectionHeader}" Text="APPLICATION UPDATE"/>
+                            <TextBlock Style="{StaticResource HintText}"
+                                       Text="Check GitHub for a new WGSM version. Apply will stop servers, swap the exe and restart automatically."/>
+                            <StackPanel Orientation="Horizontal">
+                                <Button Style="{StaticResource PrimaryBtn}"
+                                        Content="Check for update" Click="OnCheckUpdate"
+                                        Margin="0,0,10,0"/>
+                                <Button x:Name="ApplyUpdateButton" Style="{StaticResource GhostBtn}"
+                                        Content="Apply update" Click="OnApplyUpdate"
+                                        IsEnabled="False"/>
+                            </StackPanel>
+                            <TextBlock x:Name="UpdateStatusLabel" Foreground="{StaticResource WgsmMutedBrush}"
+                                       FontSize="12" Margin="0,10,0,0"/>
+                        </StackPanel>
+                    </Border>
+
+                </StackPanel>
+
+                <!-- ── Log tab ──────────────────────────────────────────────── -->
+                <Grid x:Name="PanelLog" Visibility="Collapsed">
+                    <Border Style="{StaticResource Card}" Margin="0,0,20,0">
+                        <TextBox x:Name="LogBox"
+                                 Background="{StaticResource WgsmBgBrush}"
+                                 Foreground="#CCCCCC"
+                                 BorderThickness="0"
+                                 FontFamily="Consolas" FontSize="11"
+                                 Height="500"
+                                 IsReadOnly="True"
+                                 VerticalScrollBarVisibility="Auto"
+                                 TextWrapping="Wrap"/>
+                    </Border>
+                </Grid>
+
             </Grid>
-            <Grid Margin="0,0,0,4">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
-                <TextBlock Grid.Column="0" Style="{StaticResource Label}" Text="OneDrive path"/>
-                <TextBox x:Name="BackupOnedrivPathBox" Grid.Column="1" Style="{StaticResource InputBox}"
-                         ToolTip="e.g. C:\Users\You\OneDrive\WGSM Backups"/>
-            </Grid>
-            <Grid Margin="0,0,0,4">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
-                <TextBlock Grid.Column="0" Style="{StaticResource Label}" Text="Google Drive path"/>
-                <TextBox x:Name="BackupGdrivePathBox" Grid.Column="1" Style="{StaticResource InputBox}"
-                         ToolTip="e.g. G:\My Drive\WGSM Backups"/>
-            </Grid>
-            <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
-                <Button Style="{StaticResource PrimaryButton}" Content="Save backup paths"
-                        Click="OnSaveBackupPaths" Margin="0,0,10,0"/>
-                <Button Style="{StaticResource GhostButton}" Content="Create backup now"
-                        Click="OnCreateBackup"/>
-            </StackPanel>
-
-            <!-- — Update ————————————————————————————————————————————————— -->
-            <TextBlock Style="{StaticResource SectionHeader}" Text="Update"/>
-            <TextBlock Foreground="#666" FontSize="11" Margin="0,0,0,6"
-                       Text="Check GitHub for a new version. Apply will stop servers, swap the exe and restart automatically."/>
-            <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
-                <Button Style="{StaticResource PrimaryButton}" Content="Check for update"
-                        Click="OnCheckUpdate" Margin="0,0,10,0"/>
-                <Button x:Name="ApplyUpdateButton" Style="{StaticResource GhostButton}"
-                        Content="Apply update" Click="OnApplyUpdate" IsEnabled="False"/>
-                <TextBlock x:Name="UpdateStatusLabel" Foreground="#888"
-                           VerticalAlignment="Center" Margin="10,0,0,0" FontSize="11"/>
-            </StackPanel>
-
-            <!-- — Log output ——————————————————————————————————————————— -->
-            <TextBlock Style="{StaticResource SectionHeader}" Text="Log"/>
-            <TextBox x:Name="LogBox" Background="#1A1A1A" Foreground="#CCCCCC" BorderBrush="#333"
-                     FontFamily="Consolas" FontSize="11" Height="220" IsReadOnly="True"
-                     VerticalScrollBarVisibility="Auto" TextWrapping="Wrap"/>
-
-        </StackPanel>
-    </ScrollViewer>
+        </ScrollViewer>
+    </DockPanel>
 </UserControl>
