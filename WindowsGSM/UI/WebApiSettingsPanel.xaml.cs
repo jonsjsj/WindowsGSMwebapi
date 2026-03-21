@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
+using System.Net.NetworkInformation;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
@@ -62,6 +64,7 @@ namespace WindowsGSM.UI
             _config.Save();
             TokenBox.Password = _config.ApiToken;
             AppendLog("New API token generated.");
+            AppendLog($"API Token: {_config.ApiToken}");
         }
 
         private void OnRevokeToken(object sender, RoutedEventArgs e)
@@ -159,6 +162,15 @@ namespace WindowsGSM.UI
                 await _server.StartAsync();
                 SetRunningState(true);
                 await RefreshUrlsAsync();
+
+                // Print token and port status to log
+                AppendLog($"API Token: {_config.ApiToken}");
+                AppendLog($"API port {_config.Port}: {(IsPortListening(_config.Port) ? "OK - listening" : "WARNING - not listening")}");
+                await CheckGameServerPortsAsync();
+
+                // Auto-open browser per issue #207 spec
+                var scheme = _config.HttpsEnabled ? "https" : "http";
+                Process.Start(new ProcessStartInfo($"{scheme}://localhost:{_config.Port}/ui") { UseShellExecute = true });
             }
             catch (Exception ex)
             {
@@ -214,6 +226,52 @@ namespace WindowsGSM.UI
         {
             if (sender is TextBlock tb && tb.Text != "—")
                 Process.Start(new ProcessStartInfo(tb.Text) { UseShellExecute = true });
+        }
+
+        // — Port checks ——————————————————————————————————————————————————————
+
+        private static bool IsPortListening(int port)
+        {
+            try
+            {
+                var props = IPGlobalProperties.GetIPGlobalProperties();
+                bool tcp = props.GetActiveTcpListeners().Any(ep => ep.Port == port);
+                bool udp = props.GetActiveUdpListeners().Any(ep => ep.Port == port);
+                return tcp || udp;
+            }
+            catch { return false; }
+        }
+
+        private static bool IsPortListeningTcp(int port)
+        {
+            try { return IPGlobalProperties.GetIPGlobalProperties().GetActiveTcpListeners().Any(ep => ep.Port == port); }
+            catch { return false; }
+        }
+
+        private async Task CheckGameServerPortsAsync()
+        {
+            if (_server == null) return;
+
+            var servers = await Task.Run(() => _server.ServerManager.GetAllServers());
+            var running = servers.Where(s => s.Status == "Started").ToList();
+
+            if (!running.Any()) return;
+
+            AppendLog("--- Game server ports ---");
+            foreach (var s in running)
+            {
+                var parts = new List<string>();
+
+                if (int.TryParse(s.ServerPort, out int gamePort) && gamePort > 0)
+                    parts.Add($"game:{gamePort} {(IsPortListening(gamePort) ? "OK" : "not listening")}");
+
+                if (int.TryParse(s.QueryPort, out int queryPort) && queryPort > 0 && queryPort != gamePort)
+                    parts.Add($"query:{queryPort} {(IsPortListening(queryPort) ? "OK" : "not listening")}");
+
+                if (parts.Any())
+                    AppendLog($"  [{s.Name}] {string.Join("  ", parts)}");
+            }
+            AppendLog("------------------------");
         }
 
         // — Log ——————————————————————————————————————————————————————————————
