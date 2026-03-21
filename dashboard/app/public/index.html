@@ -218,6 +218,9 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
   </button>
 
   <div class="sb-section">System</div>
+  <button class="nav-item" id="nav-plugins" onclick="showView('plugins')">
+    <span class="nav-icon">⬡</span> Plugins
+  </button>
   <button class="nav-item" id="nav-instances" onclick="showView('instances')">
     <span class="nav-icon">⊞</span> Instances
   </button>
@@ -463,6 +466,7 @@ function renderView() {
         case 'dashboard': el.innerHTML = renderDashboard(); break;
         case 'servers':   el.innerHTML = renderServers();   break;
         case 'logs':      el.innerHTML = renderLogsView();  break;
+        case 'plugins':   el.innerHTML = renderPlugins();   loadPlugins(); break;
         case 'instances': el.innerHTML = renderInstances(); break;
         case 'backup':    el.innerHTML = renderBackup();    break;
         default:          el.innerHTML = '';
@@ -670,6 +674,127 @@ async function applyUpdate(instanceId, downloadUrl) {
     if (!confirm('This will stop all servers and restart WGSM. Continue?')) return;
     const r = await proxyPost(instanceId, 'api/update/apply', { downloadUrl });
     alert(r.data?.message ?? (r.ok ? 'Update started.' : 'Failed.'));
+}
+
+// ── Plugins view ─────────────────────────────────────────────────────────
+const pluginState = { installed: [], available: [], loading: false, query: '', instanceId: null };
+
+function renderPlugins() {
+    // Pick the first online instance for API calls
+    const inst = filteredInstances().find(i => state.instData[i.id]?.status === 'online');
+    pluginState.instanceId = inst?.id ?? null;
+    return `
+<div class="section-row">
+  <span class="section-title">Plugin Browser</span>
+  <span style="font-size:11px;color:var(--muted)">Searches GitHub for <code style="background:var(--surface2);padding:2px 5px;border-radius:3px">topic:windowsgsm</code> repos</span>
+</div>
+${!inst ? '<div class="empty" style="color:var(--orange)">⚠ No online WGSM instance — add one in Instances first.</div>' : ''}
+<div style="display:flex;gap:8px;margin-bottom:14px">
+  <input id="plugin-search" placeholder="Search plugins… (e.g. Rust, Minecraft)" value="${esc(pluginState.query)}"
+    style="flex:1;background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:7px 12px;font-size:13px"
+    onkeydown="if(event.key==='Enter')searchPlugins()"/>
+  <button class="btn-primary" onclick="searchPlugins()">Search</button>
+</div>
+<div id="plugin-installed-section">
+  <div class="section-row" style="margin-top:0"><span class="section-title" style="font-size:12px">Installed</span></div>
+  <div id="plugin-installed-list"><div class="empty" style="color:var(--muted)">Loading…</div></div>
+</div>
+<div class="section-row" style="margin-top:16px"><span class="section-title" style="font-size:12px">Available on GitHub</span></div>
+<div id="plugin-available-list"><div class="empty" style="color:var(--muted)">Loading…</div></div>`;
+}
+
+async function loadPlugins() {
+    const iid = pluginState.instanceId;
+    if (!iid) return;
+
+    // Load installed list
+    const { data: installed } = await proxyGet(iid, 'api/plugins/installed');
+    pluginState.installed = installed ?? [];
+    renderInstalledPlugins();
+
+    // Load available list
+    await searchPlugins();
+}
+
+function renderInstalledPlugins() {
+    const el = document.getElementById('plugin-installed-list');
+    if (!el) return;
+    if (!pluginState.installed.length) { el.innerHTML = '<div class="empty" style="color:var(--muted)">No plugins installed.</div>'; return; }
+    el.innerHTML = pluginState.installed.map(p => `
+<div class="inst-card">
+  <div class="inst-card-info">
+    <div class="inst-card-name">${esc(p.folder)}</div>
+    <div class="inst-card-url" style="color:${p.hasFile ? 'var(--green)' : 'var(--red)'}">
+      ${p.hasFile ? '● loaded' : '● missing .cs file'}
+    </div>
+  </div>
+  <button class="btn-danger" onclick="uninstallPlugin('${esc(p.folder)}',this)">Remove</button>
+</div>`).join('');
+}
+
+async function searchPlugins() {
+    const q = document.getElementById('plugin-search')?.value ?? '';
+    pluginState.query = q;
+    const el = document.getElementById('plugin-available-list');
+    if (!el || !pluginState.instanceId) return;
+    el.innerHTML = '<div class="empty" style="color:var(--muted)">Searching…</div>';
+
+    const { data } = await proxyGet(pluginState.instanceId, `api/plugins/available${q ? '?q=' + encodeURIComponent(q) : ''}`);
+    if (!data?.items?.length) { el.innerHTML = '<div class="empty">No plugins found.</div>'; return; }
+
+    const installedFiles = new Set(pluginState.installed.map(p => p.folder.toLowerCase()));
+    el.innerHTML = data.items.map(p => {
+        const isInst = installedFiles.has(p.fileName.toLowerCase());
+        return `
+<div class="inst-card" id="plugcard-${esc(p.fileName)}">
+  <div class="inst-card-info">
+    <div class="inst-card-name">${esc(p.pluginName)} <span style="color:var(--muted);font-size:11px">★ ${p.stars}</span></div>
+    <div class="inst-card-url">${esc(p.description ?? p.repo)}</div>
+    <div style="font-size:11px;color:var(--muted);margin-top:2px">${esc(p.owner)}/${esc(p.repo)}</div>
+  </div>
+  ${isInst
+    ? '<span style="color:var(--green);font-size:12px;white-space:nowrap">✓ installed</span>'
+    : `<button class="btn-primary" style="font-size:12px;padding:5px 12px" onclick="installPlugin(${JSON.stringify(p)},this)">Install</button>`
+  }
+  <a href="${esc(p.htmlUrl)}" target="_blank" class="btn-sm" style="text-decoration:none;display:flex;align-items:center">↗</a>
+</div>`;
+    }).join('');
+}
+
+async function installPlugin(p, btn) {
+    btn.disabled = true;
+    btn.textContent = 'Installing…';
+    const r = await proxyPost(pluginState.instanceId, 'api/plugins/install', {
+        owner: p.owner, repo: p.repo, fileName: p.fileName, branch: p.branch
+    });
+    if (r.ok) {
+        btn.textContent = '✓ Installed';
+        btn.style.background = '#0d2a0d';
+        btn.style.color = 'var(--green)';
+        alert(r.data?.message ?? 'Installed! Restart WGSM to load the plugin.');
+        // Refresh installed list
+        const { data: installed } = await proxyGet(pluginState.instanceId, 'api/plugins/installed');
+        pluginState.installed = installed ?? [];
+        renderInstalledPlugins();
+    } else {
+        btn.textContent = '✗ Failed';
+        btn.disabled = false;
+        alert('Install failed: ' + (r.data?.error ?? r.status));
+    }
+}
+
+async function uninstallPlugin(fileName, btn) {
+    if (!confirm(`Remove plugin ${fileName}? WGSM must be restarted to unload it.`)) return;
+    btn.disabled = true;
+    const r = await proxyDelete(pluginState.instanceId, `api/plugins/${encodeURIComponent(fileName)}`);
+    if (r.ok) {
+        const { data: installed } = await proxyGet(pluginState.instanceId, 'api/plugins/installed');
+        pluginState.installed = installed ?? [];
+        renderInstalledPlugins();
+    } else {
+        btn.disabled = false;
+        alert('Remove failed: ' + (r.data?.error ?? 'unknown error'));
+    }
 }
 
 // ── Server card ───────────────────────────────────────────────────────────
