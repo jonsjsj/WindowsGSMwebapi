@@ -207,6 +207,60 @@
                 </StackPanel>
             </Border>
 
+            <!-- — Backup ————————————————————————————————————————————————— -->
+            <TextBlock Style="{StaticResource SectionHeader}" Text="Backup"/>
+            <TextBlock Foreground="#666" FontSize="11" Margin="0,0,0,6"
+                       Text="ZIP server configs and saves. Leave paths empty to store backups in the WGSM folder."/>
+            <Grid Margin="0,0,0,4">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Style="{StaticResource Label}" Text="Local path"/>
+                <TextBox x:Name="BackupLocalPathBox" Grid.Column="1" Style="{StaticResource InputBox}"
+                         Margin="0,0,8,0" ToolTip="e.g. C:\Backups\WGSM"/>
+                <Button Grid.Column="2" Style="{StaticResource GhostButton}"
+                        Content="Browse" Click="OnBrowseBackupLocal"/>
+            </Grid>
+            <Grid Margin="0,0,0,4">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Style="{StaticResource Label}" Text="OneDrive path"/>
+                <TextBox x:Name="BackupOnedrivPathBox" Grid.Column="1" Style="{StaticResource InputBox}"
+                         ToolTip="e.g. C:\Users\You\OneDrive\WGSM Backups"/>
+            </Grid>
+            <Grid Margin="0,0,0,4">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Style="{StaticResource Label}" Text="Google Drive path"/>
+                <TextBox x:Name="BackupGdrivePathBox" Grid.Column="1" Style="{StaticResource InputBox}"
+                         ToolTip="e.g. G:\My Drive\WGSM Backups"/>
+            </Grid>
+            <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
+                <Button Style="{StaticResource PrimaryButton}" Content="Save backup paths"
+                        Click="OnSaveBackupPaths" Margin="0,0,10,0"/>
+                <Button Style="{StaticResource GhostButton}" Content="Create backup now"
+                        Click="OnCreateBackup"/>
+            </StackPanel>
+
+            <!-- — Update ————————————————————————————————————————————————— -->
+            <TextBlock Style="{StaticResource SectionHeader}" Text="Update"/>
+            <TextBlock Foreground="#666" FontSize="11" Margin="0,0,0,6"
+                       Text="Check GitHub for a new version. Apply will stop servers, swap the exe and restart automatically."/>
+            <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                <Button Style="{StaticResource PrimaryButton}" Content="Check for update"
+                        Click="OnCheckUpdate" Margin="0,0,10,0"/>
+                <Button x:Name="ApplyUpdateButton" Style="{StaticResource GhostButton}"
+                        Content="Apply update" Click="OnApplyUpdate" IsEnabled="False"/>
+                <TextBlock x:Name="UpdateStatusLabel" Foreground="#888"
+                           VerticalAlignment="Center" Margin="10,0,0,0" FontSize="11"/>
+            </StackPanel>
+
             <!-- — Log output ——————————————————————————————————————————— -->
             <TextBlock Style="{StaticResource SectionHeader}" Text="Log"/>
             <TextBox x:Name="LogBox" Background="#1A1A1A" Foreground="#CCCCCC" BorderBrush="#333"

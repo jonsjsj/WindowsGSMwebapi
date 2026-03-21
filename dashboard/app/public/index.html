@@ -175,6 +175,22 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
 .btn-danger{background:#2d1215;color:var(--red);border:1px solid #5a1e1e;border-radius:6px;padding:6px 12px;font-size:12px;cursor:pointer;transition:.15s}
 .btn-danger:hover{background:var(--red-bg);border-color:var(--red)}
 
+/* ── Port status indicators ──────────────────────────────────────────── */
+.port-chip{background:var(--surface2);border-radius:4px;padding:2px 6px;font-family:'Courier New',monospace;font-size:10px;display:inline-flex;align-items:center;gap:4px}
+.port-dot{width:5px;height:5px;border-radius:50%;display:inline-block;flex-shrink:0}
+.port-dot.ok{background:var(--green)}.port-dot.fail{background:var(--red)}.port-dot.unknown{background:var(--muted)}
+
+/* ── Update badge ────────────────────────────────────────────────────── */
+.upd-badge{background:#2a1d0a;border:1px solid var(--orange);color:var(--orange);border-radius:4px;padding:2px 7px;font-size:10px;font-weight:600;cursor:pointer;margin-left:6px}
+.upd-badge:hover{background:#3a2d1a}
+
+/* ── Backup view ─────────────────────────────────────────────────────── */
+.backup-inst-section{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:12px}
+.backup-inst-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.backup-inst-name{font-weight:600;font-size:14px}
+.backup-list{margin-top:8px;font-size:11px;color:var(--muted);font-family:'Courier New',monospace}
+.backup-item{padding:2px 0;border-bottom:1px solid var(--border)}
+
 /* ── Empty / loading ─────────────────────────────────────────────────── */
 .empty{text-align:center;padding:60px 20px;color:var(--muted)}
 .spinner{width:28px;height:28px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .6s linear infinite;margin:0 auto 12px}
@@ -205,6 +221,9 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
   <button class="nav-item" id="nav-instances" onclick="showView('instances')">
     <span class="nav-icon">⊞</span> Instances
   </button>
+  <button class="nav-item" id="nav-backup" onclick="showView('backup')">
+    <span class="nav-icon">⊟</span> Backup
+  </button>
   <button class="nav-item" onclick="refreshAll()">
     <span class="nav-icon">↻</span> Refresh
   </button>
@@ -229,6 +248,7 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
       <div class="tb-bar"><div class="tb-bar-fill ram" id="tb-ram-bar" style="width:0%"></div></div>
       <span id="tb-ram-val">—</span>
     </span>
+    <span id="tb-update-badge" style="display:none" class="upd-badge" onclick="showView('instances')" title="Click to view instances with updates">Update available</span>
     <span class="tb-time" id="tb-time"></span>
   </div>
   <div id="content"><div class="empty"><div class="spinner"></div>Loading…</div></div>
@@ -269,6 +289,7 @@ const state = {
     view:       'dashboard',
     instances:  [],           // [{id,name,url,token}]
     instData:   {},           // {id: {info, servers, resources, status}}
+    updateData: {},           // {id: {hasUpdate, latestTag, downloadUrl}}
     selInst:    null,         // selected instance id (null = all)
     logCtx:     null,         // {instanceId, serverId, serverName}
     refreshId:  null,
@@ -318,13 +339,19 @@ async function fetchInstance(inst) {
 
     if (d.status !== 'online') { d.servers = []; d.resources = null; return; }
 
-    // Servers + resources in parallel
-    const [sv, rs] = await Promise.allSettled([
+    // Servers + resources + update check in parallel
+    const [sv, rs, upd] = await Promise.allSettled([
         proxyGet(inst.id, 'api/servers'),
         proxyGet(inst.id, 'api/resources/summary'),
+        proxyGet(inst.id, 'api/update/check'),
     ]);
-    d.servers   = sv.status === 'fulfilled' ? (sv.value ?? []) : [];
-    d.resources = rs.status === 'fulfilled' ? rs.value : null;
+    d.servers   = sv.status  === 'fulfilled' ? (sv.value  ?? []) : [];
+    d.resources = rs.status  === 'fulfilled' ? rs.value  : null;
+
+    if (upd.status === 'fulfilled' && upd.value?.hasUpdate)
+        state.updateData[inst.id] = upd.value;
+    else
+        delete state.updateData[inst.id];
 }
 
 async function proxyGet(instanceId, path) {
@@ -340,6 +367,11 @@ async function proxyPost(instanceId, path, body) {
         body: body ? JSON.stringify(body) : undefined,
     });
     return { ok: r.ok, status: r.status, data: await r.json().catch(() => null) };
+}
+
+async function proxyDelete(instanceId, path) {
+    const r = await fetch(`/api/proxy/${instanceId}/${path}`, { method: 'DELETE' });
+    return { ok: r.ok, data: await r.json().catch(() => null) };
 }
 
 // ── Topbar stats ──────────────────────────────────────────────────────────
@@ -359,6 +391,10 @@ function updateTopbarStats() {
     const ramGb = totRam / 1024;
     document.getElementById('tb-ram-bar').style.width = Math.min(100, ramGb / 32 * 100) + '%';
     document.getElementById('tb-ram-val').textContent  = count ? ramGb.toFixed(1) + ' GB' : '—';
+
+    // Show update badge if any instance has an available update
+    const anyUpdate = Object.keys(state.updateData).length > 0;
+    document.getElementById('tb-update-badge').style.display = anyUpdate ? '' : 'none';
 }
 
 // ── Sidebar ───────────────────────────────────────────────────────────────
@@ -421,6 +457,7 @@ function renderView() {
         case 'servers':   el.innerHTML = renderServers();   break;
         case 'logs':      el.innerHTML = renderLogsView();  break;
         case 'instances': el.innerHTML = renderInstances(); break;
+        case 'backup':    el.innerHTML = renderBackup();    break;
         default:          el.innerHTML = '';
     }
     bindCardButtons();
@@ -520,10 +557,12 @@ function renderInstances() {
         const status = d.status ?? 'unknown';
         const color  = status === 'online' ? 'var(--green)' : status === 'offline' ? 'var(--red)' : 'var(--muted)';
         const info   = d.info ? ` · ${d.info.instanceName} · ${d.info.onlineServers}/${d.info.totalServers} online` : '';
+        const upd  = state.updateData[inst.id];
+        const updBadge = upd ? `<span class="upd-badge" title="${esc(upd.latestTag)} available">⬆ ${esc(upd.latestTag)}</span>` : '';
         return `<div class="inst-card">
   <span class="inst-dot ${status}" style="width:9px;height:9px;border-radius:50%;flex-shrink:0;display:inline-block;background:${color}"></span>
   <div class="inst-card-info">
-    <div class="inst-card-name">${esc(inst.name)}</div>
+    <div class="inst-card-name">${esc(inst.name)}${updBadge}</div>
     <div class="inst-card-url">${esc(inst.url)}</div>
     <div class="inst-card-status" style="color:${color}">${status}${info}</div>
   </div>
@@ -548,6 +587,65 @@ ${cards || '<div class="empty" style="padding:20px">No instances added yet.</div
 </div>`;
 }
 
+// ── Backup view ───────────────────────────────────────────────────────────
+function renderBackup() {
+    const insts = filteredInstances().filter(i => state.instData[i.id]?.status === 'online');
+    if (!insts.length)
+        return `<div class="section-row"><span class="section-title">Backup</span></div>
+<div class="empty">No online instances.</div>`;
+
+    const sections = insts.map(inst => {
+        const upd = state.updateData[inst.id];
+        const updHtml = upd
+            ? `<span style="color:var(--orange);font-size:11px">Update available: ${esc(upd.latestTag)}</span>`
+            : `<span style="color:var(--green);font-size:11px">Up to date</span>`;
+
+        return `<div class="backup-inst-section">
+  <div class="backup-inst-header">
+    <div>
+      <div class="backup-inst-name">${esc(inst.name)}</div>
+      <div style="font-size:11px;color:var(--muted);margin-top:2px">${updHtml}</div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center">
+      ${upd?.downloadUrl ? `<button class="btn-sm upd-badge" onclick="applyUpdate('${inst.id}','${esc(upd.downloadUrl)}')">⬆ Apply update</button>` : ''}
+      <button class="btn-sm" onclick="createBackup('${inst.id}',this)">⊟ Create backup</button>
+    </div>
+  </div>
+  <div class="backup-list" id="bklist-${inst.id}">Loading…</div>
+</div>`;
+    }).join('');
+
+    // Trigger list load after render
+    setTimeout(() => insts.forEach(i => loadBackupList(i.id)), 50);
+
+    return `<div class="section-row"><span class="section-title">Backup & Update</span></div>${sections}`;
+}
+
+async function loadBackupList(instanceId) {
+    const el = document.getElementById(`bklist-${instanceId}`);
+    if (!el) return;
+    const data = await proxyGet(instanceId, 'api/backup/list');
+    if (!Array.isArray(data) || !data.length) { el.textContent = '(no local backups)'; return; }
+    el.innerHTML = data.slice(0, 10).map(f =>
+        `<div class="backup-item">${esc(f.name)} <span style="color:var(--muted)">${(f.size/1024/1024).toFixed(1)} MB</span></div>`
+    ).join('');
+}
+
+async function createBackup(instanceId, btn) {
+    btn.disabled = true;
+    btn.textContent = 'Creating…';
+    const r = await proxyPost(instanceId, 'api/backup/create');
+    btn.textContent = r.ok ? '✓ Done' : '✗ Failed';
+    setTimeout(() => { btn.textContent = '⊟ Create backup'; btn.disabled = false; }, 3000);
+    if (r.ok) loadBackupList(instanceId);
+}
+
+async function applyUpdate(instanceId, downloadUrl) {
+    if (!confirm('This will stop all servers and restart WGSM. Continue?')) return;
+    const r = await proxyPost(instanceId, 'api/update/apply', { downloadUrl });
+    alert(r.data?.message ?? (r.ok ? 'Update started.' : 'Failed.'));
+}
+
 // ── Server card ───────────────────────────────────────────────────────────
 function serverCard(inst, s, d) {
     const running  = s.status === 'Started';
@@ -564,9 +662,15 @@ function serverCard(inst, s, d) {
 
     const players   = s.playersCurrent != null
         ? `<span class="meta-chip">👥 ${s.playersCurrent}/${s.playersMax ?? '?'}</span>` : '';
-    const port      = s.serverPort ? `<span class="meta-chip">:${esc(s.serverPort)}</span>` : '';
+
+    function portChip(label, portNum, reachable) {
+        if (!portNum) return '';
+        const cls = reachable == null ? 'unknown' : reachable ? 'ok' : 'fail';
+        return `<span class="port-chip"><span class="port-dot ${cls}"></span>${label}:${esc(portNum)}</span>`;
+    }
+    const port      = portChip('', s.serverPort, s.gamePortReachable);
     const queryPort = (s.queryPort && s.queryPort !== s.serverPort)
-        ? `<span class="meta-chip">Q:${esc(s.queryPort)}</span>` : '';
+        ? portChip('Q', s.queryPort, s.queryPortReachable) : '';
     const multiInst = state.instances.length > 1
         ? `<div class="card-inst">${esc(inst.name)}</div>` : '';
 

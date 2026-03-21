@@ -37,6 +37,34 @@ namespace WindowsGSM.WebApi.Models
         public string Token { get; set; } = string.Empty;
     }
 
+    public class FirewallStatusDto
+    {
+        public int    Port       { get; set; }
+        public string Protocol   { get; set; } = string.Empty;
+        public bool   RuleExists { get; set; }
+        public bool   IsEnabled  { get; set; }
+    }
+
+    public class BackupResultDto
+    {
+        public bool    Success  { get; set; }
+        public string  Message  { get; set; } = string.Empty;
+        public string? FileName { get; set; }
+    }
+
+    public class UpdateCheckDto
+    {
+        public string  CurrentVersion { get; set; } = string.Empty;
+        public string  LatestTag      { get; set; } = string.Empty;
+        public bool    HasUpdate      { get; set; }
+        public string? DownloadUrl    { get; set; }
+    }
+
+    public class ApplyUpdateRequest
+    {
+        public string? DownloadUrl { get; set; }
+    }
+
     public class StatusResponse
     {
         public bool Running { get; set; }

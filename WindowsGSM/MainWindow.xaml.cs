@@ -4520,11 +4520,32 @@ namespace WindowsGSM
                 var manager = new ServerManagerService(this);
                 _webApiServer = new WebApiServer(config, network, manager);
                 WebApiPanel.Initialize(_webApiServer);
+
+                // Async version check — log result to the Web API log window
+                _ = CheckForWebApiUpdateAsync();
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"[WebApi] Init failed: {ex.Message}");
             }
+        }
+
+        private async Task CheckForWebApiUpdateAsync()
+        {
+            try
+            {
+                var svc = new WindowsGSM.WebApi.Services.UpdateService(
+                    _webApiServer!.ServerManager);
+                var (hasUpdate, latestTag, _, error) = await svc.CheckForUpdateAsync()
+                    .ConfigureAwait(false);
+
+                var current = WindowsGSM.WebApi.Services.UpdateService.CurrentVersion;
+                if (error == null && hasUpdate)
+                    _webApiServer!.Logger.Log(
+                        $"[Update] New version available: {latestTag} (current: {current}). " +
+                        "Go to Web API → Update to apply.");
+            }
+            catch { /* non-fatal */ }
         }
 
         public async Task GameServer_StartById(string serverId)

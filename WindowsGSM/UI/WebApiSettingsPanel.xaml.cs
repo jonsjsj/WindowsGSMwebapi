@@ -6,6 +6,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Forms;
 using System.Windows.Input;
 using System.Windows.Media;
 using Microsoft.Win32;
@@ -18,6 +19,9 @@ namespace WindowsGSM.UI
     {
         private WebApiServer? _server;
         private WebApiConfig  _config = WebApiConfig.Load();
+
+        // Cached download URL from the last update check
+        private string? _pendingUpdateUrl;
 
         public WebApiSettingsPanel()
         {
@@ -42,8 +46,11 @@ namespace WindowsGSM.UI
 
         private void LoadConfigToUi()
         {
-            InstanceNameBox.Text = _config.InstanceName;
-            PortBox.Text         = _config.Port.ToString();
+            InstanceNameBox.Text      = _config.InstanceName;
+            PortBox.Text              = _config.Port.ToString();
+            BackupLocalPathBox.Text   = _config.BackupLocalPath;
+            BackupOnedrivPathBox.Text = _config.BackupOnedrivePath;
+            BackupGdrivePathBox.Text  = _config.BackupGdrivePath;
             CertPathBox.Text     = string.IsNullOrEmpty(_config.CertPath) ? "No certificate imported" : _config.CertPath;
             KeyPathBox.Text      = string.IsNullOrEmpty(_config.KeyPath)  ? "No key imported"          : _config.KeyPath;
             HttpsCheckBox.IsChecked    = _config.HttpsEnabled;
@@ -355,6 +362,91 @@ namespace WindowsGSM.UI
                     AppendLog($"  [{s.Name}] {string.Join("  ", parts)}");
             }
             AppendLog("------------------------");
+        }
+
+        // — Backup ————————————————————————————————————————————————————————————
+
+        private void OnBrowseBackupLocal(object sender, RoutedEventArgs e)
+        {
+            using var dlg = new FolderBrowserDialog { Description = "Select backup destination folder" };
+            if (dlg.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                BackupLocalPathBox.Text = dlg.SelectedPath;
+        }
+
+        private void OnSaveBackupPaths(object sender, RoutedEventArgs e)
+        {
+            _config.BackupLocalPath    = BackupLocalPathBox.Text.Trim();
+            _config.BackupOnedrivePath = BackupOnedrivPathBox.Text.Trim();
+            _config.BackupGdrivePath   = BackupGdrivePathBox.Text.Trim();
+            _config.Save();
+            AppendLog("Backup paths saved.");
+        }
+
+        private async void OnCreateBackup(object sender, RoutedEventArgs e)
+        {
+            if (_server == null) return;
+            AppendLog("Creating backup...");
+            var svc = new WindowsGSM.WebApi.Services.BackupService(_config);
+            var (success, message, _) = await Task.Run(() => svc.CreateBackup());
+            AppendLog(message);
+        }
+
+        // — Update ————————————————————————————————————————————————————————————
+
+        private async void OnCheckUpdate(object sender, RoutedEventArgs e)
+        {
+            UpdateStatusLabel.Text      = "Checking...";
+            ApplyUpdateButton.IsEnabled = false;
+            _pendingUpdateUrl           = null;
+
+            var svc = new WindowsGSM.WebApi.Services.UpdateService(
+                _server?.ServerManager ?? new WindowsGSM.WebApi.Services.ServerManagerService(null!));
+            var (hasUpdate, latestTag, downloadUrl, error) =
+                await svc.CheckForUpdateAsync();
+
+            if (error != null)
+            {
+                UpdateStatusLabel.Text = $"Check failed: {error}";
+                AppendLog($"Update check failed: {error}");
+                return;
+            }
+
+            var current = WindowsGSM.WebApi.Services.UpdateService.CurrentVersion;
+            if (hasUpdate)
+            {
+                _pendingUpdateUrl           = downloadUrl;
+                ApplyUpdateButton.IsEnabled = downloadUrl != null;
+                UpdateStatusLabel.Text      = $"Update available: {latestTag}";
+                AppendLog($"Update available: {latestTag} (current: {current})");
+                if (downloadUrl == null)
+                    AppendLog("  Warning: no WindowsGSM.exe asset found in the release.");
+            }
+            else
+            {
+                UpdateStatusLabel.Text = $"Up to date ({current})";
+                AppendLog($"Up to date: {current}");
+            }
+        }
+
+        private async void OnApplyUpdate(object sender, RoutedEventArgs e)
+        {
+            if (string.IsNullOrEmpty(_pendingUpdateUrl)) return;
+
+            ApplyUpdateButton.IsEnabled = false;
+            UpdateStatusLabel.Text      = "Downloading and applying update...";
+            AppendLog("Applying update — servers will be stopped and application will restart.");
+
+            var svc = new WindowsGSM.WebApi.Services.UpdateService(
+                _server?.ServerManager ?? new WindowsGSM.WebApi.Services.ServerManagerService(null!));
+            var (success, message) = await svc.ApplyUpdateAsync(_pendingUpdateUrl);
+
+            if (!success)
+            {
+                UpdateStatusLabel.Text      = "Update failed";
+                ApplyUpdateButton.IsEnabled = true;
+                AppendLog($"Update failed: {message}");
+            }
+            // On success the application shuts down — nothing to do here
         }
 
         // — Log ——————————————————————————————————————————————————————————————

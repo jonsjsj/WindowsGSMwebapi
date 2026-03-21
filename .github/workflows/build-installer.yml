@@ -134,6 +134,10 @@ jobs:
           path: dist\WindowsGSM-WebAPI-Full-Setup-*.exe
           if-no-files-found: error
 
+      - name: Copy raw exe for release
+        shell: pwsh
+        run: Copy-Item "publish\WindowsGSM.exe" "dist\WindowsGSM.exe"
+
       - name: Create Full GitHub Release
         if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v2
@@ -165,7 +169,9 @@ jobs:
 
             ---
             > Already have WindowsGSM? Use the **[Addon installer](${{ github.server_url }}/${{ github.repository }}/releases/tag/${{ github.ref_name }})** instead.
-          files: dist\WindowsGSM-WebAPI-Full-Setup-*.exe
+          files: |
+            dist\WindowsGSM-WebAPI-Full-Setup-*.exe
+            dist\WindowsGSM.exe
           draft: false
           prerelease: ${{ contains(github.ref_name, '-beta') || contains(github.ref_name, '-rc') }}
 

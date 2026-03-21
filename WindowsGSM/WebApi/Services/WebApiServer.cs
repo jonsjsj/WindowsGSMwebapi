@@ -123,6 +123,9 @@ namespace WindowsGSM.WebApi.Services
             services.AddSingleton<A2SQueryService>();
             services.AddSingleton<ResourceMonitorService>();
             services.AddSingleton<PortCheckService>();
+            services.AddSingleton<PortManagementService>();
+            services.AddSingleton<BackupService>();
+            services.AddSingleton<UpdateService>();
             services.AddControllers()
                     .AddJsonOptions(o =>
                     {
