@@ -6,11 +6,11 @@ using System.Windows;
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("WindowsGSM")]
-[assembly: AssemblyDescription("A Game Server Manager works on Windows Platform")]
+[assembly: AssemblyTitle("WGSM")]
+[assembly: AssemblyDescription("WGSM - Game Server Manager with Web API")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("TatLead")]
-[assembly: AssemblyProduct("WindowsGSM")]
+[assembly: AssemblyCompany("jonsjsj")]
+[assembly: AssemblyProduct("WGSM")]
 [assembly: AssemblyCopyright("Copyright ©  2019")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]

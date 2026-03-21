@@ -1,9 +1,9 @@
-#define AppName      "WindowsGSM Web API"
+#define AppName      "WGSM"
 #define AppPublisher "jonsjsj"
 #define AppURL       "https://github.com/jonsjsj/WindowsGSMwebapi"
 #define AppExe       "WindowsGSM.exe"
 #define RegKey       "Software\WindowsGSM"
-#define FirewallRule "WindowsGSM Web API"
+#define FirewallRule "WGSM Web API"
 #define DefaultPort  "7876"
 
 #ifndef AppVersion
@@ -14,9 +14,9 @@
 #endif
 
 #if OutputMode == "full"
-  #define OutputBase "WindowsGSM-WebAPI-Full-Setup-" + AppVersion
+  #define OutputBase "WGSM-Full-Setup-" + AppVersion
 #else
-  #define OutputBase "WindowsGSM-WebAPI-Addon-Setup-" + AppVersion
+  #define OutputBase "WGSM-Addon-Setup-" + AppVersion
 #endif
 
 [Setup]
@@ -28,7 +28,7 @@ AppPublisherURL={#AppURL}
 AppSupportURL={#AppURL}
 AppUpdatesURL={#AppURL}
 DefaultDirName={autopf}\WindowsGSM
-DefaultGroupName=WindowsGSM
+DefaultGroupName=WGSM
 AllowNoIcons=no
 LicenseFile=..\LICENSE
 OutputDir=..\dist
@@ -55,7 +55,7 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "default"; Description: "Default installation"; Flags: iscustom
 
 [Components]
-Name: "core";   Description: "WindowsGSM application";      Types: default; Check: IsFullMode
+Name: "core";   Description: "WGSM application";            Types: default; Check: IsFullMode
 Name: "webapi"; Description: "Web API + remote control UI";  Types: default; Flags: fixed
 
 [Files]
@@ -63,8 +63,8 @@ Source: "..\publish\WindowsGSM.exe"; DestDir: "{app}"; Components: core; Flags: 
 Source: "..\publish\WebApi\wwwroot\*"; DestDir: "{app}\WebApi\wwwroot"; Components: webapi; Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Icons]
-Name: "{autodesktop}\WindowsGSM"; Filename: "{app}\{#AppExe}"; IconFilename: "{app}\{#AppExe}"; Comment: "WindowsGSM Game Server Manager"
-Name: "{group}\WindowsGSM"; Filename: "{app}\{#AppExe}"; IconFilename: "{app}\{#AppExe}"
+Name: "{autodesktop}\WGSM"; Filename: "{app}\{#AppExe}"; IconFilename: "{app}\{#AppExe}"; Comment: "WGSM Game Server Manager"
+Name: "{group}\WGSM"; Filename: "{app}\{#AppExe}"; IconFilename: "{app}\{#AppExe}"
 Name: "{group}\Uninstall {#AppName}"; Filename: "{uninstallexe}"
 
 [Registry]
@@ -137,11 +137,11 @@ begin
     WizardForm.FinishedLabel.Caption :=
       'Installation complete!' + #13#10 + #13#10 +
       'Getting started:' + #13#10 +
-      '  1. Open WindowsGSM' + #13#10 +
+      '  1. Open WGSM' + #13#10 +
       '  2. Click "Web API" in the left menu' + #13#10 +
       '  3. Click "Generate" to create an API token' + #13#10 +
       '  4. Click "Start Web API"' + #13#10 +
       '  5. Open http://localhost:{#DefaultPort}/ui' + #13#10 + #13#10 +
       'Firewall rule added for port {#DefaultPort}.' + #13#10 +
-      'WindowsGSM added to Windows startup (runs on login).';
+      'WGSM added to Windows startup (runs on login).';
 end;

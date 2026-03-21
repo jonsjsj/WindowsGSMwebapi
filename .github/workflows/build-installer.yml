@@ -96,7 +96,7 @@ jobs:
           path: ${{ env.PUBLISH_DIR }}
           if-no-files-found: error
 
-  # — Job 2: Full installer (WindowsGSM + Web API) ——————————————————————
+  # — Job 2: Full installer (WGSM + Web API) ——————————————————————
   release-full:
     name: Full installer & release
     needs: build
@@ -131,7 +131,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: installer-full
-          path: dist\WindowsGSM-WebAPI-Full-Setup-*.exe
+          path: dist\WGSM-Full-Setup-*.exe
           if-no-files-found: error
 
       - name: Copy raw exe for release
@@ -143,15 +143,15 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.ref_name }}
-          name: "WindowsGSM + Web API ${{ needs.build.outputs.version }} – Full Install"
+          name: "WGSM ${{ needs.build.outputs.version }} – Full Install"
           body: |
-            ## Full Install – WindowsGSM + Web API ${{ needs.build.outputs.version }}
+            ## Full Install – WGSM ${{ needs.build.outputs.version }}
 
-            **Use this if you don't already have WindowsGSM installed.**
+            **Use this if you don't already have WGSM installed.**
             Installs everything: the game server manager and the Web API remote control together.
 
             ### What's included
-            - WindowsGSM (game server manager GUI)
+            - WGSM (game server manager GUI)
             - Web API – control your servers from any browser
             - Web UI at `http://localhost:7876/ui`
             - Automatic Windows Firewall rule for port 7876
@@ -160,7 +160,7 @@ jobs:
 
             ### Getting started
             1. Run the installer as **Administrator**
-            2. Open WindowsGSM
+            2. Open WGSM
             3. Click **Web API** in the left navigation menu
             4. Click **Generate** to create your API token
             5. Click **Start Web API**
@@ -168,9 +168,9 @@ jobs:
             7. Paste your token and click **Connect**
 
             ---
-            > Already have WindowsGSM? Use the **[Addon installer](${{ github.server_url }}/${{ github.repository }}/releases/tag/${{ github.ref_name }})** instead.
+            > Already have WGSM? Use the **[Addon installer](${{ github.server_url }}/${{ github.repository }}/releases/tag/${{ github.ref_name }})** instead.
           files: |
-            dist\WindowsGSM-WebAPI-Full-Setup-*.exe
+            dist\WGSM-Full-Setup-*.exe
             dist\WindowsGSM.exe
           draft: false
           prerelease: ${{ contains(github.ref_name, '-beta') || contains(github.ref_name, '-rc') }}
@@ -210,7 +210,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: installer-addon
-          path: dist\WindowsGSM-WebAPI-Addon-Setup-*.exe
+          path: dist\WGSM-Addon-Setup-*.exe
           if-no-files-found: error
 
       - name: Create Addon GitHub Release
@@ -218,15 +218,15 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.ref_name }}
-          name: "WindowsGSM Web API ${{ needs.build.outputs.version }} – Addon"
+          name: "WGSM ${{ needs.build.outputs.version }} – Addon"
           body: |
-            ## Addon Install – Web API Only ${{ needs.build.outputs.version }}
+            ## Addon Install – WGSM Web API Addon ${{ needs.build.outputs.version }}
 
-            **Use this if you already have WindowsGSM installed.**
+            **Use this if you already have WGSM installed.**
             Adds the Web API remote control feature without touching your existing installation or server configs.
 
             ### What gets added
-            - Web API remote control (drops files into your existing WindowsGSM folder)
+            - Web API remote control (drops files into your existing WGSM folder)
             - Web UI at `http://localhost:7876/ui`
             - Automatic Windows Firewall rule for port 7876
             - Auto-start on Windows login (registry Run key)
@@ -234,8 +234,8 @@ jobs:
 
             ### Getting started
             1. Run the installer as **Administrator**
-            2. The installer auto-detects your WindowsGSM folder
-            3. Open WindowsGSM
+            2. The installer auto-detects your WGSM folder
+            3. Open WGSM
             4. Click **Web API** in the left navigation menu
             5. Click **Generate** to create your API token
             6. Click **Start Web API**
@@ -243,7 +243,7 @@ jobs:
             8. Paste your token and click **Connect**
 
             ---
-            > New to WindowsGSM? Use the **[Full installer](${{ github.server_url }}/${{ github.repository }}/releases/tag/${{ github.ref_name }})** instead.
-          files: dist\WindowsGSM-WebAPI-Addon-Setup-*.exe
+            > New to WGSM? Use the **[Full installer](${{ github.server_url }}/${{ github.repository }}/releases/tag/${{ github.ref_name }})** instead.
+          files: dist\WGSM-Addon-Setup-*.exe
           draft: false
           prerelease: ${{ contains(github.ref_name, '-beta') || contains(github.ref_name, '-rc') }}
