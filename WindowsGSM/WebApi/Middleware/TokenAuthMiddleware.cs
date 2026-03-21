@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using WindowsGSM.WebApi.Models;
@@ -7,17 +8,17 @@ namespace WindowsGSM.WebApi.Middleware
 {
     /// <summary>
     /// Validates the Authorization: Bearer {token} header on all /api/* requests.
-    /// The /ui/* static SPA and /api/status GET are public (status shows only running state, no server data).
+    /// /ui/*, /, and /api/info are public. Everything else requires a valid API key.
     /// </summary>
     public class TokenAuthMiddleware
     {
         private readonly RequestDelegate _next;
-        private readonly WebApiConfig _config;
-        private readonly ApiLogger _logger;
+        private readonly WebApiConfig    _config;
+        private readonly ApiLogger       _logger;
 
         public TokenAuthMiddleware(RequestDelegate next, WebApiConfig config, ApiLogger logger)
         {
-            _next = next;
+            _next   = next;
             _config = config;
             _logger = logger;
         }
@@ -27,28 +28,30 @@ namespace WindowsGSM.WebApi.Middleware
             var path   = context.Request.Path.Value ?? "";
             var remote = context.Connection.RemoteIpAddress?.ToString() ?? "unknown";
 
-            // Allow SPA and its assets through unauthenticated
-            if (path.StartsWith("/ui") || path == "/")
+            // Public routes — no token required
+            if (path.StartsWith("/ui") || path == "/" || path == "/api/info")
             {
                 await _next(context);
                 return;
             }
 
-            // Validate token for all /api/* routes
             if (path.StartsWith("/api"))
             {
-                if (string.IsNullOrEmpty(_config.ApiToken))
+                var activeKeys = _config.ApiKeys.Where(k => !string.IsNullOrEmpty(k.Token)).ToList();
+
+                if (activeKeys.Count == 0)
                 {
-                    _logger.Log($"AUTH DENIED [{remote}] {path} — no API token configured (generate one in the Web API settings)");
+                    _logger.Log($"AUTH DENIED [{remote}] {path} — no API keys configured (add one in Web API settings)");
                     context.Response.StatusCode = StatusCodes.Status503ServiceUnavailable;
-                    await context.Response.WriteAsJsonAsync(new { error = "No API token configured." });
+                    await context.Response.WriteAsJsonAsync(new { error = "No API keys configured." });
                     return;
                 }
 
-                var authHeader     = context.Request.Headers["Authorization"].ToString();
-                var expectedBearer = $"Bearer {_config.ApiToken}";
+                var authHeader = context.Request.Headers["Authorization"].ToString();
+                var matchedKey = activeKeys.FirstOrDefault(k =>
+                    string.Equals(authHeader, $"Bearer {k.Token}", System.StringComparison.Ordinal));
 
-                if (!string.Equals(authHeader, expectedBearer, System.StringComparison.Ordinal))
+                if (matchedKey == null)
                 {
                     var provided = string.IsNullOrEmpty(authHeader) ? "(none)" : authHeader;
                     _logger.Log($"AUTH DENIED [{remote}] {path} — wrong token. Provided: {provided}");
@@ -57,7 +60,7 @@ namespace WindowsGSM.WebApi.Middleware
                     return;
                 }
 
-                _logger.Log($"AUTH OK    [{remote}] {path}");
+                _logger.Log($"AUTH OK    [{remote}] {path} (key: {matchedKey.Name})");
             }
 
             await _next(context);

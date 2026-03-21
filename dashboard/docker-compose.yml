@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  wgsm-web:
+    build: ./app
+    container_name: wgsm-web
+    ports:
+      - "5680:5680"
+    volumes:
+      - wgsm-data:/data
+    environment:
+      - PORT=5680
+      - DATA_FILE=/data/instances.json
+    restart: unless-stopped
+
+volumes:
+  wgsm-data:

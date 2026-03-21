@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Net.NetworkInformation;
@@ -8,6 +7,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 using Microsoft.Win32;
 using WindowsGSM.WebApi.Models;
 using WindowsGSM.WebApi.Services;
@@ -17,7 +17,7 @@ namespace WindowsGSM.UI
     public partial class WebApiSettingsPanel : UserControl
     {
         private WebApiServer? _server;
-        private WebApiConfig _config = WebApiConfig.Load();
+        private WebApiConfig  _config = WebApiConfig.Load();
 
         public WebApiSettingsPanel()
         {
@@ -42,45 +42,135 @@ namespace WindowsGSM.UI
 
         private void LoadConfigToUi()
         {
-            TokenBox.Password = _config.ApiToken;
-            PortBox.Text = _config.Port.ToString();
-            CertPathBox.Text = string.IsNullOrEmpty(_config.CertPath) ? "No certificate imported" : _config.CertPath;
-            KeyPathBox.Text = string.IsNullOrEmpty(_config.KeyPath) ? "No key imported" : _config.KeyPath;
-            HttpsCheckBox.IsChecked = _config.HttpsEnabled;
+            InstanceNameBox.Text = _config.InstanceName;
+            PortBox.Text         = _config.Port.ToString();
+            CertPathBox.Text     = string.IsNullOrEmpty(_config.CertPath) ? "No certificate imported" : _config.CertPath;
+            KeyPathBox.Text      = string.IsNullOrEmpty(_config.KeyPath)  ? "No key imported"          : _config.KeyPath;
+            HttpsCheckBox.IsChecked    = _config.HttpsEnabled;
             AutoStartCheckBox.IsChecked = _config.AutoStart;
 
-            ScopeLocal.IsChecked = _config.Scope == ConnectionScope.LocalOnly;
-            ScopeLan.IsChecked = _config.Scope == ConnectionScope.LAN;
+            ScopeLocal.IsChecked    = _config.Scope == ConnectionScope.LocalOnly;
+            ScopeLan.IsChecked      = _config.Scope == ConnectionScope.LAN;
             ScopeExternal.IsChecked = _config.Scope == ConnectionScope.External;
+
+            RefreshKeysList();
         }
 
-        // — Token ————————————————————————————————————————————————————————————
+        // — Instance name ————————————————————————————————————————————————————
 
-        private void OnGenerateToken(object sender, RoutedEventArgs e)
+        private void OnSaveInstanceName(object sender, RoutedEventArgs e)
         {
-            if (MessageBox.Show(
-                "Generate a new API token? Any connected clients will be disconnected.",
-                "Confirm", MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes)
-                return;
-
-            _config.ApiToken = Guid.NewGuid().ToString("N") + Guid.NewGuid().ToString("N");
+            var name = InstanceNameBox.Text.Trim();
+            if (string.IsNullOrEmpty(name)) return;
+            _config.InstanceName = name;
             _config.Save();
-            TokenBox.Password = _config.ApiToken;
-            AppendLog("New API token generated.");
-            AppendLog($"API Token: {_config.ApiToken}");
+            AppendLog($"Instance name saved: {name}");
         }
 
-        private void OnRevokeToken(object sender, RoutedEventArgs e)
-        {
-            if (MessageBox.Show(
-                "Revoke the current token? All clients will lose access immediately.",
-                "Confirm", MessageBoxButton.YesNo, MessageBoxImage.Warning) != MessageBoxResult.Yes)
-                return;
+        // — API Keys —————————————————————————————————————————————————————————
 
-            _config.ApiToken = string.Empty;
+        private void RefreshKeysList()
+        {
+            KeysPanel.Children.Clear();
+
+            if (_config.ApiKeys.Count == 0)
+            {
+                KeysPanel.Children.Add(new TextBlock
+                {
+                    Text       = "No API keys. Click 'Add key' to create one.",
+                    Foreground = new SolidColorBrush(Color.FromRgb(0x88, 0x88, 0x88)),
+                    Margin     = new Thickness(8, 6, 8, 6),
+                    FontSize   = 12
+                });
+                return;
+            }
+
+            foreach (var key in _config.ApiKeys.ToList())
+            {
+                var row = new Grid { Margin = new Thickness(4, 3, 4, 3) };
+                row.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(120) });
+                row.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+                row.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+                row.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+
+                var nameLabel = new TextBlock
+                {
+                    Text               = key.Name,
+                    Foreground         = Brushes.White,
+                    VerticalAlignment  = VerticalAlignment.Center,
+                    FontWeight         = FontWeights.Medium
+                };
+
+                var preview = key.Token.Length > 16
+                    ? key.Token[..8] + "···" + key.Token[^4..]
+                    : key.Token;
+                var tokenLabel = new TextBlock
+                {
+                    Text              = preview,
+                    Foreground        = new SolidColorBrush(Color.FromRgb(0x88, 0x88, 0x88)),
+                    FontFamily        = new FontFamily("Consolas"),
+                    FontSize          = 11,
+                    VerticalAlignment = VerticalAlignment.Center,
+                    Margin            = new Thickness(8, 0, 8, 0),
+                    ToolTip           = key.Token
+                };
+
+                var copyBtn = new Button
+                {
+                    Content = "Copy",
+                    Style   = (Style)FindResource("GhostButton"),
+                    Margin  = new Thickness(0, 0, 4, 0),
+                    Tag     = key.Token
+                };
+                copyBtn.Click += (_, _) =>
+                {
+                    Clipboard.SetText(key.Token);
+                    AppendLog($"Token copied to clipboard: {key.Name}");
+                };
+
+                var removeBtn = new Button
+                {
+                    Content = "Remove",
+                    Style   = (Style)FindResource("DangerButton"),
+                    Tag     = key
+                };
+                removeBtn.Click += (_, _) =>
+                {
+                    _config.ApiKeys.Remove(key);
+                    _config.Save();
+                    RefreshKeysList();
+                    AppendLog($"API key removed: {key.Name}");
+                };
+
+                Grid.SetColumn(nameLabel, 0);
+                Grid.SetColumn(tokenLabel, 1);
+                Grid.SetColumn(copyBtn, 2);
+                Grid.SetColumn(removeBtn, 3);
+
+                row.Children.Add(nameLabel);
+                row.Children.Add(tokenLabel);
+                row.Children.Add(copyBtn);
+                row.Children.Add(removeBtn);
+
+                KeysPanel.Children.Add(row);
+            }
+        }
+
+        private void OnAddKey(object sender, RoutedEventArgs e)
+        {
+            var name = NewKeyNameBox.Text.Trim();
+            if (string.IsNullOrEmpty(name)) name = "Key " + (_config.ApiKeys.Count + 1);
+
+            var key = new ApiKey
+            {
+                Name  = name,
+                Token = Guid.NewGuid().ToString("N") + Guid.NewGuid().ToString("N")
+            };
+            _config.ApiKeys.Add(key);
             _config.Save();
-            TokenBox.Password = string.Empty;
-            AppendLog("API token revoked.");
+            RefreshKeysList();
+            AppendLog($"API key added: {key.Name}");
+            AppendLog($"Token ({key.Name}): {key.Token}");
         }
 
         // — Port —————————————————————————————————————————————————————————————
@@ -166,12 +256,13 @@ namespace WindowsGSM.UI
                 SetRunningState(true);
                 await RefreshUrlsAsync();
 
-                // Print token and port status to log
-                AppendLog($"API Token: {_config.ApiToken}");
+                // Log all active tokens
+                foreach (var key in _config.ApiKeys.Where(k => !string.IsNullOrEmpty(k.Token)))
+                    AppendLog($"Token ({key.Name}): {key.Token}");
+
                 AppendLog($"API port {_config.Port}: {(IsPortListening(_config.Port) ? "OK - listening" : "WARNING - not listening")}");
                 await CheckGameServerPortsAsync();
 
-                // Auto-open browser per issue #207 spec
                 var scheme = _config.HttpsEnabled ? "https" : "http";
                 Process.Start(new ProcessStartInfo($"{scheme}://localhost:{_config.Port}/ui") { UseShellExecute = true });
             }
@@ -197,11 +288,11 @@ namespace WindowsGSM.UI
         private void SetRunningState(bool running)
         {
             StartButton.IsEnabled = !running;
-            StopButton.IsEnabled = running;
-            StatusLabel.Text = running ? "Running" : "Not running";
+            StopButton.IsEnabled  = running;
+            StatusLabel.Text      = running ? "Running" : "Not running";
             StatusLabel.Foreground = running
-                ? new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x4E, 0xC9, 0xB0))
-                : new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x88, 0x88, 0x88));
+                ? new SolidColorBrush(Color.FromRgb(0x4E, 0xC9, 0xB0))
+                : new SolidColorBrush(Color.FromRgb(0x88, 0x88, 0x88));
         }
 
         // — URLs —————————————————————————————————————————————————————————————
@@ -210,18 +301,18 @@ namespace WindowsGSM.UI
         {
             if (_server == null) return;
             var network = _server.Network;
-            var scheme = _config.HttpsEnabled ? "https" : "http";
-            var port = _config.Port;
+            var scheme  = _config.HttpsEnabled ? "https" : "http";
+            var port    = _config.Port;
 
-            LocalUrlLabel.Text = $"{scheme}://localhost:{port}/ui";
-            LanUrlLabel.Text = $"{scheme}://{network.GetLanIp()}:{port}/ui";
+            LocalUrlLabel.Text  = $"{scheme}://localhost:{port}/ui";
+            LanUrlLabel.Text    = $"{scheme}://{network.GetLanIp()}:{port}/ui";
             PublicUrlLabel.Text = $"{scheme}://{await network.GetPublicIpAsync()}:{port}/ui";
         }
 
         private void ClearUrls()
         {
-            LocalUrlLabel.Text = "—";
-            LanUrlLabel.Text = "—";
+            LocalUrlLabel.Text  = "—";
+            LanUrlLabel.Text    = "—";
             PublicUrlLabel.Text = "—";
         }
 
@@ -238,16 +329,9 @@ namespace WindowsGSM.UI
             try
             {
                 var props = IPGlobalProperties.GetIPGlobalProperties();
-                bool tcp = props.GetActiveTcpListeners().Any(ep => ep.Port == port);
-                bool udp = props.GetActiveUdpListeners().Any(ep => ep.Port == port);
-                return tcp || udp;
+                return props.GetActiveTcpListeners().Any(ep => ep.Port == port)
+                    || props.GetActiveUdpListeners().Any(ep => ep.Port == port);
             }
-            catch { return false; }
-        }
-
-        private static bool IsPortListeningTcp(int port)
-        {
-            try { return IPGlobalProperties.GetIPGlobalProperties().GetActiveTcpListeners().Any(ep => ep.Port == port); }
             catch { return false; }
         }
 
@@ -257,20 +341,16 @@ namespace WindowsGSM.UI
 
             var servers = await Task.Run(() => _server.ServerManager.GetAllServers());
             var running = servers.Where(s => s.Status == "Started").ToList();
-
             if (!running.Any()) return;
 
             AppendLog("--- Game server ports ---");
             foreach (var s in running)
             {
-                var parts = new List<string>();
-
-                if (int.TryParse(s.ServerPort, out int gamePort) && gamePort > 0)
-                    parts.Add($"game:{gamePort} {(IsPortListening(gamePort) ? "OK" : "not listening")}");
-
-                if (int.TryParse(s.QueryPort, out int queryPort) && queryPort > 0 && queryPort != gamePort)
-                    parts.Add($"query:{queryPort} {(IsPortListening(queryPort) ? "OK" : "not listening")}");
-
+                var parts = new System.Collections.Generic.List<string>();
+                if (int.TryParse(s.ServerPort, out int gp) && gp > 0)
+                    parts.Add($"game:{gp} {(IsPortListening(gp) ? "OK" : "not listening")}");
+                if (int.TryParse(s.QueryPort, out int qp) && qp > 0 && qp != gp)
+                    parts.Add($"query:{qp} {(IsPortListening(qp) ? "OK" : "not listening")}");
                 if (parts.Any())
                     AppendLog($"  [{s.Name}] {string.Join("  ", parts)}");
             }

@@ -33,20 +33,45 @@ namespace WindowsGSM.WebApi.Services
                     var meta = _mainWindow.GetServerMetadata(server.ID);
                     result.Add(new ServerDto
                     {
-                        Id = server.ID,
-                        Name = server.ID,   // ServerTable uses ID as display key; name comes from config
-                        Game = server.Game ?? "Unknown",
-                        Status = meta?.ServerStatus.ToString() ?? server.Status ?? "Unknown",
-                        ServerIp = server.IP ?? "",
+                        Id         = server.ID,
+                        Name       = server.DisplayName ?? server.ID,
+                        Game       = server.Game ?? "Unknown",
+                        Status     = meta?.ServerStatus.ToString() ?? server.Status ?? "Unknown",
+                        ServerIp   = server.IP ?? "",
                         ServerPort = server.Port ?? "",
-                        QueryPort = server.QueryPort ?? "",
-                        Pid = (meta?.Process != null && !meta.Process.HasExited)
-                              ? meta.Process.Id : (int?)null
+                        QueryPort  = server.QueryPort ?? "",
+                        Pid        = (meta?.Process != null && !meta.Process.HasExited)
+                                     ? meta.Process.Id : (int?)null
                     });
                 }
             });
 
             return result;
+        }
+
+        /// <summary>Returns the last <paramref name="count"/> console log lines for a server.</summary>
+        public List<string> GetServerLogs(string serverId, int count = 200)
+        {
+            var logs = new List<string>();
+            try
+            {
+                _mainWindow.Dispatcher.Invoke(() =>
+                {
+                    var meta = _mainWindow.GetServerMetadata(serverId);
+                    if (meta == null) return;
+
+                    // Access ServerConsole via reflection — internal list on the metadata object
+                    var prop = meta.GetType().GetProperty("ServerConsole");
+                    if (prop?.GetValue(meta) is not System.Collections.IList console) return;
+
+                    int start = Math.Max(0, console.Count - count);
+                    for (int i = start; i < console.Count; i++)
+                        if (console[i]?.ToString() is string line)
+                            logs.Add(line);
+                });
+            }
+            catch { /* server may not have console output yet */ }
+            return logs;
         }
 
         public async Task<(bool success, string message)> StartAsync(string serverId)

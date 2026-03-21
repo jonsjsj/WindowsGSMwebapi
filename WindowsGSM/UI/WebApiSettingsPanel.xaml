@@ -4,7 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              mc:Ignorable="d"
-             d:DesignHeight="600" d:DesignWidth="800">
+             d:DesignHeight="700" d:DesignWidth="800">
 
     <UserControl.Resources>
         <Style x:Key="SectionHeader" TargetType="TextBlock">
@@ -41,31 +41,61 @@
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="Height" Value="30"/>
         </Style>
+        <Style x:Key="GhostButton" TargetType="Button">
+            <Setter Property="Background" Value="#333"/>
+            <Setter Property="Foreground" Value="#CCC"/>
+            <Setter Property="Padding" Value="10,4"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Height" Value="26"/>
+            <Setter Property="FontSize" Value="11"/>
+        </Style>
     </UserControl.Resources>
 
     <ScrollViewer VerticalScrollBarVisibility="Auto">
         <StackPanel Margin="20,16" MaxWidth="700">
 
-            <!-- — API Token ———————————————————————————————————————— -->
-            <TextBlock Style="{StaticResource SectionHeader}" Text="API Token"/>
+            <!-- — Instance identity ————————————————————————————————————— -->
+            <TextBlock Style="{StaticResource SectionHeader}" Text="Instance identity"/>
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
-                <TextBlock Grid.Column="0" Style="{StaticResource Label}" Text="Current token"/>
-                <PasswordBox x:Name="TokenBox" Grid.Column="1" Background="#2A2A2A"
-                             Foreground="White" BorderBrush="#444" Padding="6,4" Height="28"
-                             IsEnabled="False" Margin="0,0,8,0"/>
+                <TextBlock Grid.Column="0" Style="{StaticResource Label}" Text="Instance name"/>
+                <TextBox x:Name="InstanceNameBox" Grid.Column="1" Style="{StaticResource InputBox}"
+                         Margin="0,0,8,0" ToolTip="Shown on the WGSM.WEB dashboard to identify this instance"/>
                 <Button Grid.Column="2" Style="{StaticResource PrimaryButton}"
-                        Content="Generate" Click="OnGenerateToken" Margin="0,0,8,0"/>
-                <Button Grid.Column="3" Style="{StaticResource DangerButton}"
-                        Content="Revoke" Click="OnRevokeToken"/>
+                        Content="Save" Click="OnSaveInstanceName"/>
             </Grid>
 
-            <!-- — Port ————————————————————————————————————————————— -->
+            <!-- — API Keys ————————————————————————————————————————————— -->
+            <TextBlock Style="{StaticResource SectionHeader}" Text="API keys"/>
+            <TextBlock Foreground="#666" FontSize="11" Margin="0,0,0,6"
+                       Text="Each key lets one client (e.g. WGSM.WEB dashboard) connect. Use separate keys per device so you can revoke individually."/>
+
+            <!-- Keys list — populated in code-behind via RefreshKeysList() -->
+            <Border Background="#1E1E1E" BorderBrush="#333" BorderThickness="1"
+                    CornerRadius="4" Padding="4" MinHeight="36">
+                <StackPanel x:Name="KeysPanel"/>
+            </Border>
+
+            <!-- Add new key -->
+            <Grid Margin="0,6,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Style="{StaticResource Label}" Text="New key name"/>
+                <TextBox x:Name="NewKeyNameBox" Grid.Column="1" Style="{StaticResource InputBox}"
+                         Margin="0,0,8,0" Text="Dashboard"/>
+                <Button Grid.Column="2" Style="{StaticResource PrimaryButton}"
+                        Content="Add key" Click="OnAddKey"/>
+            </Grid>
+
+            <!-- — Port ————————————————————————————————————————————————— -->
             <TextBlock Style="{StaticResource SectionHeader}" Text="Port"/>
             <Grid>
                 <Grid.ColumnDefinitions>
@@ -81,7 +111,7 @@
                            Text="Default: 7876. Open this port in your firewall for LAN/external access."/>
             </Grid>
 
-            <!-- — Connection Scope ——————————————————————————————————— -->
+            <!-- — Connection Scope ——————————————————————————————————————— -->
             <TextBlock Style="{StaticResource SectionHeader}" Text="Connection scope"/>
             <StackPanel>
                 <RadioButton x:Name="ScopeLocal" Content="Local only  (localhost access)"
@@ -95,7 +125,7 @@
                              Checked="OnScopeChanged"/>
             </StackPanel>
 
-            <!-- — HTTPS ————————————————————————————————————————————— -->
+            <!-- — HTTPS ————————————————————————————————————————————————— -->
             <TextBlock Style="{StaticResource SectionHeader}" Text="HTTPS (optional)"/>
             <Grid Margin="0,0,0,4">
                 <Grid.ColumnDefinitions>
@@ -125,13 +155,13 @@
                       Foreground="#CCCCCC" Margin="130,4,0,0"
                       Checked="OnHttpsToggled" Unchecked="OnHttpsToggled"/>
 
-            <!-- — Auto-start ——————————————————————————————————————— -->
+            <!-- — Auto-start ——————————————————————————————————————————— -->
             <TextBlock Style="{StaticResource SectionHeader}" Text="Startup"/>
-            <CheckBox x:Name="AutoStartCheckBox" Content="Start Web API automatically when WindowsGSM launches"
+            <CheckBox x:Name="AutoStartCheckBox" Content="Start Web API automatically when WGSM launches"
                       Foreground="#CCCCCC" Margin="0,2"
                       Checked="OnAutoStartToggled" Unchecked="OnAutoStartToggled"/>
 
-            <!-- — Controls ——————————————————————————————————————————— -->
+            <!-- — Controls ——————————————————————————————————————————————— -->
             <TextBlock Style="{StaticResource SectionHeader}" Text="API server"/>
             <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
                 <Button x:Name="StartButton" Style="{StaticResource PrimaryButton}"
@@ -142,7 +172,7 @@
                            Text="Not running"/>
             </StackPanel>
 
-            <!-- — Connection URLs ————————————————————————————————————— -->
+            <!-- — Connection URLs ————————————————————————————————————————— -->
             <TextBlock Style="{StaticResource SectionHeader}" Text="Connection URLs"/>
             <Border Background="#1E1E1E" BorderBrush="#333" BorderThickness="1"
                     Padding="12,10" CornerRadius="4">
@@ -177,7 +207,7 @@
                 </StackPanel>
             </Border>
 
-            <!-- — Log output ——————————————————————————————————————— -->
+            <!-- — Log output ——————————————————————————————————————————— -->
             <TextBlock Style="{StaticResource SectionHeader}" Text="Log"/>
             <TextBox x:Name="LogBox" Background="#1A1A1A" Foreground="#CCCCCC" BorderBrush="#333"
                      FontFamily="Consolas" FontSize="11" Height="220" IsReadOnly="True"

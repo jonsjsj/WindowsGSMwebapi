@@ -9,7 +9,21 @@ namespace WindowsGSM.WebApi.Models
         public string ServerIp { get; set; } = string.Empty;
         public string ServerPort { get; set; } = string.Empty;
         public string QueryPort { get; set; } = string.Empty;
-        public int? Pid { get; set; }
+        public int?    Pid                { get; set; }
+        public int?    PlayersCurrent     { get; set; }
+        public int?    PlayersMax         { get; set; }
+        public double? CpuPercent         { get; set; }
+        public double? RamMb              { get; set; }
+        public bool?   GamePortReachable  { get; set; }
+        public bool?   QueryPortReachable { get; set; }
+    }
+
+    public class ResourcesSummaryDto
+    {
+        public int    TotalServers    { get; set; }
+        public int    OnlineServers   { get; set; }
+        public double TotalCpuPercent { get; set; }
+        public double TotalRamMb      { get; set; }
     }
 
     public class ApiActionResult
