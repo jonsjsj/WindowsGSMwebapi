@@ -1,17 +1,22 @@
-version: '3.8'
-
 services:
   wgsm-web:
-    build: ./app
+    image: node:18-alpine
     container_name: wgsm-web
+    working_dir: /app
     ports:
       - "5680:5680"
     volumes:
-      - wgsm-data:/data
+      - /mnt/nvme/apps/wgsmdashboard/data:/data
     environment:
       - PORT=5680
       - DATA_FILE=/data/instances.json
+    command: >
+      sh -c "
+        mkdir -p /app/public &&
+        wget -q -O /app/server.js        https://raw.githubusercontent.com/jonsjsj/WindowsGSMwebapi/master/dashboard/app/server.js &&
+        wget -q -O /app/public/index.html https://raw.githubusercontent.com/jonsjsj/WindowsGSMwebapi/master/dashboard/app/public/index.html &&
+        wget -q -O /app/package.json      https://raw.githubusercontent.com/jonsjsj/WindowsGSMwebapi/master/dashboard/app/package.json &&
+        npm install --production --loglevel error &&
+        node server.js
+      "
     restart: unless-stopped
-
-volumes:
-  wgsm-data:
