@@ -816,8 +816,19 @@ async function pluginSearchOrInstall() {
             return;
         }
 
+        if (status) status.textContent = `Downloading ${resolved.fileName}…`;
+        // Download the raw .cs content in the browser, then send content+filename to WGSM.
+        // This works with any WGSM version — no server-side URL parsing needed.
+        let content;
+        try {
+            const rawUrl = `https://raw.githubusercontent.com/${resolved.owner}/${resolved.repo}/${resolved.branch}/${resolved.fileName}`;
+            const dlr = await fetch(rawUrl);
+            if (!dlr.ok) { if (status) { status.style.color='var(--red)'; status.textContent=`✗ Could not download file (HTTP ${dlr.status})`; } if (btn) btn.disabled=false; return; }
+            content = await dlr.text();
+        } catch (e) { if (status) { status.style.color='var(--red)'; status.textContent='✗ Download error: '+e.message; } if (btn) btn.disabled=false; return; }
+
         if (status) status.textContent = `Installing ${resolved.fileName}…`;
-        const r = await proxyPost(pluginState.instanceId, 'api/plugins/install', resolved);
+        const r = await proxyPost(pluginState.instanceId, 'api/plugins/save', { fileName: resolved.fileName, content });
         if (r.ok) {
             if (status) { status.style.color = 'var(--green)'; status.textContent = '✓ ' + (r.data?.message ?? 'Installed! Restart WGSM to load.'); }
             document.getElementById('plugin-search').value = '';

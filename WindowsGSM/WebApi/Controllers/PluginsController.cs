@@ -165,6 +165,25 @@ namespace WindowsGSM.WebApi.Controllers
             }
         }
 
+        // ── POST /api/plugins/save ───────────────────────────────────────────────
+        // Body: { "fileName": "Enshrouded.cs", "content": "..." }
+        // The browser fetches the raw .cs content itself and POSTs it here — no
+        // server-side URL resolution needed, works with any WGSM version.
+        [HttpPost("api/plugins/save")]
+        public async Task<IActionResult> SavePlugin([FromBody] SavePluginRequest body)
+        {
+            if (string.IsNullOrWhiteSpace(body?.FileName) || string.IsNullOrWhiteSpace(body?.Content))
+                return BadRequest(new { error = "fileName and content are required." });
+            if (!body.FileName.EndsWith(".cs", StringComparison.OrdinalIgnoreCase))
+                return BadRequest(new { error = "fileName must end with .cs" });
+
+            var destDir  = Path.Combine(PluginsDir, body.FileName);
+            var destFile = Path.Combine(destDir, body.FileName);
+            Directory.CreateDirectory(destDir);
+            await System.IO.File.WriteAllTextAsync(destFile, body.Content).ConfigureAwait(false);
+            return Ok(new { ok = true, message = $"{body.FileName} installed. Restart WGSM to load the plugin." });
+        }
+
         // ── DELETE /api/plugins/{fileName} ────────────────────────────────────
         [HttpDelete("api/plugins/{fileName}")]
         public IActionResult UninstallPlugin(string fileName)
@@ -265,6 +284,12 @@ namespace WindowsGSM.WebApi.Controllers
             }
 
             return (null, null, null, null, "Unsupported URL. Paste a GitHub repo, blob, or raw URL.");
+        }
+
+        public class SavePluginRequest
+        {
+            public string? FileName { get; set; }
+            public string? Content  { get; set; }
         }
 
         public class InstallPluginRequest
