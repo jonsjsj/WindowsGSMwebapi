@@ -740,19 +740,70 @@ function isGithubUrl(s) {
            s.startsWith('https://raw.githubusercontent.com/');
 }
 
+// Resolve a GitHub URL into { owner, repo, branch, fileName } entirely in the browser.
+// For repo-only URLs, calls the GitHub Contents API directly (no auth, 60 req/hr limit).
+async function resolveGithubUrl(url) {
+    // raw.githubusercontent.com/Owner/Repo/branch/File.cs
+    if (url.startsWith('https://raw.githubusercontent.com/')) {
+        const parts = url.replace('https://raw.githubusercontent.com/', '').split('/');
+        if (parts.length < 4) return { error: 'Raw URL must be: raw.githubusercontent.com/Owner/Repo/branch/File.cs' };
+        const fileName = parts[3];
+        if (!fileName.endsWith('.cs')) return { error: `'${fileName}' is not a .cs file.` };
+        return { owner: parts[0], repo: parts[1], branch: parts[2], fileName };
+    }
+
+    // github.com/Owner/Repo/blob-or-tree/branch/File.cs
+    if (url.includes('/blob/') || url.includes('/tree/')) {
+        const path  = url.replace(/^https?:\/\/github\.com\//, '').split('/');
+        // path = [Owner, Repo, blob|tree, branch, ...file]
+        if (path.length < 5) return { error: 'URL must include branch and filename.' };
+        const fileName = path.slice(4).join('/').split('/').pop();
+        if (!fileName.endsWith('.cs')) return { error: `'${fileName}' is not a .cs file.` };
+        return { owner: path[0], repo: path[1], branch: path[3], fileName };
+    }
+
+    // github.com/Owner/Repo  — scan root via Contents API
+    const path  = url.replace(/^https?:\/\/github\.com\//, '').replace(/\/$/, '');
+    const parts = path.split('/');
+    if (parts.length < 2) return { error: 'GitHub URL must be: github.com/Owner/Repo' };
+    const [owner, repo] = parts;
+    try {
+        const r = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/`, {
+            headers: { Accept: 'application/vnd.github+json' }
+        });
+        if (!r.ok) return { error: `GitHub API returned ${r.status} — is the repo public?` };
+        const files = await r.json();
+        const csFiles = files.filter(f => f.type === 'file' && f.name.endsWith('.cs')).map(f => f.name);
+        if (!csFiles.length) return { error: `No .cs files found in root of ${owner}/${repo}.` };
+        const preferred = repo.startsWith('WindowsGSM.') ? repo.slice('WindowsGSM.'.length) + '.cs' : repo + '.cs';
+        const fileName = csFiles.find(f => f.toLowerCase() === preferred.toLowerCase()) ?? csFiles[0];
+        return { owner, repo, branch: 'master', fileName };
+    } catch (e) {
+        return { error: 'Failed to contact GitHub API: ' + e.message };
+    }
+}
+
 async function pluginSearchOrInstall() {
     const val = document.getElementById('plugin-search')?.value?.trim() ?? '';
     const status = document.getElementById('plugin-search-status');
     if (!val) return;
     if (isGithubUrl(val)) {
-        // Install mode
-        if (!pluginState.instanceId) { if (status) status.textContent = '⚠ No online instance.'; return; }
+        if (!pluginState.instanceId) { if (status) { status.style.color='var(--red)'; status.textContent = '⚠ No online instance.'; } return; }
         const btn = document.getElementById('plugin-search-btn');
         if (btn) btn.disabled = true;
-        if (status) { status.style.color = 'var(--muted)'; status.textContent = 'Installing…'; }
-        const r = await proxyPost(pluginState.instanceId, 'api/plugins/install', { githubUrl: val });
+        if (status) { status.style.color = 'var(--muted)'; status.textContent = 'Resolving…'; }
+
+        const resolved = await resolveGithubUrl(val);
+        if (resolved.error) {
+            if (status) { status.style.color = 'var(--red)'; status.textContent = '✗ ' + resolved.error; }
+            if (btn) btn.disabled = false;
+            return;
+        }
+
+        if (status) status.textContent = `Installing ${resolved.fileName}…`;
+        const r = await proxyPost(pluginState.instanceId, 'api/plugins/install', resolved);
         if (r.ok) {
-            if (status) { status.style.color = 'var(--green)'; status.textContent = '✓ ' + (r.data?.message ?? 'Installed!'); }
+            if (status) { status.style.color = 'var(--green)'; status.textContent = '✓ ' + (r.data?.message ?? 'Installed! Restart WGSM to load.'); }
             document.getElementById('plugin-search').value = '';
             pluginState.query = '';
             const { data: installed } = await proxyGet(pluginState.instanceId, 'api/plugins/installed');
