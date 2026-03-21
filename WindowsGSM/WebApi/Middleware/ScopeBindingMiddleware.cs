@@ -16,12 +16,14 @@ namespace WindowsGSM.WebApi.Middleware
         private readonly RequestDelegate _next;
         private readonly WebApiConfig _config;
         private readonly NetworkInfoService _network;
+        private readonly ApiLogger _logger;
 
-        public ScopeBindingMiddleware(RequestDelegate next, WebApiConfig config, NetworkInfoService network)
+        public ScopeBindingMiddleware(RequestDelegate next, WebApiConfig config, NetworkInfoService network, ApiLogger logger)
         {
             _next = next;
             _config = config;
             _network = network;
+            _logger = logger;
         }
 
         public async Task InvokeAsync(HttpContext context)
@@ -53,6 +55,7 @@ namespace WindowsGSM.WebApi.Middleware
 
             if (!allowed)
             {
+                _logger.Log($"SCOPE DENIED [{remoteIp}] — scope is {_config.Scope}, remote IP not allowed. Change scope in Web API settings to allow this connection.");
                 context.Response.StatusCode = StatusCodes.Status403Forbidden;
                 await context.Response.WriteAsJsonAsync(new
                 {

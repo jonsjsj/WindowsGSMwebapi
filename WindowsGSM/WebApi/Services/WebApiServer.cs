@@ -28,6 +28,7 @@ namespace WindowsGSM.WebApi.Services
         public WebApiConfig Config { get; }
         public NetworkInfoService Network { get; }
         public ServerManagerService ServerManager { get; }
+        public ApiLogger Logger { get; } = new ApiLogger();
 
         public bool IsRunning => _host != null;
 
@@ -41,6 +42,9 @@ namespace WindowsGSM.WebApi.Services
             Config = config;
             Network = network;
             ServerManager = serverManager;
+
+            // Forward ApiLogger entries to the LogMessage event (→ UI log box)
+            Logger.OnLog += msg => LogMessage?.Invoke(this, msg);
         }
 
         public async Task StartAsync()
@@ -115,6 +119,7 @@ namespace WindowsGSM.WebApi.Services
             services.AddSingleton(Config);
             services.AddSingleton(Network);
             services.AddSingleton(ServerManager);
+            services.AddSingleton(Logger);   // shared ApiLogger
             services.AddControllers()
                     .AddJsonOptions(o =>
                     {
@@ -130,6 +135,9 @@ namespace WindowsGSM.WebApi.Services
         private void ConfigureApp(IApplicationBuilder app)
         {
             app.UseCors();
+
+            // Log every request first so nothing is missed
+            app.UseMiddleware<RequestLoggingMiddleware>();
 
             // HTTPS redirect when cert is loaded
             if (Config.HttpsEnabled && File.Exists(Config.CertPath))
@@ -149,7 +157,7 @@ namespace WindowsGSM.WebApi.Services
         }
 
         private void Log(string message) =>
-            LogMessage?.Invoke(this, $"[WebApi {DateTime.Now:HH:mm:ss}] {message}");
+            Logger.Log(message);
 
         public async ValueTask DisposeAsync()
         {
