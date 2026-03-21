@@ -899,14 +899,22 @@ async function searchPlugins() {
 }
 
 async function installPlugin(p, btn) {
-    btn.disabled = true; btn.textContent = 'Installing…';
-    const r = await proxyPost(pluginState.instanceId, 'api/plugins/install', {
-        owner: p.owner, repo: p.repo, fileName: p.fileName, branch: p.branch
-    });
+    btn.disabled = true; btn.textContent = 'Downloading…';
+    let content;
+    try {
+        // Try direct path first; fall back to subfolder convention (Owner/Repo/branch/File.cs/File.cs)
+        let dlr = await fetch(p.rawUrl);
+        if (dlr.status === 404) dlr = await fetch(p.rawUrl + '/' + p.fileName);
+        if (!dlr.ok) { btn.textContent = '✗ Failed'; btn.disabled = false; alert(`Could not download ${p.fileName} (HTTP ${dlr.status})`); return; }
+        content = await dlr.text();
+    } catch (e) {
+        btn.textContent = '✗ Failed'; btn.disabled = false; alert('Download error: ' + e.message); return;
+    }
+    btn.textContent = 'Installing…';
+    const r = await proxyPost(pluginState.instanceId, 'api/plugins/save', { fileName: p.fileName, content });
     if (r.ok) {
         btn.textContent = '✓ Installed';
         btn.style.cssText = 'background:var(--green-bg);color:var(--green);font-size:11px;padding:5px 12px;border:none;border-radius:6px;cursor:default';
-        alert(r.data?.message ?? 'Installed! Restart WGSM to load the plugin.');
         const { data: installed } = await proxyGet(pluginState.instanceId, 'api/plugins/installed');
         pluginState.installed = installed ?? [];
         renderInstalledPlugins();
