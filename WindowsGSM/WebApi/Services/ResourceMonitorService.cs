@@ -84,7 +84,7 @@ namespace WindowsGSM.WebApi.Services
                 }
                 catch
                 {
-                    _cpuCache.TryRemove(pid, out _);
+                    _cpuCache.TryRemove(pid, out double _);
                 }
             }
         }

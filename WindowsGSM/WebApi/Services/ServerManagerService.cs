@@ -34,7 +34,7 @@ namespace WindowsGSM.WebApi.Services
                     result.Add(new ServerDto
                     {
                         Id         = server.ID,
-                        Name       = server.DisplayName ?? server.ID,
+                        Name       = server.Name ?? server.ID,
                         Game       = server.Game ?? "Unknown",
                         Status     = meta?.ServerStatus.ToString() ?? server.Status ?? "Unknown",
                         ServerIp   = server.IP ?? "",
