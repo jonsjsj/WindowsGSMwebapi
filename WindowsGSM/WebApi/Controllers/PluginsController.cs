@@ -109,23 +109,39 @@ namespace WindowsGSM.WebApi.Controllers
         }
 
         // ── POST /api/plugins/install ─────────────────────────────────────────
-        // Body: { "owner": "...", "repo": "...", "fileName": "Minecraft.cs", "branch": "master" }
+        // Accepts either:
+        //   { owner, repo, fileName, branch }  — standard GitHub install
+        //   { githubUrl }                       — any GitHub URL (repo, blob, or raw)
         [HttpPost("api/plugins/install")]
         public async Task<IActionResult> InstallPlugin([FromBody] InstallPluginRequest body)
         {
-            if (string.IsNullOrWhiteSpace(body?.Owner) ||
-                string.IsNullOrWhiteSpace(body?.Repo) ||
-                string.IsNullOrWhiteSpace(body?.FileName))
-                return BadRequest(new { error = "owner, repo and fileName are required." });
+            if (body == null) return BadRequest(new { error = "Request body required." });
+
+            // ── resolve from a raw/blob/repo GitHub URL ───────────────────────
+            if (!string.IsNullOrWhiteSpace(body.GithubUrl))
+            {
+                var resolved = await ResolveGithubUrl(body.GithubUrl);
+                if (resolved.error != null)
+                    return BadRequest(new { error = resolved.error });
+                body.Owner    = resolved.owner;
+                body.Repo     = resolved.repo;
+                body.Branch   = resolved.branch;
+                body.FileName = resolved.fileName;
+            }
+
+            if (string.IsNullOrWhiteSpace(body.Owner) ||
+                string.IsNullOrWhiteSpace(body.Repo) ||
+                string.IsNullOrWhiteSpace(body.FileName))
+                return BadRequest(new { error = "Provide either githubUrl or owner + repo + fileName." });
 
             if (!body.FileName.EndsWith(".cs", StringComparison.OrdinalIgnoreCase))
-                return BadRequest(new { error = "fileName must end with .cs" });
+                return BadRequest(new { error = "Resolved file is not a .cs file." });
 
             try
             {
-                var branch  = string.IsNullOrWhiteSpace(body.Branch) ? "master" : body.Branch;
-                var rawUrl  = $"https://raw.githubusercontent.com/{body.Owner}/{body.Repo}/{branch}/{body.FileName}";
-                var content = await _http.GetStringAsync(rawUrl).ConfigureAwait(false);
+                var branch   = string.IsNullOrWhiteSpace(body.Branch) ? "master" : body.Branch;
+                var rawUrl   = $"https://raw.githubusercontent.com/{body.Owner}/{body.Repo}/{branch}/{body.FileName}";
+                var content  = await _http.GetStringAsync(rawUrl).ConfigureAwait(false);
 
                 var destDir  = Path.Combine(PluginsDir, body.FileName);
                 var destFile = Path.Combine(destDir, body.FileName);
@@ -164,12 +180,97 @@ namespace WindowsGSM.WebApi.Controllers
             return Ok(new { ok = true, message = $"{fileName} removed. Restart WGSM to unload." });
         }
 
+        // ── URL resolver ──────────────────────────────────────────────────────
+        /// <summary>
+        /// Accepts any of:
+        ///   https://github.com/Owner/Repo
+        ///   https://github.com/Owner/Repo/blob/branch/File.cs
+        ///   https://raw.githubusercontent.com/Owner/Repo/branch/File.cs
+        /// Returns (owner, repo, branch, fileName) or (error).
+        /// </summary>
+        private async Task<(string? owner, string? repo, string? branch, string? fileName, string? error)>
+            ResolveGithubUrl(string url)
+        {
+            url = url.Trim();
+
+            // raw.githubusercontent.com/Owner/Repo/branch/File.cs
+            if (url.StartsWith("https://raw.githubusercontent.com/", StringComparison.OrdinalIgnoreCase))
+            {
+                var parts = url["https://raw.githubusercontent.com/".Length..].Split('/');
+                if (parts.Length < 4)
+                    return (null, null, null, null, "Raw URL must be: raw.githubusercontent.com/Owner/Repo/branch/File.cs");
+                var file = parts[3];
+                if (!file.EndsWith(".cs", StringComparison.OrdinalIgnoreCase))
+                    return (null, null, null, null, $"File '{file}' is not a .cs file.");
+                return (parts[0], parts[1], parts[2], file, null);
+            }
+
+            // github.com/Owner/Repo/blob/branch/File.cs
+            if (url.Contains("/blob/", StringComparison.OrdinalIgnoreCase))
+            {
+                var path  = new Uri(url).AbsolutePath.TrimStart('/'); // Owner/Repo/blob/branch/File.cs
+                var parts = path.Split('/');
+                if (parts.Length < 5)
+                    return (null, null, null, null, "Blob URL must include branch and filename.");
+                var file = string.Join("/", parts[4..]); // support subfolders
+                var fileName = Path.GetFileName(file);
+                if (!fileName.EndsWith(".cs", StringComparison.OrdinalIgnoreCase))
+                    return (null, null, null, null, $"File '{fileName}' is not a .cs file.");
+                return (parts[0], parts[1], parts[3], fileName, null);
+            }
+
+            // github.com/Owner/Repo  — scan repo root for .cs files
+            if (url.StartsWith("https://github.com/", StringComparison.OrdinalIgnoreCase) ||
+                url.StartsWith("http://github.com/",  StringComparison.OrdinalIgnoreCase))
+            {
+                var path  = new Uri(url).AbsolutePath.TrimStart('/').TrimEnd('/');
+                var parts = path.Split('/');
+                if (parts.Length < 2)
+                    return (null, null, null, null, "GitHub URL must be: github.com/Owner/Repo");
+
+                var owner = parts[0];
+                var repo  = parts[1];
+
+                // Use GitHub Contents API to find .cs files in root
+                var apiUrl = $"https://api.github.com/repos/{owner}/{repo}/contents/";
+                using var req = new HttpRequestMessage(HttpMethod.Get, apiUrl);
+                req.Headers.Accept.ParseAdd("application/vnd.github+json");
+                using var resp = await _http.SendAsync(req).ConfigureAwait(false);
+                if (!resp.IsSuccessStatusCode)
+                    return (null, null, null, null, $"Could not access repo: GitHub returned {(int)resp.StatusCode}");
+
+                var json = await resp.Content.ReadAsStringAsync().ConfigureAwait(false);
+                using var doc = JsonDocument.Parse(json);
+
+                var csFiles = doc.RootElement.EnumerateArray()
+                    .Where(f => f.GetProperty("type").GetString() == "file" &&
+                                f.GetProperty("name").GetString()!.EndsWith(".cs", StringComparison.OrdinalIgnoreCase))
+                    .Select(f => f.GetProperty("name").GetString()!)
+                    .ToList();
+
+                if (csFiles.Count == 0)
+                    return (null, null, null, null, $"No .cs files found in root of {owner}/{repo}.");
+
+                // Prefer file matching repo name (WindowsGSM.Minecraft → Minecraft.cs)
+                var pluginName = repo.StartsWith("WindowsGSM.", StringComparison.OrdinalIgnoreCase)
+                    ? repo["WindowsGSM.".Length..] + ".cs"
+                    : repo + ".cs";
+                var best = csFiles.FirstOrDefault(f => f.Equals(pluginName, StringComparison.OrdinalIgnoreCase))
+                        ?? csFiles[0];
+
+                return (owner, repo, "master", best, null);
+            }
+
+            return (null, null, null, null, "Unsupported URL. Paste a GitHub repo, blob, or raw URL.");
+        }
+
         public class InstallPluginRequest
         {
-            public string? Owner    { get; set; }
-            public string? Repo     { get; set; }
-            public string? FileName { get; set; }
-            public string? Branch   { get; set; }
+            public string? Owner     { get; set; }
+            public string? Repo      { get; set; }
+            public string? FileName  { get; set; }
+            public string? Branch    { get; set; }
+            public string? GithubUrl { get; set; }
         }
     }
 }

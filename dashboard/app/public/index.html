@@ -700,7 +700,15 @@ ${!inst ? '<div class="empty" style="color:var(--orange)">⚠ No online WGSM ins
   <div id="plugin-installed-list"><div class="empty" style="color:var(--muted)">Loading…</div></div>
 </div>
 <div class="section-row" style="margin-top:16px"><span class="section-title" style="font-size:12px">Available on GitHub</span></div>
-<div id="plugin-available-list"><div class="empty" style="color:var(--muted)">Loading…</div></div>`;
+<div id="plugin-available-list"><div class="empty" style="color:var(--muted)">Loading…</div></div>
+<div class="section-row" style="margin-top:20px"><span class="section-title" style="font-size:12px">Install from URL</span></div>
+<div style="color:var(--muted);font-size:11px;margin-bottom:8px">Paste any GitHub URL — repo, blob, or raw link. The .cs file will be found automatically.</div>
+<div style="display:flex;gap:8px;margin-bottom:4px">
+  <input id="plugin-url-input" placeholder="https://github.com/Owner/Repo  or  https://raw.githubusercontent.com/…"
+    style="flex:1;background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:7px 12px;font-size:12px"/>
+  <button class="btn-primary" id="plugin-url-btn" onclick="installFromUrl(this)">Install</button>
+</div>
+<div id="plugin-url-status" style="font-size:12px;color:var(--muted);min-height:18px"></div>`;
 }
 
 async function loadPlugins() {
@@ -795,6 +803,30 @@ async function uninstallPlugin(fileName, btn) {
         btn.disabled = false;
         alert('Remove failed: ' + (r.data?.error ?? 'unknown error'));
     }
+}
+
+async function installFromUrl(btn) {
+    const urlInput = document.getElementById('plugin-url-input');
+    const status   = document.getElementById('plugin-url-status');
+    const url = urlInput?.value?.trim();
+    if (!url) { if (status) status.textContent = 'Paste a GitHub URL first.'; return; }
+    if (!pluginState.instanceId) { if (status) status.textContent = '⚠ No online instance selected.'; return; }
+
+    btn.disabled = true;
+    if (status) status.textContent = 'Resolving…';
+
+    const r = await proxyPost(pluginState.instanceId, 'api/plugins/install', { githubUrl: url });
+
+    if (r.ok) {
+        if (status) { status.style.color = 'var(--green)'; status.textContent = '✓ ' + (r.data?.message ?? 'Installed!'); }
+        if (urlInput) urlInput.value = '';
+        const { data: installed } = await proxyGet(pluginState.instanceId, 'api/plugins/installed');
+        pluginState.installed = installed ?? [];
+        renderInstalledPlugins();
+    } else {
+        if (status) { status.style.color = 'var(--red)'; status.textContent = '✗ ' + (r.data?.error ?? `HTTP ${r.status}`); }
+    }
+    btn.disabled = false;
 }
 
 // ── Server card ───────────────────────────────────────────────────────────
