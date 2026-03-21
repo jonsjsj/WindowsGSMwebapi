@@ -29,6 +29,9 @@ namespace WindowsGSM.UI
         public void Initialize(WebApiServer server)
         {
             _server = server;
+            // Use the server's config instance so token changes are visible to middleware
+            _config = _server.Config;
+            LoadConfigToUi();
             _server.LogMessage += (_, msg) => AppendLog(msg);
 
             if (_config.AutoStart)
