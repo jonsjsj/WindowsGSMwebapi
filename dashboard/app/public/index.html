@@ -227,6 +227,9 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
   <button class="nav-item" onclick="refreshAll()">
     <span class="nav-icon">↻</span> Refresh
   </button>
+  <button class="nav-item" onclick="selfUpdate(this)" title="Pull latest dashboard from GitHub">
+    <span class="nav-icon">⬆</span> Update dashboard
+  </button>
 
   <div class="sb-spacer"></div>
 
@@ -820,6 +823,20 @@ function statusClass(s) {
 
 function fmtMb(mb) {
     return mb >= 1024 ? (mb / 1024).toFixed(1) + ' GB' : mb.toFixed(0) + ' MB';
+}
+
+async function selfUpdate(btn) {
+    if (!confirm('Pull the latest dashboard from GitHub and refresh?')) return;
+    btn.disabled = true;
+    btn.querySelector('.nav-icon').textContent = '…';
+    try {
+        const r  = await fetch('/api/self-update', { method: 'POST' });
+        const d  = await r.json();
+        if (r.ok) { alert(d.message); location.reload(); }
+        else      { alert('Update failed: ' + (d.error ?? r.status)); }
+    } catch (e) { alert('Update failed: ' + e.message); }
+    btn.disabled = false;
+    btn.querySelector('.nav-icon').textContent = '⬆';
 }
 </script>
 </body>

@@ -109,6 +109,24 @@ app.get('/api/ping/:instanceId', async (req, res) => {
     }
 });
 
+// ── Self-update: pull latest index.html from GitHub ──────────────────────
+
+const RAW_INDEX_URL =
+    'https://raw.githubusercontent.com/jonsjsj/WindowsGSMwebapi/master/dashboard/app/public/index.html';
+
+app.post('/api/self-update', async (_req, res) => {
+    try {
+        const r = await fetch(RAW_INDEX_URL, { signal: AbortSignal.timeout(15_000) });
+        if (!r.ok) return res.status(502).json({ error: `GitHub returned ${r.status}` });
+        const html = await r.text();
+        const dest = path.join(__dirname, 'public', 'index.html');
+        fs.writeFileSync(dest, html);
+        res.json({ ok: true, message: 'Dashboard updated — refresh your browser.' });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 // ── SPA fallback ──────────────────────────────────────────────────────────────
 
 app.get('*', (_req, res) =>
