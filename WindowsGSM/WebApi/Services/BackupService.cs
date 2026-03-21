@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.IO.Compression;
+using WindowsGSM.WebApi;
 using WindowsGSM.WebApi.Models;
 
 namespace WindowsGSM.WebApi.Services
@@ -12,7 +13,7 @@ namespace WindowsGSM.WebApi.Services
     public class BackupService
     {
         private readonly WebApiConfig _config;
-        private static readonly string BaseDir = AppDomain.CurrentDomain.BaseDirectory;
+        private static readonly string BaseDir = WgsmPath.AppDir;
 
         public BackupService(WebApiConfig config)
         {

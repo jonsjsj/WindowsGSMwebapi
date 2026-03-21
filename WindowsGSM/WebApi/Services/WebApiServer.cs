@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Security.Cryptography.X509Certificates;
+using WindowsGSM.WebApi;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
@@ -61,7 +62,7 @@ namespace WindowsGSM.WebApi.Services
                 .ConfigureWebHostDefaults(web =>
                 {
                     web.UseKestrel(options => ConfigureKestrel(options))
-                       .UseContentRoot(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "WebApi"))
+                       .UseContentRoot(WgsmPath.Combine("WebApi"))
                        .UseWebRoot("wwwroot")
                        .ConfigureServices(ConfigureServices)
                        .Configure(ConfigureApp);

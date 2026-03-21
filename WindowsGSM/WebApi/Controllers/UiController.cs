@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using WindowsGSM.WebApi;
 
 namespace WindowsGSM.WebApi.Controllers
 {
@@ -17,9 +18,7 @@ namespace WindowsGSM.WebApi.Controllers
         {
             // index.html is embedded as a static file under wwwroot/
             return PhysicalFile(
-                System.IO.Path.Combine(
-                    System.AppDomain.CurrentDomain.BaseDirectory,
-                    "WebApi", "wwwroot", "index.html"),
+                WgsmPath.Combine("WebApi", "wwwroot", "index.html"),
                 "text/html");
         }
 

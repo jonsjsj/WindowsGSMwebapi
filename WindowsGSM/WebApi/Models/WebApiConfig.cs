@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using WindowsGSM.WebApi;
 
 namespace WindowsGSM.WebApi.Models
 {
@@ -18,8 +19,8 @@ namespace WindowsGSM.WebApi.Models
 
     public class WebApiConfig
     {
-        private static readonly string ConfigPath = Path.Combine(
-            System.AppDomain.CurrentDomain.BaseDirectory, "configs", "webapi.json");
+        private static readonly string ConfigPath =
+            WgsmPath.Combine("configs", "webapi.json");
 
         public string       InstanceName { get; set; } = "My WGSM Instance";
         public List<ApiKey> ApiKeys      { get; set; } = new List<ApiKey>();

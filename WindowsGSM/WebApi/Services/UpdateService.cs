@@ -2,11 +2,11 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Reflection;
 using System.Text.Json;
 using System.Threading.Tasks;
 using System.Windows;
+using WindowsGSM.WebApi;
 using WindowsGSM.WebApi.Models;
 
 namespace WindowsGSM.WebApi.Services
@@ -101,7 +101,7 @@ namespace WindowsGSM.WebApi.Services
         /// </summary>
         public async Task<(bool success, string message)> ApplyUpdateAsync(string downloadUrl)
         {
-            var exeDir    = AppDomain.CurrentDomain.BaseDirectory;
+            var exeDir    = WgsmPath.AppDir;
             var exePath   = Path.Combine(exeDir, "WindowsGSM.exe");
             var updateExe = Path.Combine(exeDir, "WindowsGSM.update.exe");
             var batchPath = Path.Combine(exeDir, "wgsm_update.bat");
