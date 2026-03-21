@@ -6,7 +6,6 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Forms;
 using System.Windows.Input;
 using System.Windows.Media;
 using Microsoft.Win32;
@@ -368,7 +367,10 @@ namespace WindowsGSM.UI
 
         private void OnBrowseBackupLocal(object sender, RoutedEventArgs e)
         {
-            using var dlg = new FolderBrowserDialog { Description = "Select backup destination folder" };
+            using var dlg = new System.Windows.Forms.FolderBrowserDialog
+            {
+                Description = "Select backup destination folder"
+            };
             if (dlg.ShowDialog() == System.Windows.Forms.DialogResult.OK)
                 BackupLocalPathBox.Text = dlg.SelectedPath;
         }
