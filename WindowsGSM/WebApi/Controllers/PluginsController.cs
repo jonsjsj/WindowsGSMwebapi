@@ -139,9 +139,24 @@ namespace WindowsGSM.WebApi.Controllers
 
             try
             {
-                var branch   = string.IsNullOrWhiteSpace(body.Branch) ? "master" : body.Branch;
-                var rawUrl   = $"https://raw.githubusercontent.com/{body.Owner}/{body.Repo}/{branch}/{body.FileName}";
-                var content  = await _http.GetStringAsync(rawUrl).ConfigureAwait(false);
+                var branch  = string.IsNullOrWhiteSpace(body.Branch) ? "master" : body.Branch;
+                var rawUrl  = $"https://raw.githubusercontent.com/{body.Owner}/{body.Repo}/{branch}/{body.FileName}";
+
+                // Try root path first; if 404, try repo-named subfolder (WindowsGSM plugin convention)
+                HttpResponseMessage? dlResp = null;
+                foreach (var url in new[]
+                {
+                    rawUrl,
+                    $"https://raw.githubusercontent.com/{body.Owner}/{body.Repo}/{branch}/{body.Repo}/{body.FileName}",
+                })
+                {
+                    dlResp = await _http.GetAsync(url).ConfigureAwait(false);
+                    if (dlResp.IsSuccessStatusCode) break;
+                }
+                if (dlResp == null || !dlResp.IsSuccessStatusCode)
+                    return StatusCode(502, new { error = $"Could not download plugin file: HTTP {(int?)dlResp?.StatusCode}" });
+
+                var content  = await dlResp.Content.ReadAsStringAsync().ConfigureAwait(false);
 
                 var destDir  = Path.Combine(PluginsDir, body.FileName);
                 var destFile = Path.Combine(destDir, body.FileName);

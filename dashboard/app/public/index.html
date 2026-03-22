@@ -946,25 +946,14 @@ async function searchPlugins() {
 async function installPlugin(fileNameOrObj, btn) {
     // Accept either a fileName string (from onclick) or a plugin object (programmatic call)
     const p = typeof fileNameOrObj === 'string'
-        ? pluginState.byFileName[fileNameOrObj]
+        ? pluginState.byFileName?.[fileNameOrObj]
         : fileNameOrObj;
-    if (!p) { alert('Plugin data not found. Please refresh the list.'); return; }
-    btn.disabled = true; btn.textContent = 'Downloading…';
-    let content;
-    try {
-        // Try root path first; fall back to repo-named subfolder (common WindowsGSM convention)
-        let dlr = await fetch(p.rawUrl);
-        if (dlr.status === 404) {
-            const subUrl = `https://raw.githubusercontent.com/${p.owner}/${p.repo}/${p.branch}/${p.repo}/${p.fileName}`;
-            dlr = await fetch(subUrl);
-        }
-        if (!dlr.ok) { btn.textContent = '✗ Failed'; btn.disabled = false; alert(`Could not download ${p.fileName} (HTTP ${dlr.status})`); return; }
-        content = await dlr.text();
-    } catch (e) {
-        btn.textContent = '✗ Failed'; btn.disabled = false; alert('Download error: ' + e.message); return;
-    }
-    btn.textContent = 'Installing…';
-    const r = await proxyPost(pluginState.instanceId, 'api/plugins/save', { fileName: p.fileName, content });
+    if (!p) { alert('Plugin data not found. Please refresh the plugin list first.'); return; }
+    btn.disabled = true; btn.textContent = 'Installing…';
+    // Let WGSM download the file server-side — avoids browser CORS/network issues
+    const r = await proxyPost(pluginState.instanceId, 'api/plugins/install', {
+        owner: p.owner, repo: p.repo, fileName: p.fileName, branch: p.branch
+    });
     if (r.ok) {
         btn.textContent = '✓ Installed';
         btn.style.cssText = 'background:var(--green-bg);color:var(--green);font-size:11px;padding:5px 12px;border:none;border-radius:6px;cursor:default';
@@ -973,7 +962,7 @@ async function installPlugin(fileNameOrObj, btn) {
         renderInstalledPlugins();
     } else {
         btn.textContent = '✗ Failed'; btn.disabled = false;
-        alert('Install failed: ' + (r.data?.error ?? r.status));
+        alert('Install failed: ' + (r.data?.error ?? `HTTP ${r.status}`));
     }
 }
 
