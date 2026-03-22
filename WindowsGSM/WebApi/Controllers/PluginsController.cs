@@ -142,7 +142,7 @@ namespace WindowsGSM.WebApi.Controllers
                 var branch  = string.IsNullOrWhiteSpace(body.Branch) ? "master" : body.Branch;
                 var rawUrl  = $"https://raw.githubusercontent.com/{body.Owner}/{body.Repo}/{branch}/{body.FileName}";
 
-                // Try root path first; if 404, try repo-named subfolder (WindowsGSM plugin convention)
+                // 1. Try root; 2. Try repo-named subfolder; 3. Search full tree via GitHub API
                 HttpResponseMessage? dlResp = null;
                 foreach (var url in new[]
                 {
@@ -153,8 +153,31 @@ namespace WindowsGSM.WebApi.Controllers
                     dlResp = await _http.GetAsync(url).ConfigureAwait(false);
                     if (dlResp.IsSuccessStatusCode) break;
                 }
+
                 if (dlResp == null || !dlResp.IsSuccessStatusCode)
-                    return StatusCode(502, new { error = $"Could not download plugin file: HTTP {(int?)dlResp?.StatusCode}" });
+                {
+                    // Fall back: recursively search the repo tree for the file
+                    var treeUrl = $"https://api.github.com/repos/{body.Owner}/{body.Repo}/git/trees/{branch}?recursive=1";
+                    using var treeReq = new HttpRequestMessage(HttpMethod.Get, treeUrl);
+                    treeReq.Headers.Accept.ParseAdd("application/vnd.github+json");
+                    using var treeResp = await _http.SendAsync(treeReq).ConfigureAwait(false);
+                    if (treeResp.IsSuccessStatusCode)
+                    {
+                        var treeJson = await treeResp.Content.ReadAsStringAsync().ConfigureAwait(false);
+                        using var treeDoc = JsonDocument.Parse(treeJson);
+                        var match = treeDoc.RootElement.GetProperty("tree").EnumerateArray()
+                            .Select(n => n.GetProperty("path").GetString() ?? "")
+                            .FirstOrDefault(p => Path.GetFileName(p).Equals(body.FileName, StringComparison.OrdinalIgnoreCase));
+                        if (match != null)
+                        {
+                            var foundUrl = $"https://raw.githubusercontent.com/{body.Owner}/{body.Repo}/{branch}/{match}";
+                            dlResp = await _http.GetAsync(foundUrl).ConfigureAwait(false);
+                        }
+                    }
+                }
+
+                if (dlResp == null || !dlResp.IsSuccessStatusCode)
+                    return StatusCode(502, new { error = $"Could not find {body.FileName} anywhere in {body.Owner}/{body.Repo}." });
 
                 var content  = await dlResp.Content.ReadAsStringAsync().ConfigureAwait(false);
 
