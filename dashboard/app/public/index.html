@@ -56,7 +56,7 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,-ap
 .inst-log.open{display:block}
 
 /* ── Main area ─────────────────────────────────────────────────────────── */
-#main{flex:1;display:flex;flex-direction:column;overflow:hidden;background:var(--bg)}
+#main{flex:1;min-width:0;display:flex;flex-direction:column;overflow:hidden;background:var(--bg)}
 
 /* ── Topbar ────────────────────────────────────────────────────────────── */
 #topbar{background:var(--sb);border-bottom:1px solid var(--border);padding:0 20px;height:38px;display:flex;align-items:center;gap:20px;flex-shrink:0}
@@ -735,7 +735,7 @@ async function applyUpdate(instanceId, downloadUrl) {
 }
 
 // ── Plugins ────────────────────────────────────────────────────────────────
-const pluginState = { installed: [], available: [], byFileName: {}, loading: false, query: '', instanceId: null };
+const pluginState = { installed: [], available: [], byFileName: {}, instanceId: null, query: '' };
 
 function renderPlugins() {
     const inst = filteredInstances().find(i => state.instData[i.id]?.status === 'online');
@@ -743,32 +743,51 @@ function renderPlugins() {
     return `
 <div class="section-row">
   <span class="section-title">Plugin Browser</span>
-  <span style="font-size:11px;color:var(--muted)">topic:windowsgsm on GitHub</span>
+  <span style="font-size:11px;color:var(--muted)">Curated registry — ${pluginState.available.length || '…'} plugins</span>
 </div>
 ${!inst ? '<div class="hint hint-orange">⚠ No online WGSM instance — add one in Instances first.</div>' : ''}
-<div style="display:flex;gap:8px;margin-bottom:4px">
+
+<!-- Direct URL install -->
+<div style="display:flex;gap:8px;align-items:center;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:10px 14px;margin-bottom:12px;flex-wrap:wrap">
+  <span style="font-size:11px;color:var(--muted);white-space:nowrap">Direct .cs URL</span>
+  <input id="plugin-url-input" type="text"
+    placeholder="https://github.com/Owner/WindowsGSM.Game  or  https://raw.githubusercontent.com/…"
+    style="flex:1;min-width:200px;background:var(--bg);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:6px 10px;font-size:12px;outline:none;font-family:inherit"
+    onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'"
+    onkeydown="if(event.key==='Enter')installFromUrl()"/>
+  <button class="btn-primary" id="url-install-btn" onclick="installFromUrl()" style="font-size:12px;padding:6px 14px;white-space:nowrap">Install</button>
+</div>
+<div id="url-install-status" style="font-size:12px;min-height:16px;margin-bottom:10px"></div>
+
+<!-- Search bar -->
+<div style="display:flex;gap:8px;margin-bottom:10px">
   <input id="plugin-search"
-    placeholder="Search plugins  or paste github.com/Owner/Repo to install"
+    placeholder="Search plugins…"
     value="${esc(pluginState.query)}"
     style="flex:1;background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:7px 12px;font-size:12px;outline:none;transition:border-color .15s;font-family:inherit"
     onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'"
-    onkeydown="if(event.key==='Enter')pluginSearchOrInstall()"/>
-  <button class="btn-primary" id="plugin-search-btn" onclick="pluginSearchOrInstall()">Go</button>
+    oninput="filterPlugins()"/>
 </div>
-<div id="plugin-search-status" style="font-size:12px;color:var(--muted);min-height:18px;margin-bottom:12px"></div>
+
 <div class="section-row" style="margin-top:4px"><span class="section-title" style="font-size:12px">Installed</span></div>
 <div id="plugin-installed-list"><div class="empty" style="color:var(--muted);padding:12px 0">Loading…</div></div>
-<div class="section-row" style="margin-top:16px"><span class="section-title" style="font-size:12px">Available on GitHub</span></div>
+<div class="section-row" style="margin-top:16px"><span class="section-title" style="font-size:12px">Available</span></div>
 <div id="plugin-available-list"><div class="empty" style="color:var(--muted);padding:12px 0">Loading…</div></div>`;
 }
 
 async function loadPlugins() {
     const iid = pluginState.instanceId;
     if (!iid) return;
-    const { data: installed } = await proxyGet(iid, 'api/plugins/installed');
-    pluginState.installed = installed ?? [];
+    const [instRes, availRes] = await Promise.all([
+        proxyGet(iid, 'api/plugins/installed'),
+        proxyGet(iid, 'api/plugins/available'),
+    ]);
+    pluginState.installed = instRes.data ?? [];
+    pluginState.available = availRes.data?.items ?? [];
+    pluginState.byFileName = {};
+    pluginState.available.forEach(p => { pluginState.byFileName[p.fileName] = p; });
     renderInstalledPlugins();
-    await searchPlugins();
+    filterPlugins();
 }
 
 function renderInstalledPlugins() {
@@ -790,147 +809,31 @@ function renderInstalledPlugins() {
 </div>`).join('');
 }
 
-function isGithubUrl(s) {
-    return s.startsWith('https://github.com/') ||
-           s.startsWith('http://github.com/')  ||
-           s.startsWith('https://raw.githubusercontent.com/');
-}
-
-async function resolveGithubUrl(input) {
-    let owner, repo, branch, hintFile;
-    input = input.trim().replace(/\.git$/, '').replace(/\/$/, '');
-
-    if (input.startsWith('https://raw.githubusercontent.com/')) {
-        const parts = input.replace('https://raw.githubusercontent.com/', '').split('/');
-        if (parts.length < 4) return { error: 'Raw URL needs: /Owner/Repo/branch/File.cs' };
-        if (!parts[3].endsWith('.cs')) return { error: `'${parts[3]}' is not a .cs file.` };
-        return { owner: parts[0], repo: parts[1], branch: parts[2], fileName: parts[3] };
-    }
-
-    if (input.startsWith('https://github.com/') || input.startsWith('http://github.com/')) {
-        const path  = input.replace(/^https?:\/\/github\.com\//, '').split('/');
-        owner = path[0]; repo = path[1];
-        if (!owner || !repo) return { error: 'URL must contain Owner and Repo.' };
-        if ((path[2] === 'blob' || path[2] === 'tree') && path.length >= 5) {
-            hintFile = path.slice(4).pop();
-            branch   = path[3];
-        }
-    } else {
-        const parts = input.split('/');
-        owner = parts[0]; repo = parts[1];
-        if (!owner || !repo) return { error: 'Enter Owner/Repo or a GitHub URL.' };
-    }
-
-    try {
-        const branches = branch ? [branch] : ['master', 'main'];
-        let csFiles = [], usedBranch = branches[0];
-        for (const br of branches) {
-            const r = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/?ref=${br}`,
-                { headers: { Accept: 'application/vnd.github+json' } });
-            if (!r.ok) continue;
-            const files = await r.json();
-            csFiles = files.filter(f => f.type === 'file' && f.name.endsWith('.cs')).map(f => f.name);
-            if (csFiles.length) { usedBranch = br; break; }
-        }
-        if (!csFiles.length) {
-            // Try repo-named subfolder (e.g. WindowsGSM.Enshrouded/Enshrouded.cs)
-            for (const br of (branch ? [branch] : ['master', 'main'])) {
-                const r2 = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${repo}?ref=${br}`,
-                    { headers: { Accept: 'application/vnd.github+json' } });
-                if (!r2.ok) continue;
-                const sub = await r2.json();
-                const found = (Array.isArray(sub) ? sub : [sub])
-                    .filter(f => f.type === 'file' && f.name.endsWith('.cs'))
-                    .map(f => f.name);
-                if (found.length) { csFiles = found; usedBranch = br; break; }
-            }
-        }
-        if (!csFiles.length) return { error: `No .cs files found in root or ${repo}/ of ${owner}/${repo}.` };
-
-        const preferred = repo.startsWith('WindowsGSM.') ? repo.slice('WindowsGSM.'.length) + '.cs' : repo + '.cs';
-        const fileName  = (hintFile && csFiles.find(f => f.toLowerCase() === hintFile.toLowerCase()))
-                       ?? csFiles.find(f => f.toLowerCase() === preferred.toLowerCase())
-                       ?? csFiles[0];
-        return { owner, repo, branch: usedBranch, fileName };
-    } catch (e) {
-        return { error: 'GitHub API error: ' + e.message };
-    }
-}
-
-async function pluginSearchOrInstall() {
-    const val    = document.getElementById('plugin-search')?.value?.trim() ?? '';
-    const status = document.getElementById('plugin-search-status');
-    if (!val) return;
-    if (isGithubUrl(val)) {
-        if (!pluginState.instanceId) {
-            if (status) { status.style.color = 'var(--red)'; status.textContent = '⚠ No online instance.'; }
-            return;
-        }
-        const btn = document.getElementById('plugin-search-btn');
-        if (btn) btn.disabled = true;
-        if (status) { status.style.color = 'var(--muted)'; status.textContent = 'Resolving…'; }
-
-        const resolved = await resolveGithubUrl(val);
-        if (resolved.error) {
-            if (status) { status.style.color = 'var(--red)'; status.textContent = '✗ ' + resolved.error; }
-            if (btn) btn.disabled = false;
-            return;
-        }
-
-        if (status) status.textContent = `Downloading ${resolved.fileName}…`;
-        let content;
-        try {
-            const rawUrl = `https://raw.githubusercontent.com/${resolved.owner}/${resolved.repo}/${resolved.branch}/${resolved.fileName}`;
-            const dlr = await fetch(rawUrl);
-            if (!dlr.ok) {
-                if (status) { status.style.color = 'var(--red)'; status.textContent = `✗ Could not download file (HTTP ${dlr.status})`; }
-                if (btn) btn.disabled = false; return;
-            }
-            content = await dlr.text();
-        } catch (e) {
-            if (status) { status.style.color = 'var(--red)'; status.textContent = '✗ Download error: ' + e.message; }
-            if (btn) btn.disabled = false; return;
-        }
-
-        if (status) status.textContent = `Installing ${resolved.fileName}…`;
-        const r = await proxyPost(pluginState.instanceId, 'api/plugins/save', { fileName: resolved.fileName, content });
-        if (r.ok) {
-            if (status) { status.style.color = 'var(--green)'; status.textContent = '✓ ' + (r.data?.message ?? 'Installed! Restart WGSM to load.'); }
-            document.getElementById('plugin-search').value = '';
-            pluginState.query = '';
-            const { data: installed } = await proxyGet(pluginState.instanceId, 'api/plugins/installed');
-            pluginState.installed = installed ?? [];
-            renderInstalledPlugins();
-            await searchPlugins();
-        } else {
-            if (status) { status.style.color = 'var(--red)'; status.textContent = '✗ ' + (r.data?.error ?? `HTTP ${r.status}`); }
-        }
-        if (btn) btn.disabled = false;
-    } else {
-        if (status) { status.style.color = 'var(--muted)'; status.textContent = ''; }
-        await searchPlugins();
-    }
-}
-
-async function searchPlugins() {
-    const q  = document.getElementById('plugin-search')?.value ?? '';
+function filterPlugins() {
+    const q  = (document.getElementById('plugin-search')?.value ?? '').trim().toLowerCase();
     pluginState.query = q;
     const el = document.getElementById('plugin-available-list');
-    if (!el || !pluginState.instanceId) return;
-    el.innerHTML = '<div class="empty" style="color:var(--muted);padding:12px 0">Searching…</div>';
+    if (!el) return;
 
-    const { data } = await proxyGet(pluginState.instanceId, `api/plugins/available${q ? '?q=' + encodeURIComponent(q) : ''}`);
-    if (!data?.items?.length) { el.innerHTML = '<div class="empty" style="padding:12px 0">No plugins found.</div>'; return; }
+    const installedSet = new Set(pluginState.installed.map(p => p.folder.toLowerCase()));
+    const list = q
+        ? pluginState.available.filter(p =>
+            p.pluginName.toLowerCase().includes(q) ||
+            (p.description || '').toLowerCase().includes(q) ||
+            p.owner.toLowerCase().includes(q))
+        : pluginState.available;
 
-    const installedFiles = new Set(pluginState.installed.map(p => p.folder.toLowerCase()));
-    pluginState.byFileName = {};
-    data.items.forEach(p => { pluginState.byFileName[p.fileName] = p; });
-    el.innerHTML = data.items.map(p => {
-        const isInst = installedFiles.has(p.fileName.toLowerCase());
+    if (!list.length) {
+        el.innerHTML = '<div class="empty" style="padding:12px 0">No plugins match your search.</div>';
+        return;
+    }
+
+    el.innerHTML = list.map(p => {
+        const isInst = installedSet.has(p.fileName.toLowerCase());
         return `
 <div class="plugin-card" id="plugcard-${esc(p.fileName)}">
   <div class="plugin-info">
-    <div class="plugin-name">${esc(p.pluginName)} <span style="color:var(--muted);font-size:11px;font-weight:400">★ ${p.stars}</span></div>
+    <div class="plugin-name">${esc(p.pluginName)}</div>
     <div class="plugin-desc">${esc(p.description ?? p.repo)}</div>
     <div class="plugin-repo">${esc(p.owner)}/${esc(p.repo)}</div>
   </div>
@@ -938,19 +841,14 @@ async function searchPlugins() {
     ? '<span style="color:var(--green);font-size:12px;white-space:nowrap">✓ installed</span>'
     : `<button class="btn-primary" style="font-size:11px;padding:5px 12px;white-space:nowrap" onclick="installPlugin('${esc(p.fileName)}',this)">Install</button>`
   }
-  <a href="${esc(p.htmlUrl)}" target="_blank" class="btn-sm" style="text-decoration:none;display:flex;align-items:center">↗</a>
 </div>`;
     }).join('');
 }
 
-async function installPlugin(fileNameOrObj, btn) {
-    // Accept either a fileName string (from onclick) or a plugin object (programmatic call)
-    const p = typeof fileNameOrObj === 'string'
-        ? pluginState.byFileName?.[fileNameOrObj]
-        : fileNameOrObj;
-    if (!p) { alert('Plugin data not found. Please refresh the plugin list first.'); return; }
+async function installPlugin(fileName, btn) {
+    const p = pluginState.byFileName?.[fileName];
+    if (!p) { alert('Plugin data not found. Refresh the plugin list first.'); return; }
     btn.disabled = true; btn.textContent = 'Installing…';
-    // Let WGSM download the file server-side — avoids browser CORS/network issues
     const r = await proxyPost(pluginState.instanceId, 'api/plugins/install', {
         owner: p.owner, repo: p.repo, fileName: p.fileName, branch: p.branch
     });
@@ -964,6 +862,29 @@ async function installPlugin(fileNameOrObj, btn) {
         btn.textContent = '✗ Failed'; btn.disabled = false;
         alert('Install failed: ' + (r.data?.error ?? `HTTP ${r.status}`));
     }
+}
+
+async function installFromUrl() {
+    const input  = document.getElementById('plugin-url-input');
+    const status = document.getElementById('url-install-status');
+    const btn    = document.getElementById('url-install-btn');
+    const url    = input?.value?.trim();
+    if (!url) { if (status) { status.style.color = 'var(--red)'; status.textContent = 'Paste a URL first.'; } return; }
+    if (!pluginState.instanceId) { if (status) { status.style.color = 'var(--red)'; status.textContent = '⚠ No online instance.'; } return; }
+    btn.disabled = true;
+    if (status) { status.style.color = 'var(--muted)'; status.textContent = 'Installing…'; }
+    const r = await proxyPost(pluginState.instanceId, 'api/plugins/install', { githubUrl: url });
+    if (r.ok) {
+        if (status) { status.style.color = 'var(--green)'; status.textContent = '✓ ' + (r.data?.message ?? 'Installed!'); }
+        if (input) input.value = '';
+        const { data: installed } = await proxyGet(pluginState.instanceId, 'api/plugins/installed');
+        pluginState.installed = installed ?? [];
+        renderInstalledPlugins();
+        await loadPlugins();
+    } else {
+        if (status) { status.style.color = 'var(--red)'; status.textContent = '✗ ' + (r.data?.error ?? `HTTP ${r.status}`); }
+    }
+    btn.disabled = false;
 }
 
 async function uninstallPlugin(fileName, btn) {
