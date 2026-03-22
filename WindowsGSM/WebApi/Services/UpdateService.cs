@@ -2,7 +2,6 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Net.Http;
-using System.Reflection;
 using System.Text.Json;
 using System.Threading.Tasks;
 using System.Windows;
@@ -42,9 +41,13 @@ namespace WindowsGSM.WebApi.Services
 
         // ── Public API ───────────────────────────────────────────────────────
 
+        // Use the real exe path (Process.MainModule), not Assembly.Location.
+        // For PublishSingleFile builds Assembly.GetExecutingAssembly().Location
+        // returns "" (empty) because the assembly is extracted to a temp dir,
+        // so FileVersionInfo would read nothing and always return "0.0.0.0".
         public static string CurrentVersion =>
             FileVersionInfo.GetVersionInfo(
-                Assembly.GetExecutingAssembly().Location).FileVersion ?? "0.0.0.0";
+                Process.GetCurrentProcess().MainModule!.FileName).FileVersion ?? "0.0.0.0";
 
         /// <summary>
         /// Checks GitHub for the latest release.
