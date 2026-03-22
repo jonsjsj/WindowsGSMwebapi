@@ -179,7 +179,7 @@ header{background:var(--surface);border-bottom:1px solid var(--border);height:48
 <!-- ── App ───────────────────────────────────────────────────────────────── -->
 <div id="app">
   <header>
-    <div class="logo">WGSM <span>Web API</span></div>
+    <div class="logo">WGSM <span>Web API</span> <span style="font-size:10px;font-weight:400;color:var(--muted);margin-left:4px" id="app-ver">v1.0.36</span></div>
     <div class="header-mid">
       <div class="hstat">
         CPU
@@ -340,10 +340,11 @@ function updateHeaderStats() {
 
 function updateInstBadge() {
     const b = document.getElementById('inst-badge');
-    if (!b) return;
-    b.textContent = instInfo
+    if (b) b.textContent = instInfo
         ? `${instInfo.instanceName ?? 'WGSM'} · ${instInfo.onlineServers ?? 0}/${instInfo.totalServers ?? 0} running`
         : 'Connected';
+    const ver = document.getElementById('app-ver');
+    if (ver && instInfo?.appVersion) ver.textContent = 'v' + instInfo.appVersion;
 }
 
 // ── Navigation ─────────────────────────────────────────────────────────────

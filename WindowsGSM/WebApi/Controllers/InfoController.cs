@@ -28,7 +28,8 @@ namespace WindowsGSM.WebApi.Controllers
                 instanceName  = _config.InstanceName,
                 totalServers  = servers.Count,
                 onlineServers = servers.Count(s => s.Status == "Started"),
-                hasKeys       = _config.ApiKeys.Any(k => !string.IsNullOrEmpty(k.Token))
+                hasKeys       = _config.ApiKeys.Any(k => !string.IsNullOrEmpty(k.Token)),
+                appVersion    = UpdateService.CurrentVersion
             });
         }
     }
