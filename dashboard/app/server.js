@@ -127,7 +127,18 @@ app.get('/api/ping/:instanceId', async (req, res) => {
     }
 });
 
-// ── Request log ──────────────────────────────────────────────────────────
+// ── Plugin registry ───────────────────────────────────────────────────────
+const REGISTRY_FILE = path.join(__dirname, 'plugins-registry.json');
+app.get('/api/registry', (_req, res) => {
+    try {
+        const data = JSON.parse(fs.readFileSync(REGISTRY_FILE, 'utf8'));
+        res.json({ items: data, totalCount: data.length });
+    } catch (e) {
+        res.status(500).json({ error: 'Registry unavailable: ' + e.message });
+    }
+});
+
+// ── Request log ───────────────────────────────────────────────────────────
 app.get('/api/logs', (_req, res) => res.json(reqLog.slice().reverse()));
 
 // ── Self-update: pull latest index.html from GitHub ──────────────────────
