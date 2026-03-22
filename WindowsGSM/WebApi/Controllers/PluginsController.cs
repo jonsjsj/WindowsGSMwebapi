@@ -170,6 +170,7 @@ namespace WindowsGSM.WebApi.Controllers
                         var treeJson = await treeResp.Content.ReadAsStringAsync().ConfigureAwait(false);
                         using var treeDoc = JsonDocument.Parse(treeJson);
                         var match = treeDoc.RootElement.GetProperty("tree").EnumerateArray()
+                            .Where(n => n.TryGetProperty("type", out var t) && t.GetString() == "blob")
                             .Select(n => n.GetProperty("path").GetString() ?? "")
                             .FirstOrDefault(p => Path.GetFileName(p).Equals(body.FileName, StringComparison.OrdinalIgnoreCase));
                         if (match != null)
