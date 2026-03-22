@@ -97,10 +97,14 @@ namespace WindowsGSM.WebApi.Models
 
     public class ResourcesSummaryDto
     {
-        public int    TotalServers    { get; set; }
-        public int    OnlineServers   { get; set; }
-        public double TotalCpuPercent { get; set; }
-        public double TotalRamMb      { get; set; }
+        public int    TotalServers      { get; set; }
+        public int    OnlineServers     { get; set; }
+        public double TotalCpuPercent   { get; set; }
+        public double TotalRamMb        { get; set; }
+        public double SystemTotalRamMb  { get; set; }
+        public double DiskTotalGb       { get; set; }
+        public double DiskUsedGb        { get; set; }
+        public double DiskFreeGb        { get; set; }
     }
 
     public class ApiActionResult

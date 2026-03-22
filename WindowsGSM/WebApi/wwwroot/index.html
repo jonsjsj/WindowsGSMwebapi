@@ -134,6 +134,20 @@ header{background:var(--surface);border-bottom:1px solid var(--border);height:48
 .file-editor textarea{flex:1;width:100%;border:none;background:var(--bg);color:var(--text);font-family:'Courier New',monospace;font-size:12px;padding:12px;outline:none;resize:none;line-height:1.6;box-sizing:border-box}
 .file-status{padding:4px 12px;font-size:11px;color:var(--muted);border-top:1px solid var(--border);min-height:22px}
 
+/* ── Install wizard ───────────────────────────────────────────────────── */
+.install-wrap{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
+@media(max-width:700px){.install-wrap{grid-template-columns:1fr}}
+.install-left{display:flex;flex-direction:column;gap:10px}
+.install-search{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:8px 12px;font-size:13px;outline:none;transition:border-color .15s;font-family:inherit}
+.install-search:focus{border-color:var(--accent)}
+.install-game-list{max-height:360px;overflow-y:auto;border:1px solid var(--border);border-radius:6px;background:var(--bg)}
+.install-game-item{padding:8px 12px;cursor:pointer;font-size:12px;border-bottom:1px solid var(--border);transition:background .1s}
+.install-game-item:last-child{border-bottom:none}
+.install-game-item:hover{background:var(--surface2)}
+.install-game-item.selected{background:var(--surface2);color:var(--accent);font-weight:600}
+.install-right{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px;display:flex;flex-direction:column;gap:12px}
+.install-log{background:var(--bg);border:1px solid var(--border);border-radius:5px;font-family:'Courier New',monospace;font-size:11px;color:#aaa;padding:10px;min-height:120px;max-height:240px;overflow-y:auto;white-space:pre-wrap;word-break:break-all;line-height:1.5}
+
 /* ── Changelog ────────────────────────────────────────────────────────── */
 .cl-entry{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:14px 18px;margin-bottom:12px}
 .cl-version{font-weight:700;font-size:14px;color:var(--accent)}
@@ -177,6 +191,11 @@ header{background:var(--surface);border-bottom:1px solid var(--border);height:48
         <div class="hbar-wrap"><div class="hbar-fill ram" id="h-ram-bar" style="width:0%"></div></div>
         <span class="hstat-val" id="h-ram-val">—</span>
       </div>
+      <div class="hstat">
+        Disk
+        <div class="hbar-wrap"><div class="hbar-fill" id="h-disk-bar" style="width:0%;background:var(--orange)"></div></div>
+        <span class="hstat-val" id="h-disk-val">—</span>
+      </div>
       <span id="inst-badge">Connecting…</span>
     </div>
     <div class="header-right">
@@ -188,6 +207,7 @@ header{background:var(--surface);border-bottom:1px solid var(--border);height:48
     <nav id="sidebar">
       <div class="sb-sect">Manage</div>
       <button class="nav-btn active" id="nav-servers" onclick="showView('servers')">▤ Servers</button>
+      <button class="nav-btn" id="nav-install" onclick="showView('install')">+ Install Server</button>
       <button class="nav-btn" id="nav-logs"   onclick="showView('logs')">≡ Logs</button>
       <div class="sb-sect">Server</div>
       <button class="nav-btn" id="nav-config" onclick="showView('config')">⚙ Configuration</button>
@@ -297,13 +317,25 @@ async function loadInfo() {
 
 function updateHeaderStats() {
     if (!resources) return;
-    const cpu = resources.totalCpuPercent ?? 0;
-    const ram = resources.totalRamMb ?? 0;
+    const cpu      = resources.totalCpuPercent  ?? 0;
+    const ram      = resources.totalRamMb       ?? 0;
+    const sysRam   = resources.systemTotalRamMb ?? 0;
+    const diskUsed = resources.diskUsedGb       ?? 0;
+    const diskTotal= resources.diskTotalGb      ?? 0;
+
     document.getElementById('h-cpu-bar').style.width = Math.min(100, cpu).toFixed(1) + '%';
     document.getElementById('h-cpu-val').textContent  = cpu.toFixed(1) + '%';
+
     const ramGb = ram >= 1024 ? (ram/1024).toFixed(1)+' GB' : ram.toFixed(0)+' MB';
     document.getElementById('h-ram-val').textContent  = ramGb;
-    document.getElementById('h-ram-bar').style.width  = Math.min(100, (cpu / 2)).toFixed(1) + '%';
+    const ramPct = sysRam > 0 ? Math.min(100, ram / sysRam * 100) : Math.min(100, cpu / 2);
+    document.getElementById('h-ram-bar').style.width  = ramPct.toFixed(1) + '%';
+
+    if (diskTotal > 0) {
+        const diskPct = Math.min(100, diskUsed / diskTotal * 100);
+        document.getElementById('h-disk-bar').style.width = diskPct.toFixed(1) + '%';
+        document.getElementById('h-disk-val').textContent = diskUsed.toFixed(1)+'/'+diskTotal.toFixed(0)+' GB';
+    }
 }
 
 function updateInstBadge() {
@@ -326,6 +358,7 @@ function renderView() {
     const el = document.getElementById('view');
     switch (currentView) {
         case 'servers':   el.innerHTML = renderServers();           break;
+        case 'install':   el.innerHTML = renderInstall();           loadInstallGames(); break;
         case 'logs':      el.innerHTML = renderLogsView();          break;
         case 'config':    el.innerHTML = renderConfigChooser();     break;
         case 'files':     el.innerHTML = renderFilesChooser();      break;
@@ -691,9 +724,192 @@ function navigateUp() {
     browseDir(parts.join('/'));
 }
 
+// ── Install wizard ─────────────────────────────────────────────────────────
+let installGames = [], installSelectedGame = null, installJobId = null, installPollTimer = null;
+
+function renderInstall() {
+    return `<div class="section-row"><span class="section-title">Install Game Server</span></div>
+<div class="install-wrap">
+  <div class="install-left">
+    <input class="install-search" id="inst-search" placeholder="Search games…" oninput="filterInstallGames()" autocomplete="off"/>
+    <div class="install-game-list" id="inst-game-list"><div class="empty" style="padding:24px">Loading games…</div></div>
+  </div>
+  <div class="install-right">
+    <div style="font-size:13px;font-weight:600;color:var(--text)">Server Configuration</div>
+    <div class="cfg-grid">
+      <div class="cfg-field">
+        <label>Selected Game</label>
+        <input id="inst-game-val" readonly style="cursor:default" placeholder="← Select a game" value=""/>
+      </div>
+      <div class="cfg-field">
+        <label>Server Name</label>
+        <input id="inst-name" placeholder="e.g. My Game Server" value=""/>
+      </div>
+      <div class="cfg-field">
+        <label>Server Port</label>
+        <input id="inst-port" placeholder="e.g. 27015" value=""/>
+      </div>
+      <div class="cfg-field">
+        <label>Max Players</label>
+        <input id="inst-maxplayers" placeholder="e.g. 16" value=""/>
+      </div>
+      <div class="cfg-field">
+        <label>Map / World</label>
+        <input id="inst-map" placeholder="e.g. de_dust2" value=""/>
+      </div>
+      <div class="cfg-field">
+        <label>Server IP (blank = all)</label>
+        <input id="inst-ip" placeholder="0.0.0.0" value=""/>
+      </div>
+      <div class="cfg-field cfg-full">
+        <label>Extra Launch Parameters</label>
+        <input id="inst-params" placeholder="-tickrate 128 -nobots" value=""/>
+      </div>
+    </div>
+    <button class="btn-primary" id="inst-start-btn" onclick="startInstall()">Install Server</button>
+    <div id="inst-status" style="font-size:12px;color:var(--muted);min-height:16px"></div>
+    <div class="install-log" id="inst-log" style="display:none"></div>
+  </div>
+</div>`;
+}
+
+async function loadInstallGames() {
+    try {
+        const r = await apiFetch('/api/games');
+        if (!r.ok) return;
+        const data = await r.json();
+        installGames = data.items ?? [];
+        filterInstallGames();
+    } catch (e) {
+        const el = document.getElementById('inst-game-list');
+        if (el) el.innerHTML = `<div class="empty" style="padding:24px;color:var(--red)">Failed: ${esc(e.message)}</div>`;
+    }
+}
+
+function filterInstallGames() {
+    const q = (document.getElementById('inst-search')?.value ?? '').toLowerCase();
+    const filtered = q ? installGames.filter(g => g.toLowerCase().includes(q)) : installGames;
+    const el = document.getElementById('inst-game-list');
+    if (!el) return;
+    if (!filtered.length) { el.innerHTML = '<div class="empty" style="padding:24px">No games found.</div>'; return; }
+    el.innerHTML = filtered.map(g =>
+        `<div class="install-game-item${g === installSelectedGame ? ' selected' : ''}" onclick="selectInstallGame(${JSON.stringify(esc(g))})">${esc(g)}</div>`
+    ).join('');
+}
+
+function selectInstallGame(game) {
+    installSelectedGame = game;
+    const inp = document.getElementById('inst-game-val');
+    if (inp) inp.value = game;
+    filterInstallGames();
+}
+
+async function startInstall() {
+    const game = installSelectedGame;
+    if (!game) { setInstStatus('Select a game first.', 'var(--orange)'); return; }
+
+    const name      = document.getElementById('inst-name')?.value.trim() || game;
+    const port      = document.getElementById('inst-port')?.value.trim();
+    const maxPlayers= document.getElementById('inst-maxplayers')?.value.trim();
+    const map       = document.getElementById('inst-map')?.value.trim();
+    const ip        = document.getElementById('inst-ip')?.value.trim();
+    const params    = document.getElementById('inst-params')?.value.trim();
+
+    const btn = document.getElementById('inst-start-btn');
+    if (btn) btn.disabled = true;
+    setInstStatus('Starting install…', 'var(--muted)');
+    showInstLog('');
+
+    try {
+        const r = await apiFetch('/api/servers/install', null, 'POST', { game, serverName: name });
+        if (!r.ok) {
+            const err = await r.json().catch(() => ({}));
+            setInstStatus('Error: ' + (err.message ?? r.statusText), 'var(--red)');
+            if (btn) btn.disabled = false;
+            return;
+        }
+        const data = await r.json();
+        installJobId = data.jobId;
+        const serverId = data.serverId;
+
+        // Poll install progress
+        clearInterval(installPollTimer);
+        installPollTimer = setInterval(() => pollInstall(serverId, port, maxPlayers, map, ip, params, btn), 2000);
+    } catch (e) {
+        setInstStatus('Error: ' + e.message, 'var(--red)');
+        if (btn) btn.disabled = false;
+    }
+}
+
+async function pollInstall(serverId, port, maxPlayers, map, ip, params, btn) {
+    if (!installJobId) return;
+    try {
+        const r = await apiFetch('/api/servers/install/' + installJobId);
+        if (!r.ok) return;
+        const data = await r.json();
+
+        appendInstLog(data.log ?? '');
+        if (data.status === 'running') {
+            setInstStatus('Installing… (this can take several minutes)', 'var(--muted)');
+            return;
+        }
+        clearInterval(installPollTimer);
+        installPollTimer = null;
+        installJobId = null;
+
+        if (data.status === 'done') {
+            setInstStatus('Install complete! Applying config…', 'var(--green)');
+            // Apply user-supplied config if any fields provided
+            const cfg = {};
+            if (port)       cfg.ServerPort  = port;
+            if (maxPlayers) cfg.MaxPlayers  = maxPlayers;
+            if (map)        cfg.ServerMap   = map;
+            if (ip)         cfg.ServerIp    = ip;
+            if (params)     cfg.ServerParam = params;
+            if (Object.keys(cfg).length > 0) {
+                await apiFetch('/api/servers/' + serverId + '/config', null, 'PATCH', cfg).catch(() => {});
+            }
+            setInstStatus('Done! Server ' + serverId + ' installed successfully.', 'var(--green)');
+            await loadServers();
+        } else {
+            setInstStatus('Install failed: ' + (data.error ?? 'unknown error'), 'var(--red)');
+        }
+        if (btn) btn.disabled = false;
+    } catch {}
+}
+
+let _lastInstLog = '';
+function showInstLog(txt) {
+    _lastInstLog = '';
+    const el = document.getElementById('inst-log');
+    if (!el) return;
+    el.style.display = 'block';
+    el.textContent = txt;
+}
+function appendInstLog(txt) {
+    if (!txt || txt === _lastInstLog) return;
+    _lastInstLog = txt;
+    const el = document.getElementById('inst-log');
+    if (!el) return;
+    el.style.display = 'block';
+    el.textContent = txt;
+    el.scrollTop = el.scrollHeight;
+}
+function setInstStatus(msg, color) {
+    const el = document.getElementById('inst-status');
+    if (el) { el.textContent = msg; el.style.color = color ?? 'var(--muted)'; }
+}
+
 // ── Changelog view ─────────────────────────────────────────────────────────
 function renderChangelog() {
     const releases = [
+      { version:'v1.0.36', date:'2026-03-22', title:'Install Wizard, Disk Stats & CPU/RAM Fix',
+        items:[
+          ['new','<strong>Install Wizard</strong> — install any game server directly from the Web API dashboard with pre-config (port, max players, map, IP, launch params)'],
+          ['fix','<strong>CPU/RAM counter</strong> — fixed: PIDs now registered with background sampler so CPU% is populated correctly'],
+          ['new','<strong>Disk space</strong> — header bar now shows disk used/total for the WGSM drive'],
+          ['fix','RAM bar percentage now reflects actual system RAM instead of being tied to CPU value'],
+        ]},
       { version:'v1.0.35', date:'2026-03-22', title:'File Manager, Config Editor & Docker-style UI',
         items:[
           ['new','<strong>File Manager</strong> — browse, edit and download serverfiles directly from the web UI'],
