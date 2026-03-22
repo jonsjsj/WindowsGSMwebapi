@@ -179,7 +179,7 @@ header{background:var(--surface);border-bottom:1px solid var(--border);height:48
 <!-- ── App ───────────────────────────────────────────────────────────────── -->
 <div id="app">
   <header>
-    <div class="logo">WGSM <span>Web API</span> <span style="font-size:10px;font-weight:400;color:var(--muted);margin-left:4px" id="app-ver">v1.0.37</span></div>
+    <div class="logo">WGSM <span>Web API</span> <span style="font-size:10px;font-weight:400;color:var(--muted);margin-left:4px" id="app-ver">v1.0.38</span></div>
     <div class="header-mid">
       <div class="hstat">
         CPU
@@ -904,6 +904,10 @@ function setInstStatus(msg, color) {
 // ── Changelog view ─────────────────────────────────────────────────────────
 function renderChangelog() {
     const releases = [
+      { version:'v1.0.38', date:'2026-03-22', title:'Fix Install — WPF Thread Error',
+        items:[
+          ['fix','<strong>Install crash</strong> — game server objects are WPF-bound; all calls (Install, IsInstallValid, SetData, CreateServerCFG) now run on the UI dispatcher thread to prevent "calling thread cannot access this object" error'],
+        ]},
       { version:'v1.0.37', date:'2026-03-22', title:'Fix Update Check (GitHub Rate Limit)',
         items:[
           ['fix','<strong>Update check</strong> — switched from GitHub JSON API (60 req/hr rate-limited) to the HTML redirect endpoint; no API key needed, no rate limit'],
