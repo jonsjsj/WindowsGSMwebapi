@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -256,6 +257,190 @@ namespace WindowsGSM.WebApi.Services
                             .Select(p => new PluginError { FileName = p.FileName, Error = p.Error ?? "Unknown error" })
                             .ToList();
             return new PluginReloadResult { Loaded = loaded, Failed = failed };
+        }
+
+        // ── Server install ────────────────────────────────────────────────────
+
+        // Built-in game FullNames (mirrors GameServer/Data/Class.cs switch)
+        private static readonly string[] BuiltInGames =
+        {
+            "Counter-Strike: Global Offensive Dedicated Server",
+            "Garry's Mod Dedicated Server",
+            "Team Fortress 2 Dedicated Server",
+            "Minecraft: Bedrock Edition Server",
+            "Rust Dedicated Server",
+            "Counter-Strike Dedicated Server",
+            "Counter-Strike: Condition Zero Dedicated Server",
+            "Half-Life 2: Deathmatch Dedicated Server",
+            "Left 4 Dead 2 Dedicated Server",
+            "Minecraft: Java Edition Server",
+            "GTA V FiveM Server",
+            "7 Days to Die Dedicated Server",
+            "Mordhau Dedicated Server",
+            "Space Engineers Dedicated Server",
+            "DayZ Dedicated Server",
+            "Minecraft: Bedrock Edition Server",
+            "Onset Dedicated Server",
+            "Counter-Strike: Source Dedicated Server",
+            "Insurgency Dedicated Server",
+            "No More Room in Hell Dedicated Server",
+            "ARK: Survival Evolved Dedicated Server",
+            "Zombie Panic! Source Dedicated Server",
+            "Day of Defeat: Source Dedicated Server",
+            "StarWars Jedi Academy Dedicated Server",
+            "Rise of Kingdom Dedicated Server",
+            "Heat Dedicated Server",
+            "BlackWake Dedicated Server",
+            "Onset Dedicated Server",
+            "Eco Global Survival Server",
+            "Unturned Dedicated Server",
+            "Avorion Dedicated Server",
+            "Conan Exiles Dedicated Server",
+            "Insurgency: Sandstorm Dedicated Server",
+            "Day of Defeat Dedicated Server",
+            "Deathmatch Classic Dedicated Server",
+            "Half-Life: Opposing Force Dedicated Server",
+            "Ricochet Dedicated Server",
+            "Team Fortress Classic Dedicated Server",
+            "Titanfall 2 Dedicated Server",
+            "Squad Dedicated Server",
+            "Battalion 1944 Dedicated Server",
+            "PlanetSide 2 Dedicated Server",
+            "Risk of Rain 2 Dedicated Server",
+            "Eco Global Survival Server",
+            "Valheim Dedicated Server",
+        };
+
+        /// <summary>Returns all installable game names (built-ins + loaded plugins).</summary>
+        public List<string> GetAvailableGames()
+        {
+            var games = new List<string>();
+            // Add built-ins
+            foreach (var g in BuiltInGames)
+                if (!games.Contains(g)) games.Add(g);
+            // Add loaded plugins
+            _mainWindow.Dispatcher.Invoke(() =>
+            {
+                foreach (var p in _mainWindow.PluginsList)
+                    if (p.IsLoaded && p.FullName != null && !games.Contains(p.FullName))
+                        games.Add(p.FullName);
+            });
+            return games.OrderBy(g => g).ToList();
+        }
+
+        // ── Install jobs ──────────────────────────────────────────────────────
+
+        public class InstallJob
+        {
+            public string  JobId    { get; } = Guid.NewGuid().ToString("N")[..8];
+            public string  ServerId { get; set; } = "";
+            public string  Status  { get; set; } = "running"; // running | done | failed
+            public string? Error   { get; set; }
+            private readonly List<string> _log = new();
+            public IReadOnlyList<string> Log => _log;
+            public void AddLog(string line) { lock (_log) _log.Add(line); }
+        }
+
+        private static readonly ConcurrentDictionary<string, InstallJob> _jobs = new();
+
+        public static InstallJob? GetJob(string jobId) =>
+            _jobs.TryGetValue(jobId, out var j) ? j : null;
+
+        /// <summary>
+        /// Starts a game server install in the background.
+        /// Returns the job immediately; poll GetJob() for progress.
+        /// </summary>
+        public InstallJob StartInstall(string game, string serverName)
+        {
+            var job = new InstallJob();
+            _jobs[job.JobId] = job;
+
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    await RunInstallAsync(job, game, serverName).ConfigureAwait(false);
+                    job.Status = "done";
+                }
+                catch (Exception ex)
+                {
+                    job.Error  = ex.Message;
+                    job.Status = "failed";
+                    job.AddLog("[ERROR] " + ex.Message);
+                }
+            });
+
+            return job;
+        }
+
+        private async Task RunInstallAsync(InstallJob job, string game, string serverName)
+        {
+            // 1. Allocate a new server ID (find first free slot)
+            var newConfig = new ServerConfig(null);
+            string installPath = ServerPath.GetServersServerFiles(newConfig.ServerID);
+
+            for (int attempt = 0; attempt < 100 && Directory.Exists(installPath); attempt++)
+            {
+                newConfig   = new ServerConfig((int.Parse(newConfig.ServerID) + 1).ToString());
+                installPath = ServerPath.GetServersServerFiles(newConfig.ServerID);
+            }
+
+            job.ServerId = newConfig.ServerID;
+            job.AddLog($"[INFO] Allocating server ID {newConfig.ServerID} for {game}");
+
+            Directory.CreateDirectory(installPath);
+            newConfig.CreateServerDirectory();
+
+            // 2. Get game server class (needs PluginsList for plugin-based games)
+            dynamic? gameServer = null;
+            _mainWindow.Dispatcher.Invoke(() =>
+            {
+                gameServer = GameServer.Data.Class.Get(game, newConfig, _mainWindow.PluginsList);
+            });
+
+            if (gameServer == null)
+            {
+                Directory.Delete(installPath, true);
+                throw new InvalidOperationException($"Game '{game}' not found. Install the plugin first.");
+            }
+
+            // 3. Run the installer (e.g. SteamCMD)
+            job.AddLog($"[INFO] Starting installer for {game}…");
+            System.Diagnostics.Process? installer = await gameServer.Install();
+
+            if (installer != null)
+            {
+                // Stream stdout to the job log
+                var reader = installer.StandardOutput;
+                while (!reader.EndOfStream)
+                {
+                    var line = await reader.ReadLineAsync().ConfigureAwait(false);
+                    if (line != null) job.AddLog(line);
+                }
+                await Task.Run(() => installer.WaitForExit()).ConfigureAwait(false);
+            }
+
+            // 4. Validate
+            bool valid = (bool)gameServer.IsInstallValid();
+            if (!valid)
+            {
+                job.AddLog("[ERROR] Install validation failed — the game files may not have downloaded correctly.");
+                job.Status = "failed";
+                return;
+            }
+
+            // 5. Write WGSM config
+            newConfig.ServerIP   = newConfig.GetIPAddress();
+            newConfig.ServerPort = newConfig.GetAvailablePort((string)gameServer.Port, (int)gameServer.PortIncrements);
+            newConfig.SetData(game, serverName, gameServer);
+            newConfig.CreateWindowsGSMConfig();
+
+            try { gameServer.CreateServerCFG(); } catch { /* optional */ }
+
+            job.AddLog($"[INFO] Server '{serverName}' installed as ID {newConfig.ServerID}.");
+
+            // 6. Reload UI table on WPF dispatcher
+            await _mainWindow.Dispatcher.InvokeAsync(() => _mainWindow.LoadServerTable()).Task;
         }
 
         public (bool success, string message) SaveConfig(string serverId, UpdateServerConfigRequest req)

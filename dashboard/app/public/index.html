@@ -271,6 +271,9 @@ html{height:100%;overflow:hidden}body{background:var(--bg);color:var(--text);fon
   <button class="nav-item" id="nav-plugins" onclick="showView('plugins')">
     <span class="nav-icon">⊞</span> Plugins
   </button>
+  <button class="nav-item" id="nav-install" onclick="showView('install')">
+    <span class="nav-icon">⊕</span> Install Server
+  </button>
   <button class="nav-item" id="nav-templates" onclick="showView('templates')">
     <span class="nav-icon">⊛</span> Config Templates
   </button>
@@ -568,7 +571,7 @@ function showView(v) {
     document.getElementById('nav-' + v)?.classList.add('active');
     const titles = { dashboard:'Dashboard', servers:'Servers', logs:'Logs',
                      plugins:'Plugins', instances:'Instances', backup:'Backup & Update',
-                     templates:'Config Templates', migrate:'Server Migration', changelog:'Changelog' };
+                     templates:'Config Templates', migrate:'Server Migration', changelog:'Changelog', install:'Install Server' };
     document.getElementById('tb-title').textContent = titles[v] ?? v;
     renderView();
 }
@@ -585,6 +588,7 @@ function renderView() {
         case 'templates': el.innerHTML = renderTemplates(); loadTemplatesList(); break;
         case 'migrate':   el.innerHTML = renderMigrate();   setTimeout(migUpdateSrcServers, 0); break;
         case 'changelog': el.innerHTML = renderChangelog(); break;
+        case 'install':   el.innerHTML = renderInstall();   loadInstallGames(); break;
         default:          el.innerHTML = '';
     }
     bindCardButtons();
@@ -1674,6 +1678,164 @@ async function selfUpdate(btn) {
     btn.disabled = false;
     btn.querySelector('.nav-icon').textContent = '⬆';
 }
+
+// ── Install Server view ────────────────────────────────────────────────────
+let installGames   = [];
+let installInstId  = null;
+let installJobId   = null;
+let installPollId  = null;
+
+function renderInstall() {
+    const onlineInsts = state.instances.filter(i => state.instData[i.id]?.status === 'online');
+    const instOpts = onlineInsts.map(i =>
+        `<option value="${i.id}">${esc(i.name)}</option>`).join('');
+
+    return `
+<div class="section-row"><span class="section-title">Install Game Server</span></div>
+<div class="hint hint-muted" style="margin-bottom:16px">
+  Select a WGSM instance and a game, give your server a name, then click Install.
+  SteamCMD (or the game's own installer) will run on the Windows machine and stream progress here.
+  This requires the game's plugin to already be installed if it is not a built-in game.
+</div>
+${!onlineInsts.length ? '<div class="hint hint-orange">No online instances. Add one in the Instances page first.</div>' : ''}
+<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:18px;margin-bottom:12px">
+  <div class="form-grid">
+    <div class="form-field">
+      <label>Instance</label>
+      <select id="inst-inst-sel" onchange="onInstallInstanceChange()" style="width:100%;background:var(--bg);border:1px solid var(--border);border-radius:5px;color:var(--text);padding:7px 10px;font-size:12px;outline:none;font-family:inherit">
+        ${instOpts || '<option>No instances</option>'}
+      </select>
+    </div>
+    <div class="form-field">
+      <label>Server Name</label>
+      <input id="inst-name" placeholder="My Game Server" style="width:100%;background:var(--bg);border:1px solid var(--border);border-radius:5px;color:var(--text);padding:7px 10px;font-size:12px;outline:none;font-family:inherit"/>
+    </div>
+    <div class="form-field form-full">
+      <label>Game</label>
+      <input id="inst-game-search" placeholder="Search games…" oninput="filterInstallGames()" style="width:100%;background:var(--bg);border:1px solid var(--border);border-radius:5px;color:var(--text);padding:7px 10px;font-size:12px;outline:none;font-family:inherit;margin-bottom:6px"/>
+      <select id="inst-game-sel" size="8" style="width:100%;background:var(--bg);border:1px solid var(--border);border-radius:5px;color:var(--text);padding:4px;font-size:12px;outline:none;font-family:inherit">
+        <option>Loading games…</option>
+      </select>
+    </div>
+  </div>
+  <div style="margin-top:14px;display:flex;gap:10px;align-items:center">
+    <button class="btn-primary" id="inst-btn" onclick="startInstall()" ${!onlineInsts.length?'disabled':''}>⊕ Install</button>
+    <span id="inst-status" style="font-size:12px;color:var(--muted)"></span>
+  </div>
+</div>
+<div id="inst-log-wrap" style="display:none">
+  <div class="section-row" style="margin-top:4px"><span class="section-title">Install log</span></div>
+  <div id="inst-log" style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:12px 16px;font-family:'Courier New',monospace;font-size:11px;line-height:1.6;max-height:340px;overflow-y:auto;color:var(--muted);white-space:pre-wrap"></div>
+</div>`;
+}
+
+async function loadInstallGames() {
+    const sel = document.getElementById('inst-inst-sel');
+    if (!sel) return;
+    installInstId = sel.value;
+    if (!installInstId) return;
+    await fetchInstallGames(installInstId);
+}
+
+async function onInstallInstanceChange() {
+    const sel = document.getElementById('inst-inst-sel');
+    if (!sel) return;
+    installInstId = sel.value;
+    await fetchInstallGames(installInstId);
+}
+
+async function fetchInstallGames(instanceId) {
+    const gameSel = document.getElementById('inst-game-sel');
+    if (!gameSel) return;
+    gameSel.innerHTML = '<option>Loading…</option>';
+    const { data, ok } = await proxyGet(instanceId, 'api/games');
+    if (!ok || !data?.items) {
+        gameSel.innerHTML = '<option>Failed to load games</option>';
+        return;
+    }
+    installGames = data.items;
+    renderInstallGameList(installGames);
+}
+
+function renderInstallGameList(games) {
+    const gameSel = document.getElementById('inst-game-sel');
+    if (!gameSel) return;
+    gameSel.innerHTML = games.map(g => `<option value="${esc(g)}">${esc(g)}</option>`).join('');
+}
+
+function filterInstallGames() {
+    const q = document.getElementById('inst-game-search')?.value?.toLowerCase() ?? '';
+    const filtered = q ? installGames.filter(g => g.toLowerCase().includes(q)) : installGames;
+    renderInstallGameList(filtered);
+}
+
+async function startInstall() {
+    const instId  = document.getElementById('inst-inst-sel')?.value;
+    const game    = document.getElementById('inst-game-sel')?.value;
+    const name    = document.getElementById('inst-name')?.value?.trim() || game;
+    const btn     = document.getElementById('inst-btn');
+    const status  = document.getElementById('inst-status');
+    const logWrap = document.getElementById('inst-log-wrap');
+    const logEl   = document.getElementById('inst-log');
+
+    if (!instId || !game) { alert('Select an instance and a game first.'); return; }
+
+    btn.disabled = true;
+    status.style.color = 'var(--muted)';
+    status.textContent = 'Starting install…';
+    logWrap.style.display = '';
+    logEl.textContent = '';
+    installJobId = null;
+
+    const { ok, data } = await proxyPost(instId, 'api/servers/install', { game, serverName: name });
+    if (!ok) {
+        status.style.color = 'var(--red)';
+        status.textContent = '✗ ' + (data?.message ?? 'Failed to start install');
+        btn.disabled = false;
+        return;
+    }
+
+    installJobId = data.jobId;
+    status.textContent = `Job ${installJobId} — installing…`;
+    if (installPollId) clearInterval(installPollId);
+    installPollId = setInterval(() => pollInstall(instId, installJobId), 2000);
+}
+
+let _lastLogCount = 0;
+async function pollInstall(instanceId, jobId) {
+    const logEl  = document.getElementById('inst-log');
+    const status = document.getElementById('inst-status');
+    const btn    = document.getElementById('inst-btn');
+    if (!logEl || !status) { clearInterval(installPollId); return; }
+
+    const { ok, data } = await proxyGet(instanceId, `api/servers/install/${jobId}`);
+    if (!ok || !data) return;
+
+    // Append only new log lines
+    const newLines = (data.log ?? []).slice(_lastLogCount);
+    if (newLines.length) {
+        logEl.textContent += newLines.join('\n') + '\n';
+        logEl.scrollTop = logEl.scrollHeight;
+        _lastLogCount = data.log.length;
+    }
+
+    if (data.status === 'done') {
+        clearInterval(installPollId);
+        status.style.color = 'var(--green)';
+        status.textContent = `✓ Installed! Server ID: ${data.serverId}`;
+        btn.disabled = false;
+        _lastLogCount = 0;
+        // Refresh instance data so the new server appears
+        setTimeout(() => fetchInstance(state.instances.find(i => i.id === instanceId)), 1000);
+    } else if (data.status === 'failed') {
+        clearInterval(installPollId);
+        status.style.color = 'var(--red)';
+        status.textContent = '✗ Install failed: ' + (data.error ?? 'unknown error');
+        btn.disabled = false;
+        _lastLogCount = 0;
+    }
+}
+
 </script>
 </body>
 </html>
