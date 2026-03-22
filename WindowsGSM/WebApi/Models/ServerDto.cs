@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace WindowsGSM.WebApi.Models
 {
     public class ServerDto

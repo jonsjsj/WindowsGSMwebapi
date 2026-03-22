@@ -6,6 +6,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using WindowsGSM.WebApi;
+using WindowsGSM.WebApi.Services;
 
 namespace WindowsGSM.WebApi.Controllers
 {
