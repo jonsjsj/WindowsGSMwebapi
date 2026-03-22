@@ -129,7 +129,44 @@ namespace WindowsGSM.WebApi.Controllers
         {
             if (body == null) return BadRequest(new { error = "Request body required." });
 
-            // ── resolve from a raw/blob/repo GitHub URL ───────────────────────
+            // ── raw URL fast-path: download directly, no resolution needed ──────
+            // Handles deep paths like Owner/Repo/branch/dir/File.cs correctly.
+            if (!string.IsNullOrWhiteSpace(body.GithubUrl) &&
+                body.GithubUrl.TrimStart().StartsWith("https://raw.githubusercontent.com/", StringComparison.OrdinalIgnoreCase))
+            {
+                var rawUrl  = body.GithubUrl.Trim();
+                var rawFile = rawUrl.Split('?')[0].Split('/').Last();
+                if (!rawFile.EndsWith(".cs", StringComparison.OrdinalIgnoreCase))
+                    return BadRequest(new { error = $"File '{rawFile}' is not a .cs file." });
+
+                try
+                {
+                    var dlResp = await _http.GetAsync(rawUrl).ConfigureAwait(false);
+                    if (!dlResp.IsSuccessStatusCode)
+                        return StatusCode(502, new { error = $"Could not download {rawFile} (HTTP {(int)dlResp.StatusCode})." });
+
+                    var content  = await dlResp.Content.ReadAsStringAsync().ConfigureAwait(false);
+                    var destDir  = Path.Combine(PluginsDir, rawFile);
+                    var destFile = Path.Combine(destDir, rawFile);
+                    Directory.CreateDirectory(destDir);
+                    await System.IO.File.WriteAllTextAsync(destFile, content).ConfigureAwait(false);
+
+                    var reload = await _manager.ReloadPluginsAsync();
+                    var fail   = reload.Failed.FirstOrDefault(f =>
+                        f.FileName.Equals(rawFile, StringComparison.OrdinalIgnoreCase));
+                    return Ok(new
+                    {
+                        ok      = fail == null,
+                        message = fail == null
+                            ? $"{rawFile} installed and loaded successfully."
+                            : $"{rawFile} installed but failed to compile: {fail.Error}",
+                        reload,
+                    });
+                }
+                catch (Exception ex) { return StatusCode(500, new { error = ex.Message }); }
+            }
+
+            // ── resolve from a github.com blob/repo URL ───────────────────────
             if (!string.IsNullOrWhiteSpace(body.GithubUrl))
             {
                 var resolved = await ResolveGithubUrl(body.GithubUrl);

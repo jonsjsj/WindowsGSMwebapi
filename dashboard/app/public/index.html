@@ -56,10 +56,10 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,-ap
 .inst-log.open{display:block}
 
 /* ── Main area ─────────────────────────────────────────────────────────── */
-#main{flex:1;min-width:0;display:flex;flex-direction:column;overflow:hidden;background:var(--bg)}
+#main{flex:1;min-width:0;display:flex;flex-direction:column;overflow:clip;background:var(--bg)}
 
 /* ── Topbar ────────────────────────────────────────────────────────────── */
-#topbar{background:var(--sb);border-bottom:1px solid var(--border);padding:0 20px;height:38px;display:flex;align-items:center;gap:20px;flex-shrink:0}
+#topbar{background:var(--sb);border-bottom:1px solid var(--border);padding:0 12px;min-height:38px;display:flex;align-items:center;gap:12px;flex-shrink:0;flex-wrap:wrap;overflow:hidden}
 .tb-title{font-size:13px;font-weight:600;color:var(--text)}
 .tb-spacer{flex:1}
 .tb-sep{width:1px;height:16px;background:var(--border)}
@@ -75,7 +75,7 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,-ap
 .upd-badge:hover{filter:brightness(1.2)}
 
 /* ── Content ───────────────────────────────────────────────────────────── */
-#content{flex:1;min-width:0;overflow-y:auto;padding:20px}
+#content{flex:1;min-width:0;overflow-y:auto;overflow-x:hidden;padding:16px}
 ::-webkit-scrollbar{width:5px;height:5px}
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:var(--surface2);border-radius:3px}
@@ -858,9 +858,10 @@ async function installPlugin(fileName, btn) {
     const p = pluginState.byFileName?.[fileName];
     if (!p) { alert('Plugin data not found. Refresh the plugin list first.'); return; }
     btn.disabled = true; btn.textContent = 'Installing…';
-    const r = await proxyPost(pluginState.instanceId, 'api/plugins/install', {
-        owner: p.owner, repo: p.repo, fileName: p.fileName, branch: p.branch
-    });
+    // Send the exact raw URL from the registry — WGSM downloads directly.
+    // This works regardless of WGSM version and handles nested file paths.
+    const rawUrl = `https://raw.githubusercontent.com/${p.owner}/${p.repo}/${p.branch}/${p.filePath}`;
+    const r = await proxyPost(pluginState.instanceId, 'api/plugins/install', { githubUrl: rawUrl });
     if (r.ok) {
         btn.textContent = '✓ Installed';
         btn.style.cssText = 'background:var(--green-bg);color:var(--green);font-size:11px;padding:5px 12px;border:none;border-radius:6px;cursor:default';
