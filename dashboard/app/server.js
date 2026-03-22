@@ -8,6 +8,19 @@ const app       = express();
 const PORT      = parseInt(process.env.PORT || '5680');
 const DATA_FILE = process.env.DATA_FILE || '/data/instances.json';
 
+// ── Request log ring-buffer ───────────────────────────────────────────────
+const MAX_LOG   = 300;
+const reqLog    = [];
+function addLog(entry) {
+    reqLog.push({ ts: new Date().toISOString(), ...entry });
+    if (reqLog.length > MAX_LOG) reqLog.shift();
+}
+// Log every incoming request
+app.use((req, _res, next) => {
+    addLog({ type: 'req', method: req.method, path: req.path });
+    next();
+});
+
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -80,8 +93,11 @@ app.all('/api/proxy/:instanceId/*', async (req, res) => {
     if (['POST', 'PUT', 'PATCH'].includes(req.method) && req.body)
         opts.body = JSON.stringify(req.body);
 
+    const t0 = Date.now();
     try {
         const upstream = await fetch(url, opts);
+        const ms = Date.now() - t0;
+        addLog({ type: 'proxy', method: req.method, url, status: upstream.status, ms });
         const ct = upstream.headers.get('content-type') ?? '';
         if (ct.includes('application/json')) {
             res.status(upstream.status).json(await upstream.json());
@@ -89,7 +105,9 @@ app.all('/api/proxy/:instanceId/*', async (req, res) => {
             res.status(upstream.status).send(await upstream.text());
         }
     } catch (err) {
+        const ms = Date.now() - t0;
         const status = err.name === 'TimeoutError' ? 408 : 503;
+        addLog({ type: 'error', method: req.method, url, error: err.message, ms });
         res.status(status).json({ error: err.message });
     }
 });
@@ -108,6 +126,9 @@ app.get('/api/ping/:instanceId', async (req, res) => {
         res.json({ online: false });
     }
 });
+
+// ── Request log ──────────────────────────────────────────────────────────
+app.get('/api/logs', (_req, res) => res.json(reqLog.slice().reverse()));
 
 // ── Self-update: pull latest index.html from GitHub ──────────────────────
 

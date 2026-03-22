@@ -493,7 +493,7 @@ function renderView() {
     switch (state.view) {
         case 'dashboard': el.innerHTML = renderDashboard(); break;
         case 'servers':   el.innerHTML = renderServers();   break;
-        case 'logs':      el.innerHTML = renderLogsView();  break;
+        case 'logs':      el.innerHTML = renderLogsView();  loadProxyLog(); break;
         case 'plugins':   el.innerHTML = renderPlugins();   loadPlugins(); break;
         case 'instances': el.innerHTML = renderInstances(); break;
         case 'backup':    el.innerHTML = renderBackup();    break;
@@ -608,7 +608,37 @@ function renderLogsView() {
 </div>`));
     return `
 <div class="section-row"><span class="section-title">Server logs</span></div>
-${rows.length ? rows.join('') : '<div class="empty">No servers found.</div>'}`;
+${rows.length ? rows.join('') : '<div class="empty">No servers found.</div>'}
+<div class="section-row" style="margin-top:20px">
+  <span class="section-title">Dashboard proxy log</span>
+  <button class="btn-sm" onclick="loadProxyLog()">↻ Refresh</button>
+</div>
+<div id="proxy-log-panel" style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 14px;font-family:Consolas,monospace;font-size:11px;line-height:1.6;max-height:340px;overflow-y:auto;color:var(--muted)">
+  Loading…
+</div>`;
+}
+
+async function loadProxyLog() {
+    const el = document.getElementById('proxy-log-panel');
+    if (!el) return;
+    try {
+        const r = await fetch('/api/logs');
+        const entries = await r.json();
+        if (!entries.length) { el.textContent = 'No requests logged yet.'; return; }
+        el.innerHTML = entries.map(e => {
+            const col = e.type === 'error' ? 'var(--red)'
+                      : e.status >= 400   ? 'var(--orange)'
+                                          : 'var(--text)';
+            const detail = e.type === 'proxy'
+                ? `<span style="color:${col}">${e.method} ${e.url} → ${e.status} (${e.ms}ms)</span>`
+                : e.type === 'error'
+                ? `<span style="color:var(--red)">${e.method} ${e.url} ✗ ${esc(e.error)} (${e.ms}ms)</span>`
+                : `<span style="color:#555">${e.method} ${esc(e.path)}</span>`;
+            return `<div>${e.ts.slice(11,19)} ${detail}</div>`;
+        }).join('');
+    } catch (err) {
+        el.textContent = 'Failed to load log: ' + err.message;
+    }
 }
 
 // ── Instances ──────────────────────────────────────────────────────────────
@@ -705,7 +735,7 @@ async function applyUpdate(instanceId, downloadUrl) {
 }
 
 // ── Plugins ────────────────────────────────────────────────────────────────
-const pluginState = { installed: [], available: [], loading: false, query: '', instanceId: null };
+const pluginState = { installed: [], available: [], byFileName: {}, loading: false, query: '', instanceId: null };
 
 function renderPlugins() {
     const inst = filteredInstances().find(i => state.instData[i.id]?.status === 'online');
@@ -802,7 +832,20 @@ async function resolveGithubUrl(input) {
             csFiles = files.filter(f => f.type === 'file' && f.name.endsWith('.cs')).map(f => f.name);
             if (csFiles.length) { usedBranch = br; break; }
         }
-        if (!csFiles.length) return { error: `No .cs files found in root of ${owner}/${repo}.` };
+        if (!csFiles.length) {
+            // Try repo-named subfolder (e.g. WindowsGSM.Enshrouded/Enshrouded.cs)
+            for (const br of (branch ? [branch] : ['master', 'main'])) {
+                const r2 = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${repo}?ref=${br}`,
+                    { headers: { Accept: 'application/vnd.github+json' } });
+                if (!r2.ok) continue;
+                const sub = await r2.json();
+                const found = (Array.isArray(sub) ? sub : [sub])
+                    .filter(f => f.type === 'file' && f.name.endsWith('.cs'))
+                    .map(f => f.name);
+                if (found.length) { csFiles = found; usedBranch = br; break; }
+            }
+        }
+        if (!csFiles.length) return { error: `No .cs files found in root or ${repo}/ of ${owner}/${repo}.` };
 
         const preferred = repo.startsWith('WindowsGSM.') ? repo.slice('WindowsGSM.'.length) + '.cs' : repo + '.cs';
         const fileName  = (hintFile && csFiles.find(f => f.toLowerCase() === hintFile.toLowerCase()))
@@ -880,6 +923,8 @@ async function searchPlugins() {
     if (!data?.items?.length) { el.innerHTML = '<div class="empty" style="padding:12px 0">No plugins found.</div>'; return; }
 
     const installedFiles = new Set(pluginState.installed.map(p => p.folder.toLowerCase()));
+    pluginState.byFileName = {};
+    data.items.forEach(p => { pluginState.byFileName[p.fileName] = p; });
     el.innerHTML = data.items.map(p => {
         const isInst = installedFiles.has(p.fileName.toLowerCase());
         return `
@@ -891,20 +936,28 @@ async function searchPlugins() {
   </div>
   ${isInst
     ? '<span style="color:var(--green);font-size:12px;white-space:nowrap">✓ installed</span>'
-    : `<button class="btn-primary" style="font-size:11px;padding:5px 12px;white-space:nowrap" onclick="installPlugin(${JSON.stringify(p)},this)">Install</button>`
+    : `<button class="btn-primary" style="font-size:11px;padding:5px 12px;white-space:nowrap" onclick="installPlugin('${esc(p.fileName)}',this)">Install</button>`
   }
   <a href="${esc(p.htmlUrl)}" target="_blank" class="btn-sm" style="text-decoration:none;display:flex;align-items:center">↗</a>
 </div>`;
     }).join('');
 }
 
-async function installPlugin(p, btn) {
+async function installPlugin(fileNameOrObj, btn) {
+    // Accept either a fileName string (from onclick) or a plugin object (programmatic call)
+    const p = typeof fileNameOrObj === 'string'
+        ? pluginState.byFileName[fileNameOrObj]
+        : fileNameOrObj;
+    if (!p) { alert('Plugin data not found. Please refresh the list.'); return; }
     btn.disabled = true; btn.textContent = 'Downloading…';
     let content;
     try {
-        // Try direct path first; fall back to subfolder convention (Owner/Repo/branch/File.cs/File.cs)
+        // Try root path first; fall back to repo-named subfolder (common WindowsGSM convention)
         let dlr = await fetch(p.rawUrl);
-        if (dlr.status === 404) dlr = await fetch(p.rawUrl + '/' + p.fileName);
+        if (dlr.status === 404) {
+            const subUrl = `https://raw.githubusercontent.com/${p.owner}/${p.repo}/${p.branch}/${p.repo}/${p.fileName}`;
+            dlr = await fetch(subUrl);
+        }
         if (!dlr.ok) { btn.textContent = '✗ Failed'; btn.disabled = false; alert(`Could not download ${p.fileName} (HTTP ${dlr.status})`); return; }
         content = await dlr.text();
     } catch (e) {
