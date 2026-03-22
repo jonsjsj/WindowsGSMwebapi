@@ -284,6 +284,13 @@ namespace WindowsGSM.WebApi.Services
             catch { return null; }
         }
 
+        // ── Plugin hot-reload ─────────────────────────────────────────────────
+
+        public void ReloadPlugins()
+        {
+            _mainWindow.Dispatcher.InvokeAsync(() => _mainWindow.LoadPlugins());
+        }
+
         public (bool success, string message) SaveConfig(string serverId, UpdateServerConfigRequest req)
         {
             try

@@ -22,6 +22,9 @@ namespace WindowsGSM.WebApi.Controllers
 
         private static readonly string PluginsDir = WgsmPath.Combine("plugins");
 
+        private readonly ServerManagerService _manager;
+        public PluginsController(ServerManagerService manager) => _manager = manager;
+
         // ── GET /api/plugins/installed ────────────────────────────────────────
         [HttpGet("api/plugins/installed")]
         public IActionResult GetInstalled()
@@ -186,10 +189,11 @@ namespace WindowsGSM.WebApi.Controllers
                 Directory.CreateDirectory(destDir);
                 await System.IO.File.WriteAllTextAsync(destFile, content).ConfigureAwait(false);
 
+                _manager.ReloadPlugins();
                 return Ok(new
                 {
                     ok      = true,
-                    message = $"{body.FileName} installed. Restart WGSM to load the plugin.",
+                    message = $"{body.FileName} installed and loaded.",
                     path    = destFile,
                 });
             }
@@ -219,7 +223,8 @@ namespace WindowsGSM.WebApi.Controllers
             var destFile = Path.Combine(destDir, body.FileName);
             Directory.CreateDirectory(destDir);
             await System.IO.File.WriteAllTextAsync(destFile, body.Content).ConfigureAwait(false);
-            return Ok(new { ok = true, message = $"{body.FileName} installed. Restart WGSM to load the plugin." });
+            _manager.ReloadPlugins();
+            return Ok(new { ok = true, message = $"{body.FileName} installed and loaded." });
         }
 
         // ── DELETE /api/plugins/{fileName} ────────────────────────────────────
@@ -234,7 +239,8 @@ namespace WindowsGSM.WebApi.Controllers
                 return NotFound(new { error = "Plugin not found." });
 
             Directory.Delete(destDir, recursive: true);
-            return Ok(new { ok = true, message = $"{fileName} removed. Restart WGSM to unload." });
+            _manager.ReloadPlugins();
+            return Ok(new { ok = true, message = $"{fileName} removed and unloaded." });
         }
 
         // ── URL resolver ──────────────────────────────────────────────────────
