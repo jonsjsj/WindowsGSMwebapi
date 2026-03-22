@@ -4,9 +4,10 @@ const path       = require('path');
 const fs         = require('fs');
 const { randomUUID } = require('crypto');
 
-const app       = express();
-const PORT      = parseInt(process.env.PORT || '5680');
-const DATA_FILE = process.env.DATA_FILE || '/data/instances.json';
+const app            = express();
+const PORT           = parseInt(process.env.PORT || '5680');
+const DATA_FILE      = process.env.DATA_FILE      || '/data/instances.json';
+const TEMPLATES_FILE = process.env.TEMPLATES_FILE || '/data/templates.json';
 
 // ── Request log ring-buffer ───────────────────────────────────────────────
 const MAX_LOG   = 300;
@@ -180,6 +181,152 @@ app.post('/api/install-plugin', async (req, res) => {
         res.status(saveRes.status).json(data);
     } catch (e) {
         res.status(503).json({ error: 'WGSM unreachable: ' + e.message });
+    }
+});
+
+// ── Config Templates ──────────────────────────────────────────────────────
+
+function loadTemplates() {
+    try {
+        if (fs.existsSync(TEMPLATES_FILE))
+            return JSON.parse(fs.readFileSync(TEMPLATES_FILE, 'utf8'));
+    } catch {}
+    return [];
+}
+
+function saveTemplates(list) {
+    fs.mkdirSync(path.dirname(TEMPLATES_FILE), { recursive: true });
+    fs.writeFileSync(TEMPLATES_FILE, JSON.stringify(list, null, 2));
+}
+
+// GET /api/templates
+app.get('/api/templates', (_req, res) => res.json(loadTemplates()));
+
+// POST /api/templates  body: { name, game, config: {...} }
+app.post('/api/templates', (req, res) => {
+    const { name, game, config } = req.body ?? {};
+    if (!name || !config)
+        return res.status(400).json({ error: 'name and config are required' });
+    const list = loadTemplates();
+    const tpl  = { id: randomUUID().split('-')[0], name, game: game ?? '', config, createdAt: new Date().toISOString() };
+    list.push(tpl);
+    saveTemplates(list);
+    res.json(tpl);
+});
+
+// PUT /api/templates/:id  — update name/config
+app.put('/api/templates/:id', (req, res) => {
+    const list = loadTemplates();
+    const idx  = list.findIndex(t => t.id === req.params.id);
+    if (idx === -1) return res.status(404).json({ error: 'Not found' });
+    const { name, game, config } = req.body ?? {};
+    if (name)   list[idx].name   = name;
+    if (game)   list[idx].game   = game;
+    if (config) list[idx].config = config;
+    list[idx].updatedAt = new Date().toISOString();
+    saveTemplates(list);
+    res.json(list[idx]);
+});
+
+// DELETE /api/templates/:id
+app.delete('/api/templates/:id', (req, res) => {
+    saveTemplates(loadTemplates().filter(t => t.id !== req.params.id));
+    res.json({ ok: true });
+});
+
+// ── Server Migration ──────────────────────────────────────────────────────
+// Brokers a clone/move: backs up source server, downloads the ZIP, uploads
+// to destination instance, creates a matching server, and triggers restore.
+// Body: { srcInstanceId, srcServerId, dstInstanceId, mode: "clone"|"move" }
+
+app.post('/api/migrate', async (req, res) => {
+    const { srcInstanceId, srcServerId, dstInstanceId, mode } = req.body ?? {};
+    if (!srcInstanceId || !srcServerId || !dstInstanceId)
+        return res.status(400).json({ error: 'srcInstanceId, srcServerId and dstInstanceId are required' });
+
+    const instances = loadInstances();
+    const src = instances.find(i => i.id === srcInstanceId);
+    const dst = instances.find(i => i.id === dstInstanceId);
+    if (!src) return res.status(404).json({ error: 'Source instance not found' });
+    if (!dst) return res.status(404).json({ error: 'Destination instance not found' });
+
+    const authSrc = { 'Authorization': `Bearer ${src.token}`, 'Content-Type': 'application/json' };
+    const authDst = { 'Authorization': `Bearer ${dst.token}`, 'Content-Type': 'application/json' };
+
+    try {
+        // 1. Fetch server config from source
+        const cfgRes = await fetch(`${src.url}/api/servers/${srcServerId}/config`, {
+            headers: authSrc, signal: AbortSignal.timeout(10_000),
+        });
+        if (!cfgRes.ok) return res.status(502).json({ error: `Could not fetch source config: HTTP ${cfgRes.status}` });
+        const cfg = await cfgRes.json();
+
+        // 2. Trigger backup on source (server must be stopped)
+        const bkRes = await fetch(`${src.url}/api/servers/${srcServerId}/backup`, {
+            method: 'POST', headers: authSrc, signal: AbortSignal.timeout(10_000),
+        });
+        if (!bkRes.ok) return res.status(502).json({ error: `Backup failed: HTTP ${bkRes.status}` });
+
+        // 3. Poll for backup completion (up to 5 min)
+        let backupFile = null;
+        for (let i = 0; i < 60; i++) {
+            await new Promise(r => setTimeout(r, 5_000));
+            const listRes = await fetch(`${src.url}/api/servers/${srcServerId}/backups`, {
+                headers: authSrc, signal: AbortSignal.timeout(10_000),
+            });
+            if (listRes.ok) {
+                const backups = await listRes.json();
+                if (Array.isArray(backups) && backups.length > 0) {
+                    backupFile = backups[0].name;   // sorted newest-first by WGSM
+                    break;
+                }
+            }
+        }
+        if (!backupFile) return res.status(504).json({ error: 'Backup did not complete within 5 minutes.' });
+
+        // 4. Download backup ZIP from source
+        const dlRes = await fetch(
+            `${src.url}/api/servers/${srcServerId}/backups/${encodeURIComponent(backupFile)}/download`,
+            { headers: authSrc, signal: AbortSignal.timeout(300_000) }
+        );
+        if (!dlRes.ok) return res.status(502).json({ error: `Backup download failed: HTTP ${dlRes.status}` });
+        const zipBuffer = Buffer.from(await dlRes.arrayBuffer());
+
+        // 5. Upload backup ZIP to destination via multipart form
+        const uploadRes = await fetch(`${dst.url}/api/servers/${srcServerId}/backups/upload`, {
+            method:  'POST',
+            headers: { 'Authorization': `Bearer ${dst.token}`, 'Content-Type': 'application/octet-stream',
+                       'X-Backup-Filename': backupFile },
+            body:    zipBuffer,
+            signal:  AbortSignal.timeout(300_000),
+        });
+        if (!uploadRes.ok) return res.status(502).json({ error: `Backup upload failed: HTTP ${uploadRes.status}` });
+
+        // 6. Apply source config to destination server
+        const patchRes = await fetch(`${dst.url}/api/servers/${srcServerId}/config`, {
+            method: 'PATCH', headers: authDst,
+            body: JSON.stringify({
+                serverName:  cfg.serverName,
+                serverIp:    cfg.serverIp,
+                serverPort:  cfg.serverPort,
+                queryPort:   cfg.queryPort,
+                maxPlayers:  cfg.maxPlayers,
+                serverMap:   cfg.serverMap,
+                serverParam: cfg.serverParam,
+            }),
+            signal: AbortSignal.timeout(10_000),
+        });
+
+        addLog({ type: 'migrate', srcInstanceId, srcServerId, dstInstanceId, mode: mode ?? 'clone', backupFile });
+
+        // 7. If move mode, stop and warn about manual deletion
+        const note = (mode === 'move')
+            ? 'Migration complete. Stop and delete the source server manually in the WGSM UI.'
+            : 'Clone complete. Source server untouched.';
+
+        res.json({ ok: true, backupFile, message: note, configApplied: patchRes.ok });
+    } catch (err) {
+        res.status(503).json({ error: 'Migration failed: ' + err.message });
     }
 });
 
