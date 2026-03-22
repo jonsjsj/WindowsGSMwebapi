@@ -1,7 +1,9 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Reflection;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
@@ -26,6 +28,39 @@ namespace WindowsGSM.WebApi.Controllers
         private readonly ServerManagerService _manager;
         public PluginsController(ServerManagerService manager) => _manager = manager;
 
+        // ── Plugin registry (embedded JSON) ──────────────────────────────────
+        private static readonly Lazy<List<RegistryEntry>> _registry = new(LoadRegistry);
+
+        private static List<RegistryEntry> LoadRegistry()
+        {
+            try
+            {
+                var asm  = Assembly.GetExecutingAssembly();
+                var name = asm.GetManifestResourceNames()
+                              .FirstOrDefault(n => n.EndsWith("plugins-registry.json", StringComparison.OrdinalIgnoreCase));
+                if (name == null) return new List<RegistryEntry>();
+                using var stream = asm.GetManifestResourceStream(name)!;
+                using var doc    = JsonDocument.Parse(stream);
+                return doc.RootElement.EnumerateArray()
+                    .Select(e => new RegistryEntry
+                    {
+                        Owner      = e.GetProperty("owner").GetString()      ?? "",
+                        Repo       = e.GetProperty("repo").GetString()       ?? "",
+                        PluginName = e.GetProperty("pluginName").GetString() ?? "",
+                        FileName   = e.GetProperty("fileName").GetString()   ?? "",
+                        Branch     = e.GetProperty("branch").GetString()     ?? "master",
+                        FilePath   = e.GetProperty("filePath").GetString()   ?? "",
+                    })
+                    .ToList();
+            }
+            catch { return new List<RegistryEntry>(); }
+        }
+
+        private static RegistryEntry? FindInRegistry(string owner, string repo)
+            => _registry.Value.FirstOrDefault(e =>
+                e.Owner.Equals(owner, StringComparison.OrdinalIgnoreCase) &&
+                e.Repo .Equals(repo,  StringComparison.OrdinalIgnoreCase));
+
         // ── GET /api/plugins/installed ────────────────────────────────────────
         [HttpGet("api/plugins/installed")]
         public IActionResult GetInstalled()
@@ -48,68 +83,41 @@ namespace WindowsGSM.WebApi.Controllers
         }
 
         // ── GET /api/plugins/available ────────────────────────────────────────
-        // Searches GitHub for repos with topic:windowsgsm
+        // Returns the curated plugin registry (filtered by optional query string).
         [HttpGet("api/plugins/available")]
-        public async Task<IActionResult> GetAvailable([FromQuery] string q = "")
+        public IActionResult GetAvailable([FromQuery] string q = "")
         {
-            try
+            Directory.CreateDirectory(PluginsDir);
+            var installedFolders = Directory.GetDirectories(PluginsDir, "*.cs", SearchOption.TopDirectoryOnly)
+                .Select(d => Path.GetFileName(d))
+                .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+            var all = _registry.Value;
+
+            IEnumerable<RegistryEntry> filtered = all;
+            if (!string.IsNullOrWhiteSpace(q))
             {
-                var search = string.IsNullOrWhiteSpace(q)
-                    ? "topic:windowsgsm"
-                    : $"topic:windowsgsm {q} in:name";
-                var url = $"https://api.github.com/search/repositories?q={Uri.EscapeDataString(search)}&sort=stars&order=desc&per_page=60";
-
-                using var req = new HttpRequestMessage(HttpMethod.Get, url);
-                req.Headers.Accept.ParseAdd("application/vnd.github+json");
-                using var resp = await _http.SendAsync(req).ConfigureAwait(false);
-
-                if (!resp.IsSuccessStatusCode)
-                    return StatusCode(502, new { error = $"GitHub returned {(int)resp.StatusCode}" });
-
-                var json = await resp.Content.ReadAsStringAsync().ConfigureAwait(false);
-                using var doc = JsonDocument.Parse(json);
-
-                // Get installed folder names for cross-reference
-                Directory.CreateDirectory(PluginsDir);
-                var installedFolders = Directory.GetDirectories(PluginsDir, "*.cs", SearchOption.TopDirectoryOnly)
-                    .Select(d => Path.GetFileName(d))
-                    .ToHashSet(StringComparer.OrdinalIgnoreCase);
-
-                var items = doc.RootElement.GetProperty("items").EnumerateArray()
-                    .Select(item =>
-                    {
-                        var repoName   = item.GetProperty("name").GetString() ?? "";
-                        var owner      = item.GetProperty("owner").GetProperty("login").GetString() ?? "";
-                        var branch     = item.TryGetProperty("default_branch", out var b) ? b.GetString() ?? "master" : "master";
-                        // Convention: plugin file is named after the repo minus "WindowsGSM." prefix
-                        var pluginName = repoName.StartsWith("WindowsGSM.", StringComparison.OrdinalIgnoreCase)
-                            ? repoName["WindowsGSM.".Length..]
-                            : repoName;
-                        var fileName   = pluginName + ".cs";
-                        var installed  = installedFolders.Contains(fileName);
-
-                        return new
-                        {
-                            owner,
-                            repo        = repoName,
-                            pluginName,
-                            fileName,
-                            branch,
-                            description = item.TryGetProperty("description", out var d) ? d.GetString() : null,
-                            stars       = item.GetProperty("stargazers_count").GetInt32(),
-                            htmlUrl     = item.GetProperty("html_url").GetString(),
-                            installed,
-                            rawUrl      = $"https://raw.githubusercontent.com/{owner}/{repoName}/{branch}/{fileName}",
-                        };
-                    })
-                    .ToList();
-
-                return Ok(new { totalCount = doc.RootElement.GetProperty("total_count").GetInt32(), items });
+                var lower = q.ToLowerInvariant();
+                filtered = all.Where(e =>
+                    e.PluginName.ToLowerInvariant().Contains(lower) ||
+                    e.Description.ToLowerInvariant().Contains(lower));
             }
-            catch (Exception ex)
+
+            var items = filtered.Select(e => new
             {
-                return StatusCode(500, new { error = ex.Message });
-            }
+                owner       = e.Owner,
+                repo        = e.Repo,
+                pluginName  = e.PluginName,
+                fileName    = e.FileName,
+                branch      = e.Branch,
+                description = e.Description,
+                stars       = e.Stars,
+                htmlUrl     = $"https://github.com/{e.Owner}/{e.Repo}",
+                installed   = installedFolders.Contains(e.FileName),
+                rawUrl      = $"https://raw.githubusercontent.com/{e.Owner}/{e.Repo}/{e.Branch}/{e.FilePath}",
+            }).ToList();
+
+            return Ok(new { totalCount = items.Count, items });
         }
 
         // ── POST /api/plugins/install ─────────────────────────────────────────
@@ -143,24 +151,32 @@ namespace WindowsGSM.WebApi.Controllers
 
             try
             {
-                var branch  = string.IsNullOrWhiteSpace(body.Branch) ? "master" : body.Branch;
-                var rawUrl  = $"https://raw.githubusercontent.com/{body.Owner}/{body.Repo}/{branch}/{body.FileName}";
+                var branch = string.IsNullOrWhiteSpace(body.Branch) ? "master" : body.Branch;
 
-                // 1. Try root; 2. Try repo-named subfolder; 3. Search full tree via GitHub API
-                HttpResponseMessage? dlResp = null;
-                foreach (var url in new[]
+                // Check registry for the known file path first
+                var regEntry = FindInRegistry(body.Owner!, body.Repo!);
+                string downloadUrl;
+                if (regEntry != null)
                 {
-                    rawUrl,
-                    $"https://raw.githubusercontent.com/{body.Owner}/{body.Repo}/{branch}/{body.Repo}/{body.FileName}",
-                })
+                    downloadUrl = $"https://raw.githubusercontent.com/{regEntry.Owner}/{regEntry.Repo}/{regEntry.Branch}/{regEntry.FilePath}";
+                }
+                else
                 {
-                    dlResp = await _http.GetAsync(url).ConfigureAwait(false);
-                    if (dlResp.IsSuccessStatusCode) break;
+                    downloadUrl = $"https://raw.githubusercontent.com/{body.Owner}/{body.Repo}/{branch}/{body.FileName}";
+                }
+
+                HttpResponseMessage? dlResp = await _http.GetAsync(downloadUrl).ConfigureAwait(false);
+
+                if (dlResp == null || !dlResp.IsSuccessStatusCode)
+                {
+                    // Fallback: try repo-named subfolder, then full recursive tree search
+                    dlResp = await _http.GetAsync(
+                        $"https://raw.githubusercontent.com/{body.Owner}/{body.Repo}/{branch}/{body.Repo}/{body.FileName}")
+                        .ConfigureAwait(false);
                 }
 
                 if (dlResp == null || !dlResp.IsSuccessStatusCode)
                 {
-                    // Fall back: recursively search the repo tree for the file
                     var treeUrl = $"https://api.github.com/repos/{body.Owner}/{body.Repo}/git/trees/{branch}?recursive=1";
                     using var treeReq = new HttpRequestMessage(HttpMethod.Get, treeUrl);
                     treeReq.Headers.Accept.ParseAdd("application/vnd.github+json");
@@ -174,10 +190,9 @@ namespace WindowsGSM.WebApi.Controllers
                             .Select(n => n.GetProperty("path").GetString() ?? "")
                             .FirstOrDefault(p => Path.GetFileName(p).Equals(body.FileName, StringComparison.OrdinalIgnoreCase));
                         if (match != null)
-                        {
-                            var foundUrl = $"https://raw.githubusercontent.com/{body.Owner}/{body.Repo}/{branch}/{match}";
-                            dlResp = await _http.GetAsync(foundUrl).ConfigureAwait(false);
-                        }
+                            dlResp = await _http.GetAsync(
+                                $"https://raw.githubusercontent.com/{body.Owner}/{body.Repo}/{branch}/{match}")
+                                .ConfigureAwait(false);
                     }
                 }
 
@@ -372,6 +387,18 @@ namespace WindowsGSM.WebApi.Controllers
             public string? FileName  { get; set; }
             public string? Branch    { get; set; }
             public string? GithubUrl { get; set; }
+        }
+
+        private class RegistryEntry
+        {
+            public string Owner       { get; set; } = "";
+            public string Repo        { get; set; } = "";
+            public string PluginName  { get; set; } = "";
+            public string FileName    { get; set; } = "";
+            public string Branch      { get; set; } = "master";
+            public string FilePath    { get; set; } = "";
+            public string Description { get; set; } = "";
+            public int    Stars       { get; set; }
         }
     }
 }

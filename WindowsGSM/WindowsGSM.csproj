@@ -325,6 +325,10 @@
   <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
+  <!-- Plugin registry — embedded so it works inside the single-file exe -->
+  <ItemGroup>
+    <EmbeddedResource Include="WebApi\plugins-registry.json" />
+  </ItemGroup>
   <!-- Copy wwwroot into output so Kestrel static file middleware can serve it -->
   <ItemGroup>
     <Content Include="WebApi\wwwroot\**">

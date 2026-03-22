@@ -1,0 +1,698 @@
+[
+  {
+    "owner": "ohmcodes",
+    "repo": "WindowsGSM.Palworld",
+    "pluginName": "Palworld",
+    "fileName": "Palworld.cs",
+    "branch": "main",
+    "filePath": "Palworld.cs/Palworld.cs"
+  },
+  {
+    "owner": "ohmcodes",
+    "repo": "WindowsGSM.Enshrouded",
+    "pluginName": "Enshrouded",
+    "fileName": "Enshrouded.cs",
+    "branch": "main",
+    "filePath": "Enshrouded.cs/Enshrouded.cs"
+  },
+  {
+    "owner": "sh1ny",
+    "repo": "WindowsGSM.ArkSurvivalAscended",
+    "pluginName": "ArkSurvivalAscended",
+    "fileName": "ArkSurvivalAscended.cs",
+    "branch": "main",
+    "filePath": "ArkSurvivalAscended.cs/ArkSurvivalAscended.cs"
+  },
+  {
+    "owner": "DoctorBeardz",
+    "repo": "WindowsGSM.ProjectZomboid",
+    "pluginName": "ProjectZomboid",
+    "fileName": "ProjectZomboid.cs",
+    "branch": "main",
+    "filePath": "ProjectZomboid.cs/ProjectZomboid.cs"
+  },
+  {
+    "owner": "BizakDaTroll",
+    "repo": "WindowsGSM.Icarus",
+    "pluginName": "Icarus",
+    "fileName": "Icarus.cs",
+    "branch": "master",
+    "filePath": "Icarus.cs/Icarus.cs"
+  },
+  {
+    "owner": "ohmcodes",
+    "repo": "WindowsGSM.CS2",
+    "pluginName": "CS2",
+    "fileName": "CS2.cs",
+    "branch": "main",
+    "filePath": "CS2.cs/CS2.cs"
+  },
+  {
+    "owner": "ohmcodes",
+    "repo": "WindowsGSM.Soulmask",
+    "pluginName": "Soulmask",
+    "fileName": "Soulmask.cs",
+    "branch": "main",
+    "filePath": "Soulmask.cs/Soulmask.cs"
+  },
+  {
+    "owner": "ohmcodes",
+    "repo": "WindowsGSM.TheFront",
+    "pluginName": "TheFront",
+    "fileName": "TheFront.cs",
+    "branch": "main",
+    "filePath": "TheFront.cs/TheFront.cs"
+  },
+  {
+    "owner": "Sarpendon",
+    "repo": "WindowsGSM.MythofEmpires",
+    "pluginName": "MythofEmpires",
+    "fileName": "MythofEmpires.cs",
+    "branch": "main",
+    "filePath": "MythofEmpires.cs/MythofEmpires.cs"
+  },
+  {
+    "owner": "Sarpendon",
+    "repo": "WindowsGSM.Valheim",
+    "pluginName": "Valheim",
+    "fileName": "Valheim.cs",
+    "branch": "main",
+    "filePath": "Valheim.cs/Valheim.cs"
+  },
+  {
+    "owner": "werewolf2150",
+    "repo": "WindowsGSM.Satisfactory",
+    "pluginName": "Satisfactory",
+    "fileName": "Satisfactory.cs",
+    "branch": "Early-Access",
+    "filePath": "Satisfactory.cs/Satisfactory.cs"
+  },
+  {
+    "owner": "Raziel7893",
+    "repo": "WindowsGSM.Necesse",
+    "pluginName": "Necesse",
+    "fileName": "Necesse.cs",
+    "branch": "main",
+    "filePath": "Necesse.cs/Necesse.cs"
+  },
+  {
+    "owner": "chromamods",
+    "repo": "WindowsGSM.FabricMC",
+    "pluginName": "FabricMC",
+    "fileName": "FabricMC.cs",
+    "branch": "main",
+    "filePath": "FabricMC.cs/FabricMC.cs"
+  },
+  {
+    "owner": "ohmcodes",
+    "repo": "WindowsGSM.ArkSAwithServerAPI",
+    "pluginName": "ArkSAwithServerAPI",
+    "fileName": "ArkSAwithServerAPI.cs",
+    "branch": "main",
+    "filePath": "ArkSAwithServerAPI.cs/ArkSAwithServerAPI.cs"
+  },
+  {
+    "owner": "Raziel7893",
+    "repo": "WindowsGSM.Hytale",
+    "pluginName": "Hytale",
+    "fileName": "Hytale.cs",
+    "branch": "main",
+    "filePath": "Hytale.cs/Hytale.cs"
+  },
+  {
+    "owner": "ksduster",
+    "repo": "WindowsGSM.TheIsle",
+    "pluginName": "TheIsle",
+    "fileName": "TheIsle.cs",
+    "branch": "main",
+    "filePath": "TheIsle.cs/TheIsle.cs"
+  },
+  {
+    "owner": "1stian",
+    "repo": "WindowsGSM.ASTRONEER",
+    "pluginName": "ASTRONEER",
+    "fileName": "ASTRONEER.cs",
+    "branch": "master",
+    "filePath": "ASTRONEER.cs/ASTRONEER.cs"
+  },
+  {
+    "owner": "Jamie96ITS",
+    "repo": "WindowsGSM.KillingFloor2",
+    "pluginName": "KillingFloor2",
+    "fileName": "KillingFloor2.cs",
+    "branch": "main",
+    "filePath": "KillingFloor2.cs/KillingFloor2.cs"
+  },
+  {
+    "owner": "scowalt",
+    "repo": "WindowsGSM.Starbound",
+    "pluginName": "Starbound",
+    "fileName": "Starbound.cs",
+    "branch": "main",
+    "filePath": "Starbound.cs/Starbound.cs"
+  },
+  {
+    "owner": "BattlefieldDuck",
+    "repo": "WindowsGSM.PaperMC",
+    "pluginName": "PaperMC",
+    "fileName": "PaperMC.cs",
+    "branch": "master",
+    "filePath": "PaperMC.cs/PaperMC.cs"
+  },
+  {
+    "owner": "TheRealSarcasmO",
+    "repo": "WindowsGSM.MotorTownBTW",
+    "pluginName": "MotorTownBTW",
+    "fileName": "MotorTownBTW.cs",
+    "branch": "main",
+    "filePath": "MotorTownBTW.cs/MotorTownBTW.cs"
+  },
+  {
+    "owner": "ohmcodes",
+    "repo": "WindowsGSM.EuroTruckSimulator2",
+    "pluginName": "EuroTruckSimulator2",
+    "fileName": "EuroTruckSimulator2.cs",
+    "branch": "main",
+    "filePath": "EuroTruckSimulator2.cs/EuroTruckSimulator2.cs"
+  },
+  {
+    "owner": "Raziel7893",
+    "repo": "WindowsGSM.Smalland",
+    "pluginName": "Smalland",
+    "fileName": "Smalland.cs",
+    "branch": "main",
+    "filePath": "Smalland.cs/Smalland.cs"
+  },
+  {
+    "owner": "Raziel7893",
+    "repo": "WindowsGSM.BlackMesa",
+    "pluginName": "BlackMesa",
+    "fileName": "BlackMesa.cs",
+    "branch": "main",
+    "filePath": "BlackMesa.cs/BlackMesa.cs"
+  },
+  {
+    "owner": "Sarpendon",
+    "repo": "WindowsGSM.VRising",
+    "pluginName": "VRising",
+    "fileName": "VRising.cs",
+    "branch": "main",
+    "filePath": "VRising.cs/VRising.cs"
+  },
+  {
+    "owner": "BattlefieldDuck",
+    "repo": "WindowsGSM.ARMA3",
+    "pluginName": "ARMA3",
+    "fileName": "ARMA3.cs",
+    "branch": "master",
+    "filePath": "ARMA3.cs/ARMA3.cs"
+  },
+  {
+    "owner": "menix1337",
+    "repo": "WindowsGSM.TheIsleLegacy",
+    "pluginName": "TheIsleLegacy",
+    "fileName": "TheIsleLegacy.cs",
+    "branch": "main",
+    "filePath": "TheIsleLegacy.cs/TheIsleLegacy.cs"
+  },
+  {
+    "owner": "ohmcodes",
+    "repo": "WindowsGSM.Satisfactory",
+    "pluginName": "Satisfactory",
+    "fileName": "Satisfactory.cs",
+    "branch": "main",
+    "filePath": "Satisfactory.cs/Satisfactory.cs"
+  },
+  {
+    "owner": "dwhitacre",
+    "repo": "WindowsGSM.ForgeMC",
+    "pluginName": "ForgeMC",
+    "fileName": "ForgeMC.cs",
+    "branch": "main",
+    "filePath": "ForgeMC.cs/ForgeMC.cs"
+  },
+  {
+    "owner": "Kickbut101",
+    "repo": "WindowsGSM.Terraria",
+    "pluginName": "Terraria",
+    "fileName": "Terraria.cs",
+    "branch": "main",
+    "filePath": "Terraria.cs/Terraria.cs"
+  },
+  {
+    "owner": "1stian",
+    "repo": "WindowsGSM.Spigot",
+    "pluginName": "Spigot",
+    "fileName": "Spigot.cs",
+    "branch": "master",
+    "filePath": "Spigot.cs/Spigot.cs"
+  },
+  {
+    "owner": "cryogenx",
+    "repo": "WindowsGSM.ReturnToMoria",
+    "pluginName": "ReturnToMoria",
+    "fileName": "ReturnToMoria.cs",
+    "branch": "main",
+    "filePath": "ReturnToMoria.cs/ReturnToMoria.cs"
+  },
+  {
+    "owner": "Kickbut101",
+    "repo": "WindowsGSM.Factorio",
+    "pluginName": "Factorio",
+    "fileName": "Factorio.cs",
+    "branch": "main",
+    "filePath": "Factorio.cs/Factorio.cs"
+  },
+  {
+    "owner": "soljian",
+    "repo": "WindowsGSM.SCUM",
+    "pluginName": "SCUM",
+    "fileName": "SCUM.cs",
+    "branch": "main",
+    "filePath": "SCUM.cs/SCUM.cs"
+  },
+  {
+    "owner": "ohmcodes",
+    "repo": "WindowsGSM.AmericanTruckSimulator",
+    "pluginName": "AmericanTruckSimulator",
+    "fileName": "AmericanTruckSimulator.cs",
+    "branch": "main",
+    "filePath": "AmericanTruckSimulator.cs/AmericanTruckSimulator.cs"
+  },
+  {
+    "owner": "ma-halo",
+    "repo": "WindowsGSM.SonsOfTheForest",
+    "pluginName": "SonsOfTheForest",
+    "fileName": "SonsOfTheForest.cs",
+    "branch": "main",
+    "filePath": "SonsOfTheForest.cs/SonsOfTheForest.cs"
+  },
+  {
+    "owner": "tadavispmd040507",
+    "repo": "WindowsGSM.ASKA",
+    "pluginName": "ASKA",
+    "fileName": "ASKA.cs",
+    "branch": "main",
+    "filePath": "ASKA.cs/ASKA.cs"
+  },
+  {
+    "owner": "Raziel7893",
+    "repo": "WindowsGSM.Vein",
+    "pluginName": "Vein",
+    "fileName": "Vein.cs",
+    "branch": "main",
+    "filePath": "Vein.cs/Vein.cs"
+  },
+  {
+    "owner": "ohmcodes",
+    "repo": "WindowsGSM.Sunkenland",
+    "pluginName": "Sunkenland",
+    "fileName": "Sunkenland.cs",
+    "branch": "main",
+    "filePath": "Sunkenland.cs/Sunkenland.cs"
+  },
+  {
+    "owner": "Raziel7893",
+    "repo": "WindowsGSM.BoB",
+    "pluginName": "BoB",
+    "fileName": "BoB.cs",
+    "branch": "main",
+    "filePath": "BoB.cs/BoB.cs"
+  },
+  {
+    "owner": "0mnifarious",
+    "repo": "WindowsGSM.HumanitZ",
+    "pluginName": "HumanitZ",
+    "fileName": "HumanitZ.cs",
+    "branch": "main",
+    "filePath": "HumanitZ.cs/HumanitZ.cs"
+  },
+  {
+    "owner": "stellosartois",
+    "repo": "WindowsGSM.SvenCoop",
+    "pluginName": "SvenCoop",
+    "fileName": "SvenCoop.cs",
+    "branch": "main",
+    "filePath": "SvenCoop.cs/SvenCoop.cs"
+  },
+  {
+    "owner": "tortonight",
+    "repo": "WindowsGSM.SCUM",
+    "pluginName": "SCUM",
+    "fileName": "SCUM.cs",
+    "branch": "main",
+    "filePath": "SCUM.cs/SCUM.cs"
+  },
+  {
+    "owner": "Raziel7893",
+    "repo": "WindowsGSM.Wreckfest2",
+    "pluginName": "Wreckfest2",
+    "fileName": "Wreckfest2.cs",
+    "branch": "main",
+    "filePath": "Wreckfest2.cs/Wreckfest2.cs"
+  },
+  {
+    "owner": "Raziel7893",
+    "repo": "WindowsGSM.AstroColony",
+    "pluginName": "AstroColony",
+    "fileName": "AstroColony.cs",
+    "branch": "main",
+    "filePath": "AstroColony.cs/AstroColony.cs"
+  },
+  {
+    "owner": "MildlyInterested",
+    "repo": "WindowsGSM.ARMA3_FASTER",
+    "pluginName": "ARMA3_FASTER",
+    "fileName": "ARMA3_FASTER.cs",
+    "branch": "main",
+    "filePath": "ARMA3_FASTER.cs/ARMA3_FASTER.cs"
+  },
+  {
+    "owner": "Alakeram",
+    "repo": "WindowsGSM.StarRupture",
+    "pluginName": "StarRupture",
+    "fileName": "StarRupture.cs",
+    "branch": "1.6",
+    "filePath": "StarRupture.cs/StarRupture.cs"
+  },
+  {
+    "owner": "Raziel7893",
+    "repo": "WindowsGSM.ArmaReforger",
+    "pluginName": "ArmaReforger",
+    "fileName": "ArmaReforger.cs",
+    "branch": "main",
+    "filePath": "ArmaReforger.cs/ArmaReforger.cs"
+  },
+  {
+    "owner": "Raziel7893",
+    "repo": "WindowsGSM.VoyagersOfNera",
+    "pluginName": "VoyagersOfNera",
+    "fileName": "VoyagersOfNera.cs",
+    "branch": "main",
+    "filePath": "VoyagersOfNera.cs/VoyagersOfNera.cs"
+  },
+  {
+    "owner": "Joe90384",
+    "repo": "WindowsGSM.RustOxideWithRustEdit",
+    "pluginName": "RustOxideWithRustEdit",
+    "fileName": "RustOxideWithRustEdit.cs",
+    "branch": "main",
+    "filePath": "RustOxideWithRustEdit.cs/RustOxideWithRustEdit.cs"
+  },
+  {
+    "owner": "IOxee",
+    "repo": "WindowsGSM.RedM",
+    "pluginName": "RedM",
+    "fileName": "RedM.cs",
+    "branch": "main",
+    "filePath": "RedM.cs/RedM.cs"
+  },
+  {
+    "owner": "1stian",
+    "repo": "WindowsGSM.DeadMatter",
+    "pluginName": "DeadMatter",
+    "fileName": "DeadMatter.cs",
+    "branch": "master",
+    "filePath": "DeadMatter.cs/DeadMatter.cs"
+  },
+  {
+    "owner": "LegendSeeker",
+    "repo": "WindowsGSM.SDTD_ExperimentalBeta",
+    "pluginName": "SDTD_ExperimentalBeta",
+    "fileName": "SDTD_ExperimentalBeta.cs",
+    "branch": "master",
+    "filePath": "SDTD_ExperimentalBeta.cs/SDTD_ExperimentalBeta.cs"
+  },
+  {
+    "owner": "GeekbeeGER",
+    "repo": "WindowsGSM.NOTD",
+    "pluginName": "NOTD",
+    "fileName": "NOTD.cs",
+    "branch": "main",
+    "filePath": "NOTD.cs/NOTD.cs"
+  },
+  {
+    "owner": "Raziel7893",
+    "repo": "WindowsGSM.REM",
+    "pluginName": "REM",
+    "fileName": "REM.cs",
+    "branch": "main",
+    "filePath": "REM.cs/REM.cs"
+  },
+  {
+    "owner": "Raziel7893",
+    "repo": "WindowsGSM.Repoly",
+    "pluginName": "Repoly",
+    "fileName": "Repoly.cs",
+    "branch": "main",
+    "filePath": "Repoly.cs/Repoly.cs"
+  },
+  {
+    "owner": "SmilerRyan",
+    "repo": "WindowsGSM.BattleBit",
+    "pluginName": "BattleBit",
+    "fileName": "BattleBit.cs",
+    "branch": "master",
+    "filePath": "BattleBit.cs/BattleBit.cs"
+  },
+  {
+    "owner": "Voidoz",
+    "repo": "WindowsGSM.SCPSL",
+    "pluginName": "SCPSL",
+    "fileName": "SCPSL.cs",
+    "branch": "master",
+    "filePath": "SCPSL.cs/SCPSL.cs"
+  },
+  {
+    "owner": "Raziel7893",
+    "repo": "WindowsGSM.TABG",
+    "pluginName": "TABG",
+    "fileName": "TABG.cs",
+    "branch": "main",
+    "filePath": "TABG.cs/TABG.cs"
+  },
+  {
+    "owner": "Raziel7893",
+    "repo": "WindowsGSM.Riftbreaker",
+    "pluginName": "Riftbreaker",
+    "fileName": "Riftbreaker.cs",
+    "branch": "main",
+    "filePath": "Riftbreaker.cs/Riftbreaker.cs"
+  },
+  {
+    "owner": "Raziel7893",
+    "repo": "WindowsGSM.Brink",
+    "pluginName": "Brink",
+    "fileName": "Brink.cs",
+    "branch": "main",
+    "filePath": "Brink.cs/Brink.cs"
+  },
+  {
+    "owner": "Raziel7893",
+    "repo": "WindowsGSM.Shatterline",
+    "pluginName": "Shatterline",
+    "fileName": "Shatterline.cs",
+    "branch": "main",
+    "filePath": "Shatterline.cs/Shatterline.cs"
+  },
+  {
+    "owner": "Raziel7893",
+    "repo": "WindowsGSM.ARKSE",
+    "pluginName": "ARKSE",
+    "fileName": "ARKSE.cs",
+    "branch": "main",
+    "filePath": "ARKSE.cs/ARKSE.cs"
+  },
+  {
+    "owner": "DrAbcOfficial",
+    "repo": "WindowsGSM.MCV",
+    "pluginName": "MCV",
+    "fileName": "MCV.cs",
+    "branch": "main",
+    "filePath": "MCV.cs/MCV.cs"
+  },
+  {
+    "owner": "werewolf2150",
+    "repo": "WindowsGSM.Foundry",
+    "pluginName": "Foundry",
+    "fileName": "Foundry.cs",
+    "branch": "main",
+    "filePath": "Foundry.cs/Foundry.cs"
+  },
+  {
+    "owner": "ohmcodes",
+    "repo": "WindowsGSM.SAMP",
+    "pluginName": "SAMP",
+    "fileName": "SAMP.cs",
+    "branch": "main",
+    "filePath": "SAMP.cs/SAMP.cs"
+  },
+  {
+    "owner": "Raziel7893",
+    "repo": "WindowsGSM.RisingWorld",
+    "pluginName": "RisingWorld",
+    "fileName": "RisingWorld.cs",
+    "branch": "main",
+    "filePath": "RisingWorld.cs/RisingWorld.cs"
+  },
+  {
+    "owner": "GeekbeeGER",
+    "repo": "WindowsGSM.CoreKeeper",
+    "pluginName": "CoreKeeper",
+    "fileName": "CoreKeeper.cs",
+    "branch": "main",
+    "filePath": "CoreKeeper.cs/CoreKeeper.cs"
+  },
+  {
+    "owner": "VisualYak",
+    "repo": "WindowsGSM.GroundBranch",
+    "pluginName": "GroundBranch",
+    "fileName": "GroundBranch.cs",
+    "branch": "main",
+    "filePath": "GroundBranch.cs"
+  },
+  {
+    "owner": "1stian",
+    "repo": "WindowsGSM.Waterfall",
+    "pluginName": "Waterfall",
+    "fileName": "Waterfall.cs",
+    "branch": "master",
+    "filePath": "Waterfall.cs/Waterfall.cs"
+  },
+  {
+    "owner": "Kickbut101",
+    "repo": "WindowsGSM.Mindustry",
+    "pluginName": "Mindustry",
+    "fileName": "Mindustry.cs",
+    "branch": "main",
+    "filePath": "Mindustry.cs/Mindustry.cs"
+  },
+  {
+    "owner": "Raziel7893",
+    "repo": "WindowsGSM.Longvinter",
+    "pluginName": "Longvinter",
+    "fileName": "Longvinter.cs",
+    "branch": "main",
+    "filePath": "Longvinter.cs/Longvinter.cs"
+  },
+  {
+    "owner": "Raziel7893",
+    "repo": "WindowsGSM.Imposter",
+    "pluginName": "Imposter",
+    "fileName": "Imposter.cs",
+    "branch": "main",
+    "filePath": "Imposter.cs/Imposter.cs"
+  },
+  {
+    "owner": "johanwintgens",
+    "repo": "WindowsGSM.Satisfactory",
+    "pluginName": "Satisfactory",
+    "fileName": "Satisfactory.cs",
+    "branch": "master",
+    "filePath": "Satisfactory.cs/Satisfactory.cs"
+  },
+  {
+    "owner": "Raziel7893",
+    "repo": "WindowsGSM.GroundBranch",
+    "pluginName": "GroundBranch",
+    "fileName": "GroundBranch.cs",
+    "branch": "main",
+    "filePath": "GroundBranch.cs/GroundBranch.cs"
+  },
+  {
+    "owner": "ohmcodes",
+    "repo": "WindowsGSM.AssettoCorsa",
+    "pluginName": "AssettoCorsa",
+    "fileName": "AssettoCorsa.cs",
+    "branch": "main",
+    "filePath": "AssettoCorsa.cs/AssettoCorsa.cs"
+  },
+  {
+    "owner": "Raziel7893",
+    "repo": "WindowsGSM.NuclearDawn",
+    "pluginName": "NuclearDawn",
+    "fileName": "NuclearDawn.cs",
+    "branch": "main",
+    "filePath": "NuclearDawn.cs/NuclearDawn.cs"
+  },
+  {
+    "owner": "estvn-ca",
+    "repo": "WindowsGSM.PurpurMC",
+    "pluginName": "PurpurMC",
+    "fileName": "PurpurMC.cs",
+    "branch": "main",
+    "filePath": "PurpurMC.cs/PurpurMC.cs"
+  },
+  {
+    "owner": "Raziel7893",
+    "repo": "WindowsGSM.Dragonhold",
+    "pluginName": "Dragonhold",
+    "fileName": "Dragonhold.cs",
+    "branch": "main",
+    "filePath": "Dragonhold.cs/Dragonhold.cs"
+  },
+  {
+    "owner": "Raziel7893",
+    "repo": "WindowsGSM.Nightingale",
+    "pluginName": "Nightingale",
+    "fileName": "Nightingale.cs",
+    "branch": "main",
+    "filePath": "Nightingale.cs/Nightingale.cs"
+  },
+  {
+    "owner": "Prefix",
+    "repo": "WindowsGSM.SBox",
+    "pluginName": "SBox",
+    "fileName": "SBox.cs",
+    "branch": "main",
+    "filePath": "SBox.cs/SBox.cs"
+  },
+  {
+    "owner": "JTNeXuS2",
+    "repo": "WindowsGSM.SoulMask",
+    "pluginName": "SoulMask",
+    "fileName": "SoulMask.cs",
+    "branch": "main",
+    "filePath": "SoulMask.cs"
+  },
+  {
+    "owner": "tempusthales",
+    "repo": "WindowsGSM.theforest",
+    "pluginName": "theforest",
+    "fileName": "theforest.cs",
+    "branch": "main",
+    "filePath": "theforest.cs/theforest.cs"
+  },
+  {
+    "owner": "x1manPsychopath",
+    "repo": "WindowsGSM.Factorio",
+    "pluginName": "Factorio",
+    "fileName": "Factorio.cs",
+    "branch": "main",
+    "filePath": "Factorio.cs"
+  },
+  {
+    "owner": "ohmcodes",
+    "repo": "WindowsGSM.AgeOfChivalry",
+    "pluginName": "AgeOfChivalry",
+    "fileName": "AgeOfChivalry.cs",
+    "branch": "main",
+    "filePath": "AgeOfChivalry.cs/AgeOfChivalry.cs"
+  },
+  {
+    "owner": "IOxee",
+    "repo": "WindowsGSM.FiveM",
+    "pluginName": "FiveM",
+    "fileName": "FiveM.cs",
+    "branch": "main",
+    "filePath": "FiveM.cs"
+  },
+  {
+    "owner": "ohmcodes",
+    "repo": "WindowsGSM.DarkMessiahOfMightAndMagic",
+    "pluginName": "DarkMessiahOfMightAndMagic",
+    "fileName": "DarkMessiahOfMightAndMagic.cs",
+    "branch": "main",
+    "filePath": "DarkMessiahOfMightAndMagic.cs/DarkMessiahOfMightAndMagic.cs"
+  }
+]
