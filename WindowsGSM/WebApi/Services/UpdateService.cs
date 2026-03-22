@@ -2,11 +2,9 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Net.Http;
-using System.Text.Json;
 using System.Threading.Tasks;
 using System.Windows;
 using WindowsGSM.WebApi;
-using WindowsGSM.WebApi.Models;
 
 namespace WindowsGSM.WebApi.Services
 {
@@ -50,7 +48,9 @@ namespace WindowsGSM.WebApi.Services
                 Process.GetCurrentProcess().MainModule!.FileName).FileVersion ?? "0.0.0.0";
 
         /// <summary>
-        /// Checks GitHub for the latest release.
+        /// Checks GitHub for the latest release using the HTML redirect — no API key,
+        /// no rate limit.  GET /releases/latest → 302 → /releases/tag/vX.Y.Z
+        /// Download URL is constructed directly from the tag name.
         /// Returns (hasUpdate, latestTag, downloadUrl, errorMessage).
         /// </summary>
         public async Task<(bool hasUpdate, string latestTag, string? downloadUrl, string? error)>
@@ -58,36 +58,25 @@ namespace WindowsGSM.WebApi.Services
         {
             try
             {
-                var url     = $"https://api.github.com/repos/{GitHubOwner}/{GitHubRepo}/releases/latest";
-                using var req = new HttpRequestMessage(HttpMethod.Get, url);
-                req.Headers.Accept.ParseAdd("application/vnd.github+json");
+                // Use the web URL; GitHub redirects to the actual tag page with no rate limit.
+                var url = $"https://github.com/{GitHubOwner}/{GitHubRepo}/releases/latest";
+                using var req  = new HttpRequestMessage(HttpMethod.Get, url);
+                using var resp = await _http.SendAsync(req, HttpCompletionOption.ResponseHeadersRead)
+                                           .ConfigureAwait(false);
 
-                using var resp = await _http.SendAsync(req).ConfigureAwait(false);
-                if (!resp.IsSuccessStatusCode)
-                    return (false, string.Empty, null, $"GitHub returned {(int)resp.StatusCode}");
+                // Follow the redirect manually to extract the tag from the final URL
+                var finalUrl = resp.RequestMessage?.RequestUri?.ToString()
+                            ?? resp.Headers.Location?.ToString()
+                            ?? string.Empty;
 
-                var json = await resp.Content.ReadAsStringAsync().ConfigureAwait(false);
-                using var doc = JsonDocument.Parse(json);
+                // finalUrl ends with  /releases/tag/v1.0.36
+                var tagStart = finalUrl.LastIndexOf("/tag/", StringComparison.Ordinal);
+                if (tagStart < 0)
+                    return (false, string.Empty, null, "Could not parse release tag from redirect URL");
 
-                var root      = doc.RootElement;
-                var tagName   = root.GetProperty("tag_name").GetString() ?? "";
-                var latestVer = tagName.TrimStart('v');
-
-                // Find the raw exe asset
-                string? downloadUrl = null;
-                if (root.TryGetProperty("assets", out var assets))
-                {
-                    foreach (var asset in assets.EnumerateArray())
-                    {
-                        if (asset.TryGetProperty("name", out var nameProp) &&
-                            nameProp.GetString() == AssetName &&
-                            asset.TryGetProperty("browser_download_url", out var urlProp))
-                        {
-                            downloadUrl = urlProp.GetString();
-                            break;
-                        }
-                    }
-                }
+                var tagName    = finalUrl.Substring(tagStart + 5); // strip "/tag/"
+                var latestVer  = tagName.TrimStart('v');
+                var downloadUrl = $"https://github.com/{GitHubOwner}/{GitHubRepo}/releases/download/{tagName}/{AssetName}";
 
                 bool hasUpdate = IsNewer(latestVer, CurrentVersion);
                 return (hasUpdate, tagName, downloadUrl, null);
