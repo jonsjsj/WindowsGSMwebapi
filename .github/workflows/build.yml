@@ -1,16 +1,27 @@
 name: Build
-on: [push, pull_request]
+
+on:
+  pull_request:
+  push:
+    branches-ignore:
+      - master
 
 jobs:
-  Build:
-    runs-on: windows-2019
+  build:
+    runs-on: windows-latest
     steps:
-    - uses: actions/checkout@v2
-    - name: Setup MSBuild.exe
-      uses: microsoft/setup-msbuild@v1
-      env:
-        ACTIONS_ALLOW_UNSECURE_COMMANDS: true
-    - name: Restore packages
-      run: msbuild WindowsGSM.sln /t:restore
-    - name: Build with MSBuild
-      run: msbuild WindowsGSM.sln
+      - uses: actions/checkout@v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Add MSBuild to PATH
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Restore
+        run: msbuild WindowsGSM/WindowsGSM.csproj /t:Restore /p:Configuration=Release
+
+      - name: Build
+        run: msbuild WindowsGSM/WindowsGSM.csproj /p:Configuration=Release /p:Platform=AnyCPU
