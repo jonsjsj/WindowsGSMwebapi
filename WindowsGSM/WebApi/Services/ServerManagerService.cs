@@ -391,12 +391,18 @@ namespace WindowsGSM.WebApi.Services
             Directory.CreateDirectory(installPath);
             newConfig.CreateServerDirectory();
 
-            // 2. Get game server class (needs PluginsList for plugin-based games)
+            // 2. Get game server class and start the installer — must run on the UI thread
+            //    because dynamic game server objects are WPF-bound.
             dynamic? gameServer = null;
-            _mainWindow.Dispatcher.Invoke(() =>
+            System.Diagnostics.Process? installer = null;
+
+            await _mainWindow.Dispatcher.InvokeAsync(async () =>
             {
                 gameServer = GameServer.Data.Class.Get(game, newConfig, _mainWindow.PluginsList);
-            });
+                if (gameServer == null) return;
+                job.AddLog($"[INFO] Starting installer for {game}…");
+                installer = await gameServer.Install();
+            }).Task.Unwrap().ConfigureAwait(false);
 
             if (gameServer == null)
             {
@@ -404,13 +410,9 @@ namespace WindowsGSM.WebApi.Services
                 throw new InvalidOperationException($"Game '{game}' not found. Install the plugin first.");
             }
 
-            // 3. Run the installer (e.g. SteamCMD)
-            job.AddLog($"[INFO] Starting installer for {game}…");
-            System.Diagnostics.Process? installer = await gameServer.Install();
-
+            // 3. Stream installer output from background (SteamCMD etc.)
             if (installer != null)
             {
-                // Stream stdout to the job log
                 var reader = installer.StandardOutput;
                 while (!reader.EndOfStream)
                 {
@@ -420,8 +422,13 @@ namespace WindowsGSM.WebApi.Services
                 await Task.Run(() => installer.WaitForExit()).ConfigureAwait(false);
             }
 
-            // 4. Validate
-            bool valid = (bool)gameServer.IsInstallValid();
+            // 4–6. Validate and write config — back on UI thread because gameServer is UI-bound
+            bool valid = false;
+            await _mainWindow.Dispatcher.InvokeAsync(() =>
+            {
+                valid = (bool)gameServer.IsInstallValid();
+            }).Task.ConfigureAwait(false);
+
             if (!valid)
             {
                 job.AddLog("[ERROR] Install validation failed — the game files may not have downloaded correctly.");
@@ -429,18 +436,17 @@ namespace WindowsGSM.WebApi.Services
                 return;
             }
 
-            // 5. Write WGSM config
-            newConfig.ServerIP   = newConfig.GetIPAddress();
-            newConfig.ServerPort = newConfig.GetAvailablePort((string)gameServer.Port, (int)gameServer.PortIncrements);
-            newConfig.SetData(game, serverName, gameServer);
-            newConfig.CreateWindowsGSMConfig();
-
-            try { gameServer.CreateServerCFG(); } catch { /* optional */ }
+            await _mainWindow.Dispatcher.InvokeAsync(() =>
+            {
+                newConfig.ServerIP   = newConfig.GetIPAddress();
+                newConfig.ServerPort = newConfig.GetAvailablePort((string)gameServer.Port, (int)gameServer.PortIncrements);
+                newConfig.SetData(game, serverName, gameServer);
+                newConfig.CreateWindowsGSMConfig();
+                try { gameServer.CreateServerCFG(); } catch { /* optional */ }
+                _mainWindow.LoadServerTable();
+            }).Task.ConfigureAwait(false);
 
             job.AddLog($"[INFO] Server '{serverName}' installed as ID {newConfig.ServerID}.");
-
-            // 6. Reload UI table on WPF dispatcher
-            await _mainWindow.Dispatcher.InvokeAsync(() => _mainWindow.LoadServerTable()).Task;
         }
 
         public (bool success, string message) SaveConfig(string serverId, UpdateServerConfigRequest req)
