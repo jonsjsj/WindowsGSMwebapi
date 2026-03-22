@@ -81,6 +81,18 @@ namespace WindowsGSM.WebApi.Models
         public string FileName { get; set; } = string.Empty;
     }
 
+    public class PluginError
+    {
+        public string FileName { get; set; } = string.Empty;
+        public string Error    { get; set; } = string.Empty;
+    }
+
+    public class PluginReloadResult
+    {
+        public List<string>      Loaded  { get; set; } = new();
+        public List<PluginError> Failed  { get; set; } = new();
+    }
+
     public class ResourcesSummaryDto
     {
         public int    TotalServers    { get; set; }

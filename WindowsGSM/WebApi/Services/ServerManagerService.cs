@@ -286,9 +286,20 @@ namespace WindowsGSM.WebApi.Services
 
         // ── Plugin hot-reload ─────────────────────────────────────────────────
 
-        public void ReloadPlugins()
+        /// <summary>
+        /// Recompiles and reloads all plugins on the WPF UI thread.
+        /// Returns a summary of what loaded successfully.
+        /// </summary>
+        public async Task<PluginReloadResult> ReloadPluginsAsync()
         {
-            _mainWindow.Dispatcher.InvokeAsync(() => _mainWindow.LoadPlugins());
+            await _mainWindow.Dispatcher.InvokeAsync(async () =>
+                await _mainWindow.LoadPlugins()).Task.Unwrap();
+
+            var loaded  = _mainWindow.PluginsList.Where(p => p.IsLoaded).Select(p => p.FileName).ToList();
+            var failed  = _mainWindow.PluginsList.Where(p => !p.IsLoaded)
+                            .Select(p => new PluginError { FileName = p.FileName, Error = p.Error ?? "Unknown error" })
+                            .ToList();
+            return new PluginReloadResult { Loaded = loaded, Failed = failed };
         }
 
         public (bool success, string message) SaveConfig(string serverId, UpdateServerConfigRequest req)

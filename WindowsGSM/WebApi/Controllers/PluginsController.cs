@@ -189,12 +189,16 @@ namespace WindowsGSM.WebApi.Controllers
                 Directory.CreateDirectory(destDir);
                 await System.IO.File.WriteAllTextAsync(destFile, content).ConfigureAwait(false);
 
-                _manager.ReloadPlugins();
+                var reload = await _manager.ReloadPluginsAsync();
+                var thisPlugin = reload.Failed.FirstOrDefault(f =>
+                    f.FileName.Equals(body.FileName, StringComparison.OrdinalIgnoreCase));
                 return Ok(new
                 {
-                    ok      = true,
-                    message = $"{body.FileName} installed and loaded.",
-                    path    = destFile,
+                    ok      = thisPlugin == null,
+                    message = thisPlugin == null
+                        ? $"{body.FileName} installed and loaded successfully."
+                        : $"{body.FileName} installed but failed to compile: {thisPlugin.Error}",
+                    reload,
                 });
             }
             catch (HttpRequestException ex)
@@ -223,13 +227,22 @@ namespace WindowsGSM.WebApi.Controllers
             var destFile = Path.Combine(destDir, body.FileName);
             Directory.CreateDirectory(destDir);
             await System.IO.File.WriteAllTextAsync(destFile, body.Content).ConfigureAwait(false);
-            _manager.ReloadPlugins();
-            return Ok(new { ok = true, message = $"{body.FileName} installed and loaded." });
+            var reload = await _manager.ReloadPluginsAsync();
+            var thisPlugin = reload.Failed.FirstOrDefault(f =>
+                f.FileName.Equals(body.FileName, StringComparison.OrdinalIgnoreCase));
+            return Ok(new
+            {
+                ok      = thisPlugin == null,
+                message = thisPlugin == null
+                    ? $"{body.FileName} installed and loaded successfully."
+                    : $"{body.FileName} installed but failed to compile: {thisPlugin.Error}",
+                reload,
+            });
         }
 
         // ── DELETE /api/plugins/{fileName} ────────────────────────────────────
         [HttpDelete("api/plugins/{fileName}")]
-        public IActionResult UninstallPlugin(string fileName)
+        public async Task<IActionResult> UninstallPlugin(string fileName)
         {
             if (!fileName.EndsWith(".cs", StringComparison.OrdinalIgnoreCase))
                 return BadRequest(new { error = "fileName must end with .cs" });
@@ -239,8 +252,22 @@ namespace WindowsGSM.WebApi.Controllers
                 return NotFound(new { error = "Plugin not found." });
 
             Directory.Delete(destDir, recursive: true);
-            _manager.ReloadPlugins();
+            await _manager.ReloadPluginsAsync();
             return Ok(new { ok = true, message = $"{fileName} removed and unloaded." });
+        }
+
+        // ── POST /api/plugins/reload ──────────────────────────────────────────
+        // Recompiles all installed plugins without restarting WGSM
+        [HttpPost("api/plugins/reload")]
+        public async Task<IActionResult> Reload()
+        {
+            var result = await _manager.ReloadPluginsAsync();
+            return Ok(new
+            {
+                ok      = result.Failed.Count == 0,
+                message = $"Reload complete. Loaded: {result.Loaded.Count}, Failed: {result.Failed.Count}",
+                result,
+            });
         }
 
         // ── URL resolver ──────────────────────────────────────────────────────

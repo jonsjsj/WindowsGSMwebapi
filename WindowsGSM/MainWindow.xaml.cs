@@ -543,10 +543,12 @@ namespace WindowsGSM
             }
         }
 
-        public async void LoadPlugins(bool shouldAwait = true)
+        public async Task LoadPlugins(bool shouldAwait = true)
         {
             var pm = new PluginManagement();
             PluginsList = await pm.LoadPlugins(shouldAwait);
+
+            StackPanel_PluginList.Children.Clear();
 
             int loadedCount = 0;
             PluginsList.ForEach(delegate (PluginMetadata plugin)
