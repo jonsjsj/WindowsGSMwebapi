@@ -85,31 +85,31 @@ namespace WindowsGSM.WebApi.Controllers
             s.RamMb      = _resources.GetRamMb(s.Pid);
         }
 
-        // POST /api/servers/{id}/start
+        // POST /api/servers/{id}/start  →  202 Accepted, poll GET /api/servers/{id} for status
         [HttpPost("{id}/start")]
-        public async Task<IActionResult> Start(string id)
+        public IActionResult Start(string id)
         {
-            var (success, message) = await _manager.StartAsync(id);
+            var (success, message) = _manager.Start(id);
             var result = new ApiActionResult { Success = success, Message = message };
-            return success ? Ok(result) : BadRequest(result);
+            return success ? Accepted(result) : BadRequest(result);
         }
 
         // POST /api/servers/{id}/stop
         [HttpPost("{id}/stop")]
-        public async Task<IActionResult> Stop(string id)
+        public IActionResult Stop(string id)
         {
-            var (success, message) = await _manager.StopAsync(id);
+            var (success, message) = _manager.Stop(id);
             var result = new ApiActionResult { Success = success, Message = message };
-            return success ? Ok(result) : BadRequest(result);
+            return success ? Accepted(result) : BadRequest(result);
         }
 
         // POST /api/servers/{id}/restart
         [HttpPost("{id}/restart")]
-        public async Task<IActionResult> Restart(string id)
+        public IActionResult Restart(string id)
         {
-            var (success, message) = await _manager.RestartAsync(id);
+            var (success, message) = _manager.Restart(id);
             var result = new ApiActionResult { Success = success, Message = message };
-            return success ? Ok(result) : BadRequest(result);
+            return success ? Accepted(result) : BadRequest(result);
         }
 
         // GET /api/servers/{id}/logs?count=200
@@ -134,22 +134,22 @@ namespace WindowsGSM.WebApi.Controllers
             return success ? Ok(result) : BadRequest(result);
         }
 
-        // POST /api/servers/{id}/update
+        // POST /api/servers/{id}/update  →  202 Accepted
         [HttpPost("{id}/update")]
-        public async Task<IActionResult> Update(string id)
+        public IActionResult Update(string id)
         {
-            var (success, message) = await _manager.UpdateAsync(id);
+            var (success, message) = _manager.Update(id);
             var result = new ApiActionResult { Success = success, Message = message };
-            return success ? Ok(result) : BadRequest(result);
+            return success ? Accepted(result) : BadRequest(result);
         }
 
-        // POST /api/servers/{id}/backup
+        // POST /api/servers/{id}/backup  →  202 Accepted
         [HttpPost("{id}/backup")]
-        public async Task<IActionResult> Backup(string id)
+        public IActionResult Backup(string id)
         {
-            var (success, message) = await _manager.BackupAsync(id);
+            var (success, message) = _manager.Backup(id);
             var result = new ApiActionResult { Success = success, Message = message };
-            return success ? Ok(result) : BadRequest(result);
+            return success ? Accepted(result) : BadRequest(result);
         }
 
         // GET /api/servers/{id}/backups
@@ -160,17 +160,16 @@ namespace WindowsGSM.WebApi.Controllers
             return Ok(backups);
         }
 
-        // POST /api/servers/{id}/restore
-        // Body: { "fileName": "backup_20240101_120000.zip" }
+        // POST /api/servers/{id}/restore  →  202 Accepted
         [HttpPost("{id}/restore")]
-        public async Task<IActionResult> RestoreBackup(string id, [FromBody] RestoreBackupRequest req)
+        public IActionResult RestoreBackup(string id, [FromBody] RestoreBackupRequest req)
         {
             if (string.IsNullOrWhiteSpace(req?.FileName))
                 return BadRequest(new ApiActionResult { Success = false, Message = "fileName is required." });
 
-            var (success, message) = await _manager.RestoreBackupAsync(id, req.FileName);
+            var (success, message) = _manager.RestoreBackup(id, req.FileName);
             var result = new ApiActionResult { Success = success, Message = message };
-            return success ? Ok(result) : BadRequest(result);
+            return success ? Accepted(result) : BadRequest(result);
         }
 
         // GET /api/servers/{id}/config

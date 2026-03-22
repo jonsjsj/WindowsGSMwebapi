@@ -78,17 +78,9 @@ namespace WindowsGSM.WebApi.Services
             return logs;
         }
 
-        public async Task<(bool success, string message)> StartAsync(string serverId)
+        public (bool success, string message) Start(string serverId)
         {
-            ServerTable? server = null;
-
-            _mainWindow.Dispatcher.Invoke(() =>
-            {
-                foreach (ServerTable s in _mainWindow.ServerGrid.Items)
-                    if (s.ID == serverId) { server = s; break; }
-            });
-
-            if (server == null)
+            if (_mainWindow.GetServerMetadata(serverId) == null)
                 return (false, $"Server '{serverId}' not found.");
 
             var meta = _mainWindow.GetServerMetadata(serverId);
@@ -96,58 +88,34 @@ namespace WindowsGSM.WebApi.Services
                 meta?.ServerStatus == MainWindow.ServerStatus.Starting)
                 return (false, "Server is already running or starting.");
 
-            try
-            {
-                await _mainWindow.Dispatcher.InvokeAsync(async () =>
-                    await _mainWindow.GameServer_StartById(serverId)).Task.Unwrap();
-                return (true, "Start command sent.");
-            }
-            catch (Exception ex) { return (false, ex.Message); }
+            _ = _mainWindow.Dispatcher.InvokeAsync(async () =>
+                await _mainWindow.GameServer_StartById(serverId));
+            return (true, "Start command sent.");
         }
 
-        public async Task<(bool success, string message)> StopAsync(string serverId)
+        public (bool success, string message) Stop(string serverId)
         {
-            ServerTable? server = null;
-            _mainWindow.Dispatcher.Invoke(() =>
-            {
-                foreach (ServerTable s in _mainWindow.ServerGrid.Items)
-                    if (s.ID == serverId) { server = s; break; }
-            });
-
-            if (server == null) return (false, $"Server '{serverId}' not found.");
+            if (_mainWindow.GetServerMetadata(serverId) == null)
+                return (false, $"Server '{serverId}' not found.");
 
             var meta = _mainWindow.GetServerMetadata(serverId);
             if (meta?.ServerStatus == MainWindow.ServerStatus.Stopped ||
                 meta?.ServerStatus == MainWindow.ServerStatus.Stopping)
                 return (false, "Server is already stopped or stopping.");
 
-            try
-            {
-                await _mainWindow.Dispatcher.InvokeAsync(async () =>
-                    await _mainWindow.GameServer_StopById(serverId)).Task.Unwrap();
-                return (true, "Stop command sent.");
-            }
-            catch (Exception ex) { return (false, ex.Message); }
+            _ = _mainWindow.Dispatcher.InvokeAsync(async () =>
+                await _mainWindow.GameServer_StopById(serverId));
+            return (true, "Stop command sent.");
         }
 
-        public async Task<(bool success, string message)> RestartAsync(string serverId)
+        public (bool success, string message) Restart(string serverId)
         {
-            ServerTable? server = null;
-            _mainWindow.Dispatcher.Invoke(() =>
-            {
-                foreach (ServerTable s in _mainWindow.ServerGrid.Items)
-                    if (s.ID == serverId) { server = s; break; }
-            });
+            if (_mainWindow.GetServerMetadata(serverId) == null)
+                return (false, $"Server '{serverId}' not found.");
 
-            if (server == null) return (false, $"Server '{serverId}' not found.");
-
-            try
-            {
-                await _mainWindow.Dispatcher.InvokeAsync(async () =>
-                    await _mainWindow.GameServer_RestartById(serverId)).Task.Unwrap();
-                return (true, "Restart command sent.");
-            }
-            catch (Exception ex) { return (false, ex.Message); }
+            _ = _mainWindow.Dispatcher.InvokeAsync(async () =>
+                await _mainWindow.GameServer_RestartById(serverId));
+            return (true, "Restart command sent.");
         }
 
         // ── Send console command ──────────────────────────────────────────────
@@ -177,7 +145,7 @@ namespace WindowsGSM.WebApi.Services
 
         // ── Update game server ────────────────────────────────────────────────
 
-        public async Task<(bool success, string message)> UpdateAsync(string serverId)
+        public (bool success, string message) Update(string serverId)
         {
             if (_mainWindow.GetServerMetadata(serverId) == null)
                 return (false, $"Server '{serverId}' not found.");
@@ -186,18 +154,14 @@ namespace WindowsGSM.WebApi.Services
             if (meta?.ServerStatus != MainWindow.ServerStatus.Stopped)
                 return (false, "Server must be stopped before updating.");
 
-            try
-            {
-                await _mainWindow.Dispatcher.InvokeAsync(async () =>
-                    await _mainWindow.GameServer_UpdateById(serverId)).Task.Unwrap();
-                return (true, "Update completed.");
-            }
-            catch (Exception ex) { return (false, ex.Message); }
+            _ = _mainWindow.Dispatcher.InvokeAsync(async () =>
+                await _mainWindow.GameServer_UpdateById(serverId));
+            return (true, "Update started.");
         }
 
         // ── Per-server backup ─────────────────────────────────────────────────
 
-        public async Task<(bool success, string message)> BackupAsync(string serverId)
+        public (bool success, string message) Backup(string serverId)
         {
             if (_mainWindow.GetServerMetadata(serverId) == null)
                 return (false, $"Server '{serverId}' not found.");
@@ -206,13 +170,9 @@ namespace WindowsGSM.WebApi.Services
             if (meta?.ServerStatus != MainWindow.ServerStatus.Stopped)
                 return (false, "Server must be stopped before backup.");
 
-            try
-            {
-                await _mainWindow.Dispatcher.InvokeAsync(async () =>
-                    await _mainWindow.GameServer_BackupById(serverId)).Task.Unwrap();
-                return (true, "Backup completed.");
-            }
-            catch (Exception ex) { return (false, ex.Message); }
+            _ = _mainWindow.Dispatcher.InvokeAsync(async () =>
+                await _mainWindow.GameServer_BackupById(serverId));
+            return (true, "Backup started.");
         }
 
         public List<object> ListBackupsForServer(string serverId)
@@ -230,7 +190,7 @@ namespace WindowsGSM.WebApi.Services
             catch { return new List<object>(); }
         }
 
-        public async Task<(bool success, string message)> RestoreBackupAsync(string serverId, string backupFile)
+        public (bool success, string message) RestoreBackup(string serverId, string backupFile)
         {
             if (_mainWindow.GetServerMetadata(serverId) == null)
                 return (false, $"Server '{serverId}' not found.");
@@ -239,13 +199,9 @@ namespace WindowsGSM.WebApi.Services
             if (meta?.ServerStatus != MainWindow.ServerStatus.Stopped)
                 return (false, "Server must be stopped before restoring.");
 
-            try
-            {
-                await _mainWindow.Dispatcher.InvokeAsync(async () =>
-                    await _mainWindow.GameServer_RestoreBackupById(serverId, backupFile)).Task.Unwrap();
-                return (true, "Restore completed.");
-            }
-            catch (Exception ex) { return (false, ex.Message); }
+            _ = _mainWindow.Dispatcher.InvokeAsync(async () =>
+                await _mainWindow.GameServer_RestoreBackupById(serverId, backupFile));
+            return (true, "Restore started.");
         }
 
         // ── Server config ─────────────────────────────────────────────────────
