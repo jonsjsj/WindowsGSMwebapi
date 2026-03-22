@@ -4559,5 +4559,23 @@ namespace WindowsGSM
             var server = ServerGrid.Items.Cast<ServerTable>().FirstOrDefault(s => s.ID == serverId);
             if (server != null) await GameServer_Restart(server);
         }
+
+        public async Task GameServer_UpdateById(string serverId)
+        {
+            var server = ServerGrid.Items.Cast<ServerTable>().FirstOrDefault(s => s.ID == serverId);
+            if (server != null) await GameServer_Update(server);
+        }
+
+        public async Task GameServer_BackupById(string serverId)
+        {
+            var server = ServerGrid.Items.Cast<ServerTable>().FirstOrDefault(s => s.ID == serverId);
+            if (server != null) await GameServer_Backup(server);
+        }
+
+        public async Task GameServer_RestoreBackupById(string serverId, string backupFile)
+        {
+            var server = ServerGrid.Items.Cast<ServerTable>().FirstOrDefault(s => s.ID == serverId);
+            if (server != null) await GameServer_RestoreBackup(server, backupFile);
+        }
     }
 }

@@ -120,5 +120,80 @@ namespace WindowsGSM.WebApi.Controllers
             var logs = _manager.GetServerLogs(id, count);
             return Ok(logs);
         }
+
+        // POST /api/servers/{id}/command
+        // Body: { "command": "status", "waitMs": 500 }
+        [HttpPost("{id}/command")]
+        public async Task<IActionResult> SendCommand(string id, [FromBody] SendCommandRequest req)
+        {
+            if (string.IsNullOrWhiteSpace(req?.Command))
+                return BadRequest(new ApiActionResult { Success = false, Message = "command is required." });
+
+            var (success, message) = await _manager.SendCommandAsync(id, req.Command, req.WaitMs);
+            var result = new ApiActionResult { Success = success, Message = message };
+            return success ? Ok(result) : BadRequest(result);
+        }
+
+        // POST /api/servers/{id}/update
+        [HttpPost("{id}/update")]
+        public async Task<IActionResult> Update(string id)
+        {
+            var (success, message) = await _manager.UpdateAsync(id);
+            var result = new ApiActionResult { Success = success, Message = message };
+            return success ? Ok(result) : BadRequest(result);
+        }
+
+        // POST /api/servers/{id}/backup
+        [HttpPost("{id}/backup")]
+        public async Task<IActionResult> Backup(string id)
+        {
+            var (success, message) = await _manager.BackupAsync(id);
+            var result = new ApiActionResult { Success = success, Message = message };
+            return success ? Ok(result) : BadRequest(result);
+        }
+
+        // GET /api/servers/{id}/backups
+        [HttpGet("{id}/backups")]
+        public IActionResult ListBackups(string id)
+        {
+            var backups = _manager.ListBackupsForServer(id);
+            return Ok(backups);
+        }
+
+        // POST /api/servers/{id}/restore
+        // Body: { "fileName": "backup_20240101_120000.zip" }
+        [HttpPost("{id}/restore")]
+        public async Task<IActionResult> RestoreBackup(string id, [FromBody] RestoreBackupRequest req)
+        {
+            if (string.IsNullOrWhiteSpace(req?.FileName))
+                return BadRequest(new ApiActionResult { Success = false, Message = "fileName is required." });
+
+            var (success, message) = await _manager.RestoreBackupAsync(id, req.FileName);
+            var result = new ApiActionResult { Success = success, Message = message };
+            return success ? Ok(result) : BadRequest(result);
+        }
+
+        // GET /api/servers/{id}/config
+        [HttpGet("{id}/config")]
+        public IActionResult GetConfig(string id)
+        {
+            var cfg = _manager.GetConfig(id);
+            if (cfg == null)
+                return NotFound(new ApiActionResult { Success = false, Message = $"Config for server '{id}' not found." });
+            return Ok(cfg);
+        }
+
+        // PATCH /api/servers/{id}/config
+        // Body: any subset of ServerConfigDto fields — only provided fields are updated
+        [HttpPatch("{id}/config")]
+        public IActionResult UpdateConfig(string id, [FromBody] UpdateServerConfigRequest req)
+        {
+            if (req == null)
+                return BadRequest(new ApiActionResult { Success = false, Message = "Request body required." });
+
+            var (success, message) = _manager.SaveConfig(id, req);
+            var result = new ApiActionResult { Success = success, Message = message };
+            return success ? Ok(result) : BadRequest(result);
+        }
     }
 }

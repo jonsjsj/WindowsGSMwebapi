@@ -9,6 +9,8 @@ namespace WindowsGSM.WebApi.Models
         public string ServerIp { get; set; } = string.Empty;
         public string ServerPort { get; set; } = string.Empty;
         public string QueryPort { get; set; } = string.Empty;
+        public string Map        { get; set; } = string.Empty;
+        public string MaxPlayers { get; set; } = string.Empty;
         public int?    Pid                { get; set; }
         public int?    PlayersCurrent     { get; set; }
         public int?    PlayersMax         { get; set; }
@@ -16,6 +18,67 @@ namespace WindowsGSM.WebApi.Models
         public double? RamMb              { get; set; }
         public bool?   GamePortReachable  { get; set; }
         public bool?   QueryPortReachable { get; set; }
+    }
+
+    public class ServerConfigDto
+    {
+        public string ServerId      { get; set; } = string.Empty;
+        public string ServerGame    { get; set; } = string.Empty;
+        public string ServerName    { get; set; } = string.Empty;
+        public string ServerIp      { get; set; } = string.Empty;
+        public string ServerPort    { get; set; } = string.Empty;
+        public string QueryPort     { get; set; } = string.Empty;
+        public string ServerMap     { get; set; } = string.Empty;
+        public string MaxPlayers    { get; set; } = string.Empty;
+        public string ServerParam   { get; set; } = string.Empty;
+        public string ServerGslt    { get; set; } = string.Empty;
+        public bool   AutoRestart   { get; set; }
+        public bool   AutoStart     { get; set; }
+        public bool   AutoUpdate    { get; set; }
+        public bool   UpdateOnStart { get; set; }
+        public bool   BackupOnStart { get; set; }
+        public bool   RestartCrontab { get; set; }
+        public string CrontabFormat  { get; set; } = string.Empty;
+        public string CPUPriority    { get; set; } = string.Empty;
+        public string CPUAffinity    { get; set; } = string.Empty;
+        public bool   EmbedConsole   { get; set; }
+        public bool   DiscordAlert   { get; set; }
+        public string DiscordWebhook { get; set; } = string.Empty;
+    }
+
+    public class UpdateServerConfigRequest
+    {
+        public string? ServerName    { get; set; }
+        public string? ServerIp      { get; set; }
+        public string? ServerPort    { get; set; }
+        public string? QueryPort     { get; set; }
+        public string? ServerMap     { get; set; }
+        public string? MaxPlayers    { get; set; }
+        public string? ServerParam   { get; set; }
+        public string? ServerGslt    { get; set; }
+        public bool?   AutoRestart   { get; set; }
+        public bool?   AutoStart     { get; set; }
+        public bool?   AutoUpdate    { get; set; }
+        public bool?   UpdateOnStart { get; set; }
+        public bool?   BackupOnStart { get; set; }
+        public bool?   RestartCrontab { get; set; }
+        public string? CrontabFormat  { get; set; }
+        public string? CPUPriority    { get; set; }
+        public string? CPUAffinity    { get; set; }
+        public bool?   EmbedConsole   { get; set; }
+        public bool?   DiscordAlert   { get; set; }
+        public string? DiscordWebhook { get; set; }
+    }
+
+    public class SendCommandRequest
+    {
+        public string Command { get; set; } = string.Empty;
+        public int    WaitMs  { get; set; } = 0;
+    }
+
+    public class RestoreBackupRequest
+    {
+        public string FileName { get; set; } = string.Empty;
     }
 
     public class ResourcesSummaryDto
