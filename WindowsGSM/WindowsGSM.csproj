@@ -19,9 +19,9 @@
     <WebPage>publish.htm</WebPage>
 	<IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
     <ApplicationRevision>1</ApplicationRevision>
-    <ApplicationVersion>1.0.36</ApplicationVersion>
-    <Version>1.0.36</Version>
-    <FileVersion>1.0.36</FileVersion>
+    <ApplicationVersion>1.0.37</ApplicationVersion>
+    <Version>1.0.37</Version>
+    <FileVersion>1.0.37</FileVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <CreateDesktopShortcut>true</CreateDesktopShortcut>
     <PublishWizardCompleted>true</PublishWizardCompleted>
