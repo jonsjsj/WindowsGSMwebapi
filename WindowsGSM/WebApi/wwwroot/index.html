@@ -179,7 +179,7 @@ header{background:var(--surface);border-bottom:1px solid var(--border);height:48
 <!-- ── App ───────────────────────────────────────────────────────────────── -->
 <div id="app">
   <header>
-    <div class="logo">WGSM <span>Web API</span> <span style="font-size:10px;font-weight:400;color:var(--muted);margin-left:4px" id="app-ver">v1.0.38</span></div>
+    <div class="logo">WGSM <span>Web API</span> <span style="font-size:10px;font-weight:400;color:var(--muted);margin-left:4px" id="app-ver">v1.0.39</span></div>
     <div class="header-mid">
       <div class="hstat">
         CPU
@@ -214,6 +214,7 @@ header{background:var(--surface);border-bottom:1px solid var(--border);height:48
       <button class="nav-btn" id="nav-files"  onclick="showView('files')">📁 File Manager</button>
       <button class="nav-btn" id="nav-backup" onclick="showView('backup')">⊟ Backup</button>
       <div class="sb-sect">Info</div>
+      <button class="nav-btn" id="nav-update"    onclick="showView('update')">⬆ App Update</button>
       <button class="nav-btn" id="nav-changelog" onclick="showView('changelog')">✦ Changelog</button>
     </nav>
     <div id="content-area">
@@ -360,6 +361,7 @@ function renderView() {
     switch (currentView) {
         case 'servers':   el.innerHTML = renderServers();           break;
         case 'install':   el.innerHTML = renderInstall();           loadInstallGames(); break;
+        case 'update':    el.innerHTML = renderUpdateView();        checkAppUpdate();   break;
         case 'logs':      el.innerHTML = renderLogsView();          break;
         case 'config':    el.innerHTML = renderConfigChooser();     break;
         case 'files':     el.innerHTML = renderFilesChooser();      break;
@@ -725,6 +727,87 @@ function navigateUp() {
     browseDir(parts.join('/'));
 }
 
+// ── App Update view ────────────────────────────────────────────────────────
+function renderUpdateView() {
+    return `<div class="section-row"><span class="section-title">WindowsGSM App Update</span></div>
+<div style="max-width:520px;display:flex;flex-direction:column;gap:14px">
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px;display:flex;flex-direction:column;gap:10px">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:12px">
+      <div><div style="color:var(--muted);margin-bottom:3px">Current version</div><div style="font-weight:600;font-size:14px" id="upd-current">—</div></div>
+      <div><div style="color:var(--muted);margin-bottom:3px">Latest version</div><div style="font-weight:600;font-size:14px" id="upd-latest">—</div></div>
+    </div>
+    <div id="upd-status" style="font-size:12px;color:var(--muted);min-height:16px">Checking…</div>
+    <div style="display:flex;gap:8px">
+      <button class="btn-primary" id="upd-apply-btn" style="display:none" onclick="applyAppUpdate()">⬆ Apply Update &amp; Restart</button>
+      <button class="btn-sm" onclick="checkAppUpdate()">↻ Re-check</button>
+    </div>
+  </div>
+  <div style="font-size:11px;color:var(--muted);line-height:1.6">
+    Clicking <strong style="color:var(--text)">Apply Update</strong> will download the new exe, stop all running servers, swap the binary and restart WindowsGSM automatically.
+  </div>
+</div>`;
+}
+
+let _updateInfo = null;
+
+async function checkAppUpdate() {
+    const setStatus = (msg, color) => {
+        const el = document.getElementById('upd-status');
+        if (el) { el.textContent = msg; el.style.color = color ?? 'var(--muted)'; }
+    };
+    const hide = () => { const b = document.getElementById('upd-apply-btn'); if (b) b.style.display = 'none'; };
+    const show = () => { const b = document.getElementById('upd-apply-btn'); if (b) b.style.display = ''; };
+
+    hide();
+    setStatus('Checking for updates…', 'var(--muted)');
+    try {
+        const r = await apiFetch('/api/update/check');
+        if (!r.ok) {
+            const err = await r.json().catch(() => ({}));
+            setStatus('Check failed: ' + (err.message ?? err.error ?? `HTTP ${r.status}`), 'var(--red)');
+            return;
+        }
+        _updateInfo = await r.json();
+        const cur = document.getElementById('upd-current');
+        const lat = document.getElementById('upd-latest');
+        if (cur) cur.textContent = 'v' + (_updateInfo.currentVersion ?? '?');
+        if (lat) lat.textContent = _updateInfo.latestTag ?? '?';
+
+        if (_updateInfo.hasUpdate) {
+            setStatus('Update available!', 'var(--green)');
+            show();
+        } else {
+            setStatus('You are up to date.', 'var(--green)');
+        }
+    } catch (e) {
+        setStatus('Error: ' + e.message, 'var(--red)');
+    }
+}
+
+async function applyAppUpdate() {
+    if (!_updateInfo?.downloadUrl) { alert('No download URL — re-check for updates first.'); return; }
+    const btn = document.getElementById('upd-apply-btn');
+    if (btn) btn.disabled = true;
+    const setStatus = (msg, color) => {
+        const el = document.getElementById('upd-status');
+        if (el) { el.textContent = msg; el.style.color = color ?? 'var(--muted)'; }
+    };
+    setStatus('Downloading update… (this may take a minute)', 'var(--muted)');
+    try {
+        const r = await apiFetch('/api/update/apply', null, 'POST', { downloadUrl: _updateInfo.downloadUrl });
+        const data = await r.json().catch(() => ({}));
+        if (r.ok && data.success) {
+            setStatus('Update started — WindowsGSM will restart automatically.', 'var(--green)');
+        } else {
+            setStatus('Failed: ' + (data.message ?? data.error ?? `HTTP ${r.status}`), 'var(--red)');
+            if (btn) btn.disabled = false;
+        }
+    } catch (e) {
+        setStatus('Error: ' + e.message, 'var(--red)');
+        if (btn) btn.disabled = false;
+    }
+}
+
 // ── Install wizard ─────────────────────────────────────────────────────────
 let installGames = [], installSelectedGame = null, installJobId = null, installPollTimer = null;
 
@@ -904,6 +987,11 @@ function setInstStatus(msg, color) {
 // ── Changelog view ─────────────────────────────────────────────────────────
 function renderChangelog() {
     const releases = [
+      { version:'v1.0.39', date:'2026-03-22', title:'App Update UI in Dashboard',
+        items:[
+          ['new','<strong>App Update panel</strong> — check and apply WindowsGSM updates directly from the Web API dashboard (sidebar → App Update)'],
+          ['imp','Update status shows current vs latest version with clear error messages instead of bare HTTP codes'],
+        ]},
       { version:'v1.0.38', date:'2026-03-22', title:'Fix Install — WPF Thread Error',
         items:[
           ['fix','<strong>Install crash</strong> — game server objects are WPF-bound; all calls (Install, IsInstallValid, SetData, CreateServerCFG) now run on the UI dispatcher thread to prevent "calling thread cannot access this object" error'],
