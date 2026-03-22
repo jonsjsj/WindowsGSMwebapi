@@ -23,10 +23,10 @@
   --accent:   #00d4aa;
   --r:        8px;
 }
-body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,-apple-system,sans-serif;font-size:13px;display:flex;height:100vh;overflow:hidden;min-width:0}
+body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,-apple-system,sans-serif;font-size:13px;display:flex;height:100vh;overflow:hidden}
 
 /* ── Sidebar ───────────────────────────────────────────────────────────── */
-#sidebar{width:210px;min-width:140px;flex-shrink:1;background:var(--sb);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow-y:auto;overflow-x:hidden}
+#sidebar{width:210px;min-width:140px;flex-shrink:1;background:var(--sb);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow-y:auto;overflow-x:hidden}@media(max-width:540px){#sidebar{display:none}}
 .sb-head{padding:18px 16px 14px;border-bottom:1px solid var(--border)}
 .logo-text{font-size:20px;font-weight:700;color:var(--accent);letter-spacing:1px}
 .logo-sub{font-size:10px;color:#444;margin-top:2px;letter-spacing:.3px}
@@ -858,19 +858,26 @@ async function installPlugin(fileName, btn) {
     const p = pluginState.byFileName?.[fileName];
     if (!p) { alert('Plugin data not found. Refresh the plugin list first.'); return; }
     btn.disabled = true; btn.textContent = 'Installing…';
-    // Send the exact raw URL from the registry — WGSM downloads directly.
-    // This works regardless of WGSM version and handles nested file paths.
     const rawUrl = `https://raw.githubusercontent.com/${p.owner}/${p.repo}/${p.branch}/${p.filePath}`;
-    const r = await proxyPost(pluginState.instanceId, 'api/plugins/install', { githubUrl: rawUrl });
-    if (r.ok) {
-        btn.textContent = '✓ Installed';
-        btn.style.cssText = 'background:var(--green-bg);color:var(--green);font-size:11px;padding:5px 12px;border:none;border-radius:6px;cursor:default';
-        const { data: installed } = await proxyGet(pluginState.instanceId, 'api/plugins/installed');
-        pluginState.installed = installed ?? [];
-        renderInstalledPlugins();
-    } else {
+    try {
+        const res  = await fetch('/api/install-plugin', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ instanceId: pluginState.instanceId, rawUrl, fileName: p.fileName })
+        });
+        const data = await res.json().catch(() => ({}));
+        if (res.ok && data.ok !== false) {
+            btn.textContent = '✓ Installed';
+            btn.style.cssText = 'background:var(--green-bg);color:var(--green);font-size:11px;padding:5px 12px;border:none;border-radius:6px;cursor:default';
+            const instRes = await proxyGet(pluginState.instanceId, 'api/plugins/installed');
+            pluginState.installed = instRes.data ?? [];
+            renderInstalledPlugins();
+        } else {
+            btn.textContent = '✗ Failed'; btn.disabled = false;
+            alert('Install failed: ' + (data.error ?? data.message ?? `HTTP ${res.status}`));
+        }
+    } catch (e) {
         btn.textContent = '✗ Failed'; btn.disabled = false;
-        alert('Install failed: ' + (r.data?.error ?? `HTTP ${r.status}`));
+        alert('Install error: ' + e.message);
     }
 }
 
@@ -879,22 +886,72 @@ async function installFromUrl() {
     const status = document.getElementById('url-install-status');
     const btn    = document.getElementById('url-install-btn');
     const url    = input?.value?.trim();
-    if (!url) { if (status) { status.style.color = 'var(--red)'; status.textContent = 'Paste a URL first.'; } return; }
-    if (!pluginState.instanceId) { if (status) { status.style.color = 'var(--red)'; status.textContent = '⚠ No online instance.'; } return; }
+    if (!url) { setStatus(status, 'Paste a URL first.', false); return; }
+    if (!pluginState.instanceId) { setStatus(status, '⚠ No online instance selected.', false); return; }
+
     btn.disabled = true;
-    if (status) { status.style.color = 'var(--muted)'; status.textContent = 'Installing…'; }
-    const r = await proxyPost(pluginState.instanceId, 'api/plugins/install', { githubUrl: url });
-    if (r.ok) {
-        if (status) { status.style.color = 'var(--green)'; status.textContent = '✓ ' + (r.data?.message ?? 'Installed!'); }
-        if (input) input.value = '';
-        const { data: installed } = await proxyGet(pluginState.instanceId, 'api/plugins/installed');
-        pluginState.installed = installed ?? [];
-        renderInstalledPlugins();
-        await loadPlugins();
-    } else {
-        if (status) { status.style.color = 'var(--red)'; status.textContent = '✗ ' + (r.data?.error ?? `HTTP ${r.status}`); }
+    setStatus(status, 'Resolving…', null);
+
+    let rawUrl, fileName;
+    try {
+        if (url.startsWith('https://raw.githubusercontent.com/')) {
+            // Direct raw URL — use as-is, filename is the last path segment
+            rawUrl   = url;
+            fileName = url.split('?')[0].split('/').pop();
+        } else if (url.includes('github.com/')) {
+            const clean = url.replace(/^https?:\/\/github\.com\//, '').replace(/\.git$/, '').replace(/\/$/, '');
+            const parts = clean.split('/');
+            const owner = parts[0], repo = parts[1];
+            // Check registry first
+            const entry = PLUGIN_REGISTRY.find(p =>
+                p.owner.toLowerCase() === owner?.toLowerCase() &&
+                p.repo.toLowerCase()  === repo?.toLowerCase());
+            if (entry) {
+                rawUrl   = `https://raw.githubusercontent.com/${entry.owner}/${entry.repo}/${entry.branch}/${entry.filePath}`;
+                fileName = entry.fileName;
+            } else if (parts[2] === 'blob' && parts.length >= 5) {
+                // github.com/Owner/Repo/blob/branch/path/File.cs
+                fileName = parts[parts.length - 1];
+                rawUrl   = `https://raw.githubusercontent.com/${parts[0]}/${parts[1]}/${parts[3]}/${parts.slice(4).join('/')}`;
+            } else {
+                setStatus(status, '✗ Repo not in registry. Paste a direct raw URL instead.', false);
+                btn.disabled = false; return;
+            }
+        } else {
+            setStatus(status, '✗ Paste a github.com or raw.githubusercontent.com URL.', false);
+            btn.disabled = false; return;
+        }
+
+        if (!fileName?.toLowerCase().endsWith('.cs')) {
+            setStatus(status, `✗ '${fileName}' is not a .cs file.`, false);
+            btn.disabled = false; return;
+        }
+
+        setStatus(status, `Installing ${fileName}…`, null);
+        const res  = await fetch('/api/install-plugin', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ instanceId: pluginState.instanceId, rawUrl, fileName })
+        });
+        const data = await res.json().catch(() => ({}));
+        if (res.ok && data.ok !== false) {
+            setStatus(status, '✓ ' + (data.message ?? `${fileName} installed!`), true);
+            if (input) input.value = '';
+            const instRes = await proxyGet(pluginState.instanceId, 'api/plugins/installed');
+            pluginState.installed = instRes.data ?? [];
+            renderInstalledPlugins();
+        } else {
+            setStatus(status, '✗ ' + (data.error ?? data.message ?? `HTTP ${res.status}`), false);
+        }
+    } catch (e) {
+        setStatus(status, '✗ ' + e.message, false);
     }
     btn.disabled = false;
+}
+
+function setStatus(el, msg, ok) {
+    if (!el) return;
+    el.textContent = msg;
+    el.style.color = ok === true ? 'var(--green)' : ok === false ? 'var(--red)' : 'var(--muted)';
 }
 
 async function uninstallPlugin(fileName, btn) {

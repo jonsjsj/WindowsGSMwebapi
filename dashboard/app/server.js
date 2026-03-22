@@ -129,12 +129,57 @@ app.get('/api/ping/:instanceId', async (req, res) => {
 
 // ── Plugin registry ───────────────────────────────────────────────────────
 const REGISTRY_FILE = path.join(__dirname, 'plugins-registry.json');
+
+let _registry = null;
+function getRegistry() {
+    if (!_registry)
+        _registry = JSON.parse(fs.readFileSync(REGISTRY_FILE, 'utf8'));
+    return _registry;
+}
+
 app.get('/api/registry', (_req, res) => {
     try {
-        const data = JSON.parse(fs.readFileSync(REGISTRY_FILE, 'utf8'));
+        const data = getRegistry();
         res.json({ items: data, totalCount: data.length });
     } catch (e) {
         res.status(500).json({ error: 'Registry unavailable: ' + e.message });
+    }
+});
+
+// ── Plugin install (Node downloads .cs, saves to WGSM via api/plugins/save) ──
+// Works with any WGSM version. TrueNAS fetches from GitHub; WGSM just writes.
+app.post('/api/install-plugin', async (req, res) => {
+    const { instanceId, rawUrl, fileName } = req.body ?? {};
+    if (!instanceId || !rawUrl || !fileName)
+        return res.status(400).json({ error: 'instanceId, rawUrl and fileName are required' });
+
+    const instance = loadInstances().find(i => i.id === instanceId);
+    if (!instance) return res.status(404).json({ error: 'Instance not found' });
+
+    // 1. Download .cs from GitHub on the Node side
+    let content;
+    try {
+        const dlr = await fetch(rawUrl, { signal: AbortSignal.timeout(20_000) });
+        if (!dlr.ok)
+            return res.status(502).json({ error: `Could not download ${fileName}: HTTP ${dlr.status}` });
+        content = await dlr.text();
+    } catch (e) {
+        return res.status(502).json({ error: 'Download failed: ' + e.message });
+    }
+
+    // 2. Save to WGSM via api/plugins/save
+    try {
+        const saveRes = await fetch(`${instance.url}/api/plugins/save`, {
+            method:  'POST',
+            headers: { 'Authorization': `Bearer ${instance.token}`, 'Content-Type': 'application/json' },
+            body:    JSON.stringify({ fileName, content }),
+            signal:  AbortSignal.timeout(30_000),
+        });
+        const data = await saveRes.json().catch(() => ({}));
+        addLog({ type: 'install', fileName, status: saveRes.status });
+        res.status(saveRes.status).json(data);
+    } catch (e) {
+        res.status(503).json({ error: 'WGSM unreachable: ' + e.message });
     }
 });
 
