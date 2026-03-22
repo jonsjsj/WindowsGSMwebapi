@@ -117,13 +117,13 @@ namespace WindowsGSM.WebApi.Services
                     await resp.Content.CopyToAsync(fs).ConfigureAwait(false);
 
                 // 2. Stop all running servers via the UI dispatcher
-                await Application.Current.Dispatcher.InvokeAsync(async () =>
+                Application.Current.Dispatcher.Invoke(() =>
                 {
                     var servers = _serverManager.GetAllServers();
                     foreach (var s in servers)
                         if (s.Status == "Started" || s.Status == "Starting")
-                            await _serverManager.StopAsync(s.Id).ConfigureAwait(false);
-                }).Task.Unwrap().ConfigureAwait(false);
+                            _serverManager.Stop(s.Id);
+                });
 
                 // 3. Write swap batch
                 File.WriteAllText(batchPath,
