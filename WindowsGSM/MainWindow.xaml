@@ -109,7 +109,7 @@
                   <mah:ToggleSwitch x:Name="MahAppSwitch_SendStatistics" Header="Send Statistics" Margin="20,0,0,15" Toggled="SendStatistics_IsCheckedChanged"/>
                   <mah:ToggleSwitch x:Name="MahAppSwitch_DonorConnect" Header="Donor Connect (Patreon)" Margin="20,0,0,15" Toggled="DonorConnect_IsCheckedChanged"/>
                   <DockPanel Margin="20,0,20,20">
-                     <Label Content="WindowsGSM Theme (Donor Only)" FontSize="13.5" Padding="0" DockPanel.Dock="Top"></Label>
+                     <Label Content="WGSM Theme (Donor Only)" FontSize="13.5" Padding="0" DockPanel.Dock="Top"></Label>
                      <ComboBox x:Name="comboBox_Themes" Margin="0,5,0,0" Height="25" DockPanel.Dock="Top" SelectionChanged="ComboBox_Themes_SelectionChanged" IsEnabled="False"></ComboBox>
                   </DockPanel>
                </StackPanel>
@@ -340,7 +340,7 @@
                   <DockPanel DockPanel.Dock="Left">
                      <DockPanel DockPanel.Dock="Top">
                         <DockPanel DockPanel.Dock="Top">
-                           <Label DockPanel.Dock="Top" Content="DISCORD BOT" FontWeight="SemiBold" Foreground="Gray"/>
+                           <Label DockPanel.Dock="Top" Content="DISCORD BOT" FontWeight="SemiBold" Foreground="{StaticResource WgsmMutedBrush}"/>
                         </DockPanel>
                         <DockPanel DockPanel.Dock="Top">
                            <Label Content="Usage: Remote control the game servers with Discord" DockPanel.Dock="Left"/>
@@ -414,7 +414,7 @@
       <DockPanel Name="hMenu_Dashboard" Margin="200,0,0,0" Visibility="Hidden">
          <Grid Margin="10,10,10,10">
             <DockPanel>
-               <Label DockPanel.Dock="Top" Content="SYSTEM METRICS" FontWeight="SemiBold" Foreground="Gray"/>
+               <Label DockPanel.Dock="Top" Content="SYSTEM METRICS" FontWeight="SemiBold" Foreground="{StaticResource WgsmMutedBrush}"/>
                <DockPanel DockPanel.Dock="Top">
                   <Grid>
                      <Grid.ColumnDefinitions>
@@ -471,7 +471,7 @@
                   </Grid>
                </DockPanel>
 
-               <Label DockPanel.Dock="Top" Content="GAME SERVERS" FontWeight="SemiBold" Foreground="Gray" Margin="0,10,0,0"/>
+               <Label DockPanel.Dock="Top" Content="GAME SERVERS" FontWeight="SemiBold" Foreground="{StaticResource WgsmMutedBrush}" Margin="0,10,0,0"/>
                <DockPanel DockPanel.Dock="Top" x:Name="dashboard_gameservers">
                   <Grid>
                      <Grid.ColumnDefinitions>
@@ -674,7 +674,7 @@
                      </MenuItem.Icon>
                   </MenuItem>
                   <Separator/>
-                  <MenuItem Header="About WindowsGSM" Click="Help_AboutWindowsGSM_Click">
+                  <MenuItem Header="About WGSM" Click="Help_AboutWindowsGSM_Click">
                      <MenuItem.Icon>
                         <Image Source="/WindowsGSM;component/Images/WindowsGSM-Icon.ico" Width="23" Margin="3"/>
                      </MenuItem.Icon>

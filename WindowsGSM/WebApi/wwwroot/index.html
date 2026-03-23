@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>WindowsGSM · Web API</title>
+<title>WGSM · Web API</title>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -166,7 +166,7 @@ header{background:var(--surface);border-bottom:1px solid var(--border);height:48
 
 <!-- ── Auth ──────────────────────────────────────────────────────────────── -->
 <div id="auth-screen">
-  <h1>WindowsGSM</h1>
+  <h1>WGSM</h1>
   <p>Web API — Remote Control</p>
   <div class="auth-card">
     <label for="token-input">API Token</label>
@@ -380,7 +380,7 @@ function renderView() {
 function renderServers() {
     if (!servers.length)
         return `<div class="section-row"><span class="section-title">Game Servers</span><button class="btn-sm" onclick="loadServers().then(renderView)">↻ Refresh</button></div>
-<div class="empty">No servers found. Add a server in the WindowsGSM application first.</div>`;
+<div class="empty">No servers found. Add a server in the WGSM application first.</div>`;
 
     const cards = servers.map(s => {
         const running  = s.status === 'Started';
@@ -901,7 +901,7 @@ function navigateUp() {
 
 // ── App Update view ────────────────────────────────────────────────────────
 function renderUpdateView() {
-    return `<div class="section-row"><span class="section-title">WindowsGSM App Update</span></div>
+    return `<div class="section-row"><span class="section-title">WGSM App Update</span></div>
 <div style="max-width:520px;display:flex;flex-direction:column;gap:14px">
   <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px;display:flex;flex-direction:column;gap:10px">
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:12px">
@@ -915,7 +915,7 @@ function renderUpdateView() {
     </div>
   </div>
   <div style="font-size:11px;color:var(--muted);line-height:1.6">
-    Clicking <strong style="color:var(--text)">Apply Update</strong> will download the new exe, stop all running servers, swap the binary and restart WindowsGSM automatically.
+    Clicking <strong style="color:var(--text)">Apply Update</strong> will download the new exe, stop all running servers, swap the binary and restart WGSM automatically.
   </div>
 </div>`;
 }
@@ -969,7 +969,7 @@ async function applyAppUpdate() {
         const r = await apiFetch('/api/update/apply', null, 'POST', { downloadUrl: _updateInfo.downloadUrl });
         const data = await r.json().catch(() => ({}));
         if (r.ok && data.success) {
-            setStatus('Update started — WindowsGSM will restart automatically.', 'var(--green)');
+            setStatus('Update started — WGSM will restart automatically.', 'var(--green)');
         } else {
             setStatus('Failed: ' + (data.message ?? data.error ?? `HTTP ${r.status}`), 'var(--red)');
             if (btn) btn.disabled = false;
@@ -1168,7 +1168,7 @@ function renderChangelog() {
         ]},
       { version:'v1.0.39', date:'2026-03-22', title:'App Update UI in Dashboard',
         items:[
-          ['new','<strong>App Update panel</strong> — check and apply WindowsGSM updates directly from the Web API dashboard (sidebar → App Update)'],
+          ['new','<strong>App Update panel</strong> — check and apply WGSM updates directly from the Web API dashboard (sidebar → App Update)'],
           ['imp','Update status shows current vs latest version with clear error messages instead of bare HTTP codes'],
         ]},
       { version:'v1.0.38', date:'2026-03-22', title:'Fix Install — WPF Thread Error',
@@ -1204,7 +1204,7 @@ function renderChangelog() {
         ]},
       { version:'v1.0.33', date:'2026-03-15', title:'Initial Web API Release',
         items:[
-          ['new','Kestrel-based Web API embedded in WindowsGSM.exe'],
+          ['new','Kestrel-based Web API embedded in WGSM.exe'],
           ['new','Server start/stop/restart/update/backup via REST API'],
           ['new','A2S player count queries, port reachability checks'],
           ['new','CPU/RAM monitoring per server and aggregate'],

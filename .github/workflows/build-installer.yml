@@ -136,7 +136,7 @@ jobs:
 
       - name: Copy raw exe for release
         shell: pwsh
-        run: Copy-Item "publish\WindowsGSM.exe" "dist\WindowsGSM.exe"
+        run: Copy-Item "publish\WindowsGSM.exe" "dist\WGSM.exe"
 
       - name: Create Full GitHub Release
         if: startsWith(github.ref, 'refs/tags/')
@@ -167,83 +167,8 @@ jobs:
             6. Open `http://localhost:7876/ui` in your browser
             7. Paste your token and click **Connect**
 
-            ---
-            > Already have WGSM? Use the **[Addon installer](${{ github.server_url }}/${{ github.repository }}/releases/tag/${{ github.ref_name }})** instead.
           files: |
             dist\WGSM-Full-Setup-*.exe
-            dist\WindowsGSM.exe
-          draft: false
-          prerelease: ${{ contains(github.ref_name, '-beta') || contains(github.ref_name, '-rc') }}
-
-  # — Job 3: Addon installer (Web API only) —————————————————————————————
-  release-addon:
-    name: Addon installer & release
-    needs: build
-    runs-on: windows-latest
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Download publish output
-        uses: actions/download-artifact@v4
-        with:
-          name: publish-output
-          path: publish
-
-      - name: Install Inno Setup 6
-        run: choco install innosetup --no-progress -y
-
-      - name: Compile Addon installer
-        shell: pwsh
-        run: |
-          $iscc = "C:\Program Files (x86)\Inno Setup 6\ISCC.exe"
-          New-Item -ItemType Directory -Force -Path dist
-          & $iscc `
-            "/DAppVersion=${{ needs.build.outputs.version }}" `
-            "/DOutputMode=apionly" `
-            "installer\setup.iss"
-          if ($LASTEXITCODE -ne 0) { throw "ISCC failed with exit code $LASTEXITCODE" }
-          Write-Host "Built: $(Get-ChildItem dist\*.exe | Select -Expand Name)"
-
-      - name: Upload Addon installer artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: installer-addon
-          path: dist\WGSM-Addon-Setup-*.exe
-          if-no-files-found: error
-
-      - name: Create Addon GitHub Release
-        if: startsWith(github.ref, 'refs/tags/')
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: ${{ github.ref_name }}
-          name: "WGSM ${{ needs.build.outputs.version }} – Addon"
-          body: |
-            ## Addon Install – WGSM Web API Addon ${{ needs.build.outputs.version }}
-
-            **Use this if you already have WGSM installed.**
-            Adds the Web API remote control feature without touching your existing installation or server configs.
-
-            ### What gets added
-            - Web API remote control (drops files into your existing WGSM folder)
-            - Web UI at `http://localhost:7876/ui`
-            - Automatic Windows Firewall rule for port 7876
-            - Auto-start on Windows login (registry Run key)
-            - Desktop & Start Menu shortcuts
-
-            ### Getting started
-            1. Run the installer as **Administrator**
-            2. The installer auto-detects your WGSM folder
-            3. Open WGSM
-            4. Click **Web API** in the left navigation menu
-            5. Click **Generate** to create your API token
-            6. Click **Start Web API**
-            7. Open `http://localhost:7876/ui` in your browser
-            8. Paste your token and click **Connect**
-
-            ---
-            > New to WGSM? Use the **[Full installer](${{ github.server_url }}/${{ github.repository }}/releases/tag/${{ github.ref_name }})** instead.
-          files: dist\WGSM-Addon-Setup-*.exe
+            dist\WGSM.exe
           draft: false
           prerelease: ${{ contains(github.ref_name, '-beta') || contains(github.ref_name, '-rc') }}
