@@ -187,6 +187,21 @@ All file paths are validated with `Path.GetFullPath` against `servers/{id}/serve
 | POST | `/api/ports/{port}/open` | Token | Add inbound firewall rule |
 | DELETE | `/api/ports/{port}/close` | Token | Remove firewall rule |
 
+### Config Backup & Restore
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| GET | `/api/config/export` | Token | Export `webapi.json` as an AES-256 encrypted `.enc` file. Password via `X-Config-Password` header. |
+| POST | `/api/config/import` | Token | Import a `.enc` backup file. Body: `multipart/form-data`, field `file`. Password via `X-Config-Password` header. Validates JSON before overwriting. |
+
+**Encryption details:**
+- Algorithm: AES-256-CBC, PKCS7 padding
+- Key derivation: PBKDF2-SHA256, 100 000 iterations, 32-byte key
+- Wire format: `[16 B random salt][16 B random IV][ciphertext]`
+- The password is never stored; loss of password means the backup cannot be decrypted
+
+**After importing:** Stop and restart the Web API in WindowsGSM to apply the restored tokens and settings.
+
 ### App Self-Update
 
 | Method | Path | Auth | Description |
@@ -310,6 +325,7 @@ Push a tag matching `v*.*.*` to trigger the GitHub Actions workflow (`build-inst
 
 | Version | Date | Key Changes |
 |---------|------|-------------|
+| v1.0.40 | 2026-03-23 | Config Backup & Restore — AES-256 encrypted export/import of API tokens and settings |
 | v1.0.39 | 2026-03-22 | App Update panel in dashboard; full error messages on update failure |
 | v1.0.38 | 2026-03-22 | Fixed install — all gameServer calls dispatched to WPF UI thread |
 | v1.0.37 | 2026-03-22 | Fixed update check — switched from GitHub JSON API to HTML redirect |
