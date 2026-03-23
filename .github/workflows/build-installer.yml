@@ -134,10 +134,6 @@ jobs:
           path: dist\WGSM-Full-Setup-*.exe
           if-no-files-found: error
 
-      - name: Copy raw exe for release
-        shell: pwsh
-        run: Copy-Item "publish\WindowsGSM.exe" "dist\WGSM.exe"
-
       - name: Create Full GitHub Release
         if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v2
@@ -167,8 +163,6 @@ jobs:
             6. Open `http://localhost:7876/ui` in your browser
             7. Paste your token and click **Connect**
 
-          files: |
-            dist\WGSM-Full-Setup-*.exe
-            dist\WGSM.exe
+          files: dist\WGSM-Full-Setup-*.exe
           draft: false
           prerelease: ${{ contains(github.ref_name, '-beta') || contains(github.ref_name, '-rc') }}

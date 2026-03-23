@@ -17,7 +17,6 @@ namespace WindowsGSM.WebApi.Services
     {
         private const string GitHubOwner = "jonsjsj";
         private const string GitHubRepo  = "WindowsGSMwebapi";
-        private const string AssetName   = "WGSM.exe";
 
         private readonly ServerManagerService _serverManager;
 
@@ -76,7 +75,7 @@ namespace WindowsGSM.WebApi.Services
 
                 var tagName    = finalUrl.Substring(tagStart + 5); // strip "/tag/"
                 var latestVer  = tagName.TrimStart('v');
-                var downloadUrl = $"https://github.com/{GitHubOwner}/{GitHubRepo}/releases/download/{tagName}/{AssetName}";
+                var downloadUrl = $"https://github.com/{GitHubOwner}/{GitHubRepo}/releases/download/{tagName}/WGSM-Full-Setup-{latestVer}.exe";
 
                 bool hasUpdate = IsNewer(latestVer, CurrentVersion);
                 return (hasUpdate, tagName, downloadUrl, null);
@@ -93,22 +92,19 @@ namespace WindowsGSM.WebApi.Services
         /// </summary>
         public async Task<(bool success, string message)> ApplyUpdateAsync(string downloadUrl)
         {
-            var exeDir    = WgsmPath.AppDir;
-            var exePath   = Path.Combine(exeDir, "WindowsGSM.exe");
-            var updateExe = Path.Combine(exeDir, "WindowsGSM.update.exe");
-            var batchPath = Path.Combine(exeDir, "wgsm_update.bat");
+            var tempInstaller = Path.Combine(Path.GetTempPath(), "WGSM-Update-Setup.exe");
 
             try
             {
-                // 1. Download new exe
+                // 1. Download installer
                 using var resp = await _http.GetAsync(downloadUrl, HttpCompletionOption.ResponseHeadersRead)
                                            .ConfigureAwait(false);
                 resp.EnsureSuccessStatusCode();
 
-                await using (var fs = File.Create(updateExe))
+                await using (var fs = File.Create(tempInstaller))
                     await resp.Content.CopyToAsync(fs).ConfigureAwait(false);
 
-                // 2. Stop all running servers via the UI dispatcher
+                // 2. Stop all running servers
                 Application.Current.Dispatcher.Invoke(() =>
                 {
                     var servers = _serverManager.GetAllServers();
@@ -117,22 +113,12 @@ namespace WindowsGSM.WebApi.Services
                             _serverManager.Stop(s.Id);
                 });
 
-                // 3. Write swap batch
-                File.WriteAllText(batchPath,
-                    "@echo off\r\n" +
-                    "timeout /t 3 /nobreak >nul\r\n" +
-                    $"copy /y \"{updateExe}\" \"{exePath}\"\r\n" +
-                    $"del \"{updateExe}\"\r\n" +
-                    $"start \"\" \"{exePath}\"\r\n" +
-                    $"del \"%~f0\"\r\n");
-
-                // 4. Launch batch and exit
+                // 3. Launch installer silently — Inno Setup closes & restarts the app
                 Process.Start(new ProcessStartInfo
                 {
-                    FileName        = "cmd.exe",
-                    Arguments       = $"/c \"{batchPath}\"",
-                    UseShellExecute = false,
-                    CreateNoWindow  = true,
+                    FileName        = tempInstaller,
+                    Arguments       = "/VERYSILENT /NORESTART /CLOSEAPPLICATIONS",
+                    UseShellExecute = true,
                 });
 
                 Application.Current.Dispatcher.Invoke(() => Application.Current.Shutdown());
