@@ -2,7 +2,7 @@
 
 Embedded REST API + web dashboard for WindowsGSM. Runs inside the WGSM WPF application on Windows. Exposes game servers over HTTP so they can be managed remotely via browser or the TrueNAS dashboard.
 
-**Current version:** v1.0.39
+**Current version:** v1.0.41
 
 ---
 
@@ -186,6 +186,9 @@ All file paths are validated with `Path.GetFullPath` against `servers/{id}/serve
 | GET | `/api/ports/{port}/status` | Token | Check Windows Firewall rule for port |
 | POST | `/api/ports/{port}/open` | Token | Add inbound firewall rule |
 | DELETE | `/api/ports/{port}/close` | Token | Remove firewall rule |
+| GET | `/api/ports/{port}/reachability` | Token | Check if port is reachable from the internet (via portchecker.co). Returns `{ port, protocol, reachable, publicIp }`. Optional query param: `?protocol=TCP` (default TCP). |
+
+**Auto-managed firewall rules:** When a server is started via `POST /api/servers/{id}/start`, TCP and UDP inbound rules are automatically created for the server's game port and query port. Rule names follow the pattern `WGSM Auto {serverId} {port} {protocol}` so they can be managed independently of manually created rules. Rules are removed automatically when the server is stopped.
 
 ### Config Backup & Restore
 
@@ -325,6 +328,7 @@ Push a tag matching `v*.*.*` to trigger the GitHub Actions workflow (`build-inst
 
 | Version | Date | Key Changes |
 |---------|------|-------------|
+| v1.0.41 | 2026-03-23 | Port Management Phase 1 — `GET /api/ports/{port}/reachability` (external internet check via portchecker.co); auto-open TCP+UDP firewall rules on server Start, auto-close on Stop; 🌐 internet reachability chip on server cards |
 | v1.0.40 | 2026-03-23 | Config Backup & Restore — AES-256 encrypted export/import of API tokens and settings |
 | v1.0.39 | 2026-03-22 | App Update panel in dashboard; full error messages on update failure |
 | v1.0.38 | 2026-03-22 | Fixed install — all gameServer calls dispatched to WPF UI thread |

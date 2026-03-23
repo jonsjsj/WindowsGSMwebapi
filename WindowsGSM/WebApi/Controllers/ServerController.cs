@@ -9,21 +9,24 @@ namespace WindowsGSM.WebApi.Controllers
     [Route("api/servers")]
     public class ServerController : ControllerBase
     {
-        private readonly ServerManagerService  _manager;
-        private readonly A2SQueryService       _a2s;
+        private readonly ServerManagerService   _manager;
+        private readonly A2SQueryService        _a2s;
         private readonly ResourceMonitorService _resources;
-        private readonly PortCheckService      _ports;
+        private readonly PortCheckService       _ports;
+        private readonly PortManagementService  _fw;
 
         public ServerController(
-            ServerManagerService  manager,
-            A2SQueryService       a2s,
+            ServerManagerService   manager,
+            A2SQueryService        a2s,
             ResourceMonitorService resources,
-            PortCheckService      ports)
+            PortCheckService       ports,
+            PortManagementService  fw)
         {
             _manager   = manager;
             _a2s       = a2s;
             _resources = resources;
             _ports     = ports;
+            _fw        = fw;
         }
 
         // GET /api/servers
@@ -46,6 +49,19 @@ namespace WindowsGSM.WebApi.Controllers
                 return NotFound(new ApiActionResult { Success = false, Message = $"Server '{id}' not found." });
             await EnrichAsync(server).ConfigureAwait(false);
             return Ok(server);
+        }
+
+        // Open or close auto-managed firewall rules for a server's ports.
+        private void ApplyFirewall(string id, bool open)
+        {
+            var cfg = _manager.GetConfig(id);
+            if (cfg == null) return;
+            if (!int.TryParse(cfg.ServerPort, out var gp)) return;
+            int.TryParse(cfg.QueryPort, out var qp);
+            if (open)
+                _fw.OpenPortsForServer(id, gp, qp);
+            else
+                _fw.ClosePortsForServer(id, gp, qp);
         }
 
         // Populate the extended fields that are only meaningful for running servers
@@ -90,6 +106,8 @@ namespace WindowsGSM.WebApi.Controllers
         public IActionResult Start(string id)
         {
             var (success, message) = _manager.Start(id);
+            if (success)
+                ApplyFirewall(id, open: true);
             var result = new ApiActionResult { Success = success, Message = message };
             return success ? Accepted(result) : BadRequest(result);
         }
@@ -99,6 +117,8 @@ namespace WindowsGSM.WebApi.Controllers
         public IActionResult Stop(string id)
         {
             var (success, message) = _manager.Stop(id);
+            if (success)
+                ApplyFirewall(id, open: false);
             var result = new ApiActionResult { Success = success, Message = message };
             return success ? Accepted(result) : BadRequest(result);
         }

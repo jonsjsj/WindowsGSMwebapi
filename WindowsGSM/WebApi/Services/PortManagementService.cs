@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 
 namespace WindowsGSM.WebApi.Services
@@ -6,11 +7,13 @@ namespace WindowsGSM.WebApi.Services
     /// <summary>
     /// Manages Windows Firewall rules for game server and API ports via netsh.
     /// All operations require the process to be running as Administrator.
-    /// Rule names follow the pattern "WGSM Port {port} {protocol}".
+    /// Manual rule names: "WGSM Port {port} {protocol}".
+    /// Auto-managed rule names: "WGSM Auto {serverId} {port} {protocol}".
     /// </summary>
     public class PortManagementService
     {
-        private static string RuleName(int port, string proto) => $"WGSM Port {port} {proto.ToUpper()}";
+        private static string RuleName(int port, string proto)     => $"WGSM Port {port} {proto.ToUpper()}";
+        private static string AutoRuleName(string id, int port, string proto) => $"WGSM Auto {id} {port} {proto.ToUpper()}";
 
         /// <summary>
         /// Checks whether an inbound Windows Firewall allow-rule exists for the given port.
@@ -80,6 +83,47 @@ namespace WindowsGSM.WebApi.Services
             {
                 return (false, $"Failed to remove firewall rule: {ex.Message}");
             }
+        }
+
+        // ── Auto-managed rules (tied to a specific server) ───────────────────
+
+        /// <summary>
+        /// Opens TCP + UDP inbound firewall rules for a server's game and query ports.
+        /// Rule names include the serverId so they can be removed independently of manual rules.
+        /// Silently ignores errors — firewall operations are best-effort.
+        /// </summary>
+        public void OpenPortsForServer(string serverId, int gamePort, int queryPort)
+        {
+            var ports = new HashSet<int> { gamePort };
+            if (queryPort > 0 && queryPort != gamePort) ports.Add(queryPort);
+            foreach (var port in ports)
+                foreach (var proto in new[] { "TCP", "UDP" })
+                {
+                    var name = AutoRuleName(serverId, port, proto);
+                    try
+                    {
+                        RunNetsh($"advfirewall firewall add rule name=\"{name}\" " +
+                                 $"dir=in action=allow protocol={proto} localport={port}");
+                    }
+                    catch { /* best-effort */ }
+                }
+        }
+
+        /// <summary>
+        /// Removes the auto-managed inbound firewall rules created by OpenPortsForServer.
+        /// Silently ignores errors — firewall operations are best-effort.
+        /// </summary>
+        public void ClosePortsForServer(string serverId, int gamePort, int queryPort)
+        {
+            var ports = new HashSet<int> { gamePort };
+            if (queryPort > 0 && queryPort != gamePort) ports.Add(queryPort);
+            foreach (var port in ports)
+                foreach (var proto in new[] { "TCP", "UDP" })
+                {
+                    var name = AutoRuleName(serverId, port, proto);
+                    try { RunNetsh($"advfirewall firewall delete rule name=\"{name}\" dir=in protocol={proto}"); }
+                    catch { /* best-effort */ }
+                }
         }
 
         // ── helpers ─────────────────────────────────────────────────────────

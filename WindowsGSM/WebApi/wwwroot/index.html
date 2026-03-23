@@ -413,6 +413,7 @@ function renderServers() {
   <div class="card-meta">
     ${portChip('Port', s.serverPort, s.gamePortReachable)}
     ${portChip('Query', (s.queryPort !== s.serverPort ? s.queryPort : ''), s.queryPortReachable)}
+    ${running && s.serverPort ? `<span class="chip" id="inet-${s.id}">🌐 …</span>` : ''}
     ${players}
     ${s.map ? `<span class="chip">${esc(s.map)}</span>` : ''}
     ${s.maxPlayers ? `<span class="chip">Max ${esc(s.maxPlayers)}</span>` : ''}
@@ -429,8 +430,9 @@ function renderServers() {
 </div>`;
     }).join('');
 
-    // Bind action buttons after rendering
+    // Bind action buttons and kick off internet reachability checks after rendering
     setTimeout(bindActionBtns, 0);
+    setTimeout(startReachabilityChecks, 0);
 
     return `<div class="section-row">
   <span class="section-title">Game Servers (${servers.length})</span>
@@ -443,6 +445,30 @@ function bindActionBtns() {
     document.querySelectorAll('[data-cmd]').forEach(btn => {
         btn.addEventListener('click', () => serverAction(btn.dataset.id, btn.dataset.cmd));
     });
+}
+
+// ── Internet reachability chips ─────────────────────────────────────────────
+function startReachabilityChecks() {
+    servers
+        .filter(s => s.status === 'Started' && s.serverPort)
+        .forEach(checkInternetReachability);
+}
+
+async function checkInternetReachability(s) {
+    const el = document.getElementById('inet-' + s.id);
+    if (!el) return;
+    try {
+        const r = await apiFetch(`/api/ports/${s.serverPort}/reachability`);
+        if (!r.ok) { el.textContent = '🌐 ?'; return; }
+        const data = await r.json();
+        if (data.reachable) {
+            el.textContent = '🌐 Open';
+            el.className = 'chip ok';
+        } else {
+            el.textContent = '🌐 Blocked';
+            el.className = 'chip fail';
+        }
+    } catch { el.textContent = '🌐 ?'; }
 }
 
 async function serverAction(id, cmd) {

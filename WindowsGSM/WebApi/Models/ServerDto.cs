@@ -18,8 +18,9 @@ namespace WindowsGSM.WebApi.Models
         public int?    PlayersMax         { get; set; }
         public double? CpuPercent         { get; set; }
         public double? RamMb              { get; set; }
-        public bool?   GamePortReachable  { get; set; }
-        public bool?   QueryPortReachable { get; set; }
+        public bool?   GamePortReachable         { get; set; }
+        public bool?   QueryPortReachable        { get; set; }
+        public bool?   GamePortInternetReachable { get; set; }
     }
 
     public class ServerConfigDto
@@ -116,6 +117,14 @@ namespace WindowsGSM.WebApi.Models
     public class TokenResponse
     {
         public string Token { get; set; } = string.Empty;
+    }
+
+    public class PortReachabilityDto
+    {
+        public int    Port      { get; set; }
+        public string Protocol  { get; set; } = string.Empty;
+        public bool   Reachable { get; set; }
+        public string PublicIp  { get; set; } = string.Empty;
     }
 
     public class FirewallStatusDto
