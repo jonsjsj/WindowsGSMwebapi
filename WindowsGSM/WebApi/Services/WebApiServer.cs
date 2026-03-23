@@ -126,6 +126,7 @@ namespace WindowsGSM.WebApi.Services
             services.AddSingleton<PortCheckService>();
             services.AddSingleton<PortManagementService>();
             services.AddSingleton<BackupService>();
+            services.AddSingleton<CloudBackupService>();
             services.AddSingleton<UpdateService>();
             services.AddControllers()
                     .AddJsonOptions(o =>

@@ -37,9 +37,23 @@ namespace WindowsGSM.WebApi.Models
         public bool            AutoStart    { get; set; } = false;
 
         // Backup destinations — leave empty to skip that destination
-        public string BackupLocalPath   { get; set; } = string.Empty;
+        public string BackupLocalPath    { get; set; } = string.Empty;
         public string BackupOnedrivePath { get; set; } = string.Empty;
-        public string BackupGdrivePath  { get; set; } = string.Empty;
+        public string BackupGdrivePath   { get; set; } = string.Empty;
+
+        // Cloud backup OAuth credentials — Google Drive
+        public string? GoogleClientId      { get; set; }
+        public string? GoogleClientSecret  { get; set; }
+        public string? GoogleRefreshToken  { get; set; }
+        // Optional target folder ID in Google Drive (leave null for root)
+        public string? GoogleDriveFolderId { get; set; }
+
+        // Cloud backup OAuth credentials — OneDrive / Microsoft Graph
+        public string? OneDriveClientId     { get; set; }
+        public string? OneDriveClientSecret { get; set; }
+        public string? OneDriveRefreshToken { get; set; }
+        // OneDrive folder path for backups (default: "WGSM Backups")
+        public string? OneDriveFolderPath   { get; set; }
 
         // Convenience accessor — maps to the first key token so existing code keeps working
         [JsonIgnore]

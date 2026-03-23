@@ -14,19 +14,22 @@ namespace WindowsGSM.WebApi.Controllers
         private readonly ResourceMonitorService _resources;
         private readonly PortCheckService       _ports;
         private readonly PortManagementService  _fw;
+        private readonly CloudBackupService     _cloud;
 
         public ServerController(
             ServerManagerService   manager,
             A2SQueryService        a2s,
             ResourceMonitorService resources,
             PortCheckService       ports,
-            PortManagementService  fw)
+            PortManagementService  fw,
+            CloudBackupService     cloud)
         {
             _manager   = manager;
             _a2s       = a2s;
             _resources = resources;
             _ports     = ports;
             _fw        = fw;
+            _cloud     = cloud;
         }
 
         // GET /api/servers
@@ -163,10 +166,26 @@ namespace WindowsGSM.WebApi.Controllers
             return success ? Accepted(result) : BadRequest(result);
         }
 
-        // POST /api/servers/{id}/backup  →  202 Accepted
+        // POST /api/servers/{id}/backup?destination=local|gdrive|onedrive  →  202 Accepted
+        // For cloud destinations the response includes { jobId } — poll GET /api/cloud-backup/jobs/{jobId}.
         [HttpPost("{id}/backup")]
-        public IActionResult Backup(string id)
+        public IActionResult Backup(string id, [FromQuery] string destination = "local")
         {
+            if (destination == "gdrive" || destination == "onedrive")
+            {
+                var cfg = _cloud;  // just validates injection; actual check is inside StartJob
+                try
+                {
+                    var jobId = _cloud.StartJob(id, destination);
+                    return Accepted(new { jobId, message = $"Cloud backup to {destination} started." });
+                }
+                catch (System.Exception ex)
+                {
+                    return BadRequest(new ApiActionResult { Success = false, Message = ex.Message });
+                }
+            }
+
+            // Default: local backup via WGSM
             var (success, message) = _manager.Backup(id);
             var result = new ApiActionResult { Success = success, Message = message };
             return success ? Accepted(result) : BadRequest(result);

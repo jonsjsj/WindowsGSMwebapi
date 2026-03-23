@@ -2,7 +2,7 @@
 
 Embedded REST API + web dashboard for WindowsGSM. Runs inside the WGSM WPF application on Windows. Exposes game servers over HTTP so they can be managed remotely via browser or the TrueNAS dashboard.
 
-**Current version:** v1.0.41
+**Current version:** v1.0.42
 
 ---
 
@@ -190,6 +190,63 @@ All file paths are validated with `Path.GetFullPath` against `servers/{id}/serve
 
 **Auto-managed firewall rules:** When a server is started via `POST /api/servers/{id}/start`, TCP and UDP inbound rules are automatically created for the server's game port and query port. Rule names follow the pattern `WGSM Auto {serverId} {port} {protocol}` so they can be managed independently of manually created rules. Rules are removed automatically when the server is stopped.
 
+### OAuth / Cloud Integrations
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| GET | `/api/oauth/status` | Token | Returns `{ googleLinked, oneDriveLinked }` |
+| POST | `/api/oauth/google/credentials` | Token | Save Google Client ID, Secret, and optional Folder ID. Body: `{ clientId, clientSecret, folderIdOrPath }` |
+| POST | `/api/oauth/onedrive/credentials` | Token | Save OneDrive Client ID, Secret, and optional folder path. Body: `{ clientId, clientSecret, folderIdOrPath }` |
+| GET | `/api/oauth/google/start` | **None** | Opens Google OAuth consent screen (designed for browser popup). |
+| GET | `/api/oauth/google/callback` | **None** | Google redirects here after consent; stores refresh token. |
+| GET | `/api/oauth/onedrive/start` | **None** | Opens Microsoft OAuth consent screen. |
+| GET | `/api/oauth/onedrive/callback` | **None** | Microsoft redirects here after consent; stores refresh token. |
+| DELETE | `/api/oauth/google/unlink` | Token | Remove stored Google refresh token. |
+| DELETE | `/api/oauth/onedrive/unlink` | Token | Remove stored OneDrive refresh token. |
+
+### Cloud Backup
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| POST | `/api/servers/{id}/backup?destination=gdrive\|onedrive\|local` | Token | Start backup. `local` (default) = existing WGSM backup. `gdrive`/`onedrive` = cloud backup job; returns `{ jobId }`. |
+| GET | `/api/cloud-backup/jobs/{jobId}` | Token | Poll cloud backup progress. Returns `{ jobId, serverId, provider, status, progress, message, cloudFileId }`. Poll every 2 s until `status === "done"` or `"failed"`. |
+
+**Cloud backup flow:**
+1. ZIP is created from `servers/{id}/serverfiles/` and `servers/{id}/configs/`
+2. Uploaded via resumable upload (Google Drive) or upload session (OneDrive) in 10 MB chunks
+3. Temp ZIP is deleted after upload regardless of success or failure
+4. `cloudFileId` in the completed job is the Drive file ID (Google) or OneDrive item ID
+
+**No extra NuGet packages required.** Everything uses `HttpClient` against the REST APIs directly.
+
+---
+
+## Cloud Integrations Setup
+
+### Google Drive
+
+1. Go to [Google Cloud Console](https://console.cloud.google.com/) → **APIs & Services → Credentials**
+2. Create an **OAuth 2.0 Client ID** of type **Web application**
+3. Add `http://localhost:{port}/api/oauth/google/callback` to **Authorized redirect URIs** (use your actual WGSM port)
+4. Enable the **Google Drive API** for the project
+5. In WGSM dashboard → **☁ Cloud** → enter your Client ID and Secret → **Save Credentials**
+6. Click **Link Google Drive** — complete the consent in the popup
+7. The WGSM dashboard now shows **☁ GDrive** buttons on all server cards
+
+**Scope granted:** `https://www.googleapis.com/auth/drive.file` — only files created by this app are accessible.
+
+### OneDrive
+
+1. Go to [Azure Portal](https://portal.azure.com/) → **Microsoft Entra ID → App registrations → New registration**
+2. Set the redirect URI platform to **Web** and URI to `http://localhost:{port}/api/oauth/onedrive/callback`
+3. Under **Certificates & secrets** → create a new **Client secret** (copy it — only shown once)
+4. Under **API permissions** → add `Files.ReadWrite` (Microsoft Graph, Delegated)
+5. In WGSM dashboard → **☁ Cloud** → enter your Application (Client) ID and Secret → **Save Credentials**
+6. Click **Link OneDrive** — complete the consent in the popup
+7. Files upload to `WGSM Backups/` in the user's OneDrive by default (configurable)
+
+---
+
 ### Config Backup & Restore
 
 | Method | Path | Auth | Description |
@@ -328,6 +385,7 @@ Push a tag matching `v*.*.*` to trigger the GitHub Actions workflow (`build-inst
 
 | Version | Date | Key Changes |
 |---------|------|-------------|
+| v1.0.42 | 2026-03-23 | Cloud Backups — Google Drive + OneDrive via OAuth 2.0; resumable chunked upload; `☁ Cloud` integrations panel; `☁ GDrive` / `☁ OneDrive` buttons on server cards; no extra NuGet packages |
 | v1.0.41 | 2026-03-23 | Port Management Phase 1 — `GET /api/ports/{port}/reachability` (external internet check via portchecker.co); auto-open TCP+UDP firewall rules on server Start, auto-close on Stop; 🌐 internet reachability chip on server cards |
 | v1.0.40 | 2026-03-23 | Config Backup & Restore — AES-256 encrypted export/import of API tokens and settings |
 | v1.0.39 | 2026-03-22 | App Update panel in dashboard; full error messages on update failure |

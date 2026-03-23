@@ -216,6 +216,7 @@ header{background:var(--surface);border-bottom:1px solid var(--border);height:48
       <div class="sb-sect">Info</div>
       <button class="nav-btn" id="nav-update"    onclick="showView('update')">⬆ App Update</button>
       <button class="nav-btn" id="nav-cfgbackup" onclick="showView('cfgbackup')">⊞ Config Backup</button>
+      <button class="nav-btn" id="nav-cloud"     onclick="showView('cloud')">☁ Cloud</button>
       <button class="nav-btn" id="nav-changelog" onclick="showView('changelog')">✦ Changelog</button>
     </nav>
     <div id="content-area">
@@ -251,6 +252,7 @@ let currentView = 'servers';
 let logCtx      = null;
 let fileState   = null;
 let refreshTimer = null;
+let cloudState  = { googleLinked: false, oneDriveLinked: false };
 
 // ── Auth ───────────────────────────────────────────────────────────────────
 async function connect() {
@@ -284,7 +286,7 @@ function logout() {
 async function showApp() {
     document.getElementById('auth-screen').style.display = 'none';
     document.getElementById('app').classList.add('visible');
-    await Promise.all([loadServers(), loadResources(), loadInfo()]);
+    await Promise.all([loadServers(), loadResources(), loadInfo(), loadCloudState()]);
     showView('servers');
     refreshTimer = setInterval(async () => {
         await Promise.all([loadServers(), loadResources()]);
@@ -367,8 +369,9 @@ function renderView() {
         case 'config':    el.innerHTML = renderConfigChooser();     break;
         case 'files':     el.innerHTML = renderFilesChooser();      break;
         case 'backup':    el.innerHTML = renderBackupView();        loadBackupData(); break;
-        case 'cfgbackup': el.innerHTML = renderConfigBackupView();  break;
-        case 'changelog': el.innerHTML = renderChangelog();         break;
+        case 'cfgbackup': el.innerHTML = renderConfigBackupView();        break;
+        case 'cloud':     el.innerHTML = renderCloudIntegrations(); loadCloudState().then(renderView); break;
+        case 'changelog': el.innerHTML = renderChangelog();              break;
         default:          el.innerHTML = '';
     }
 }
@@ -425,6 +428,8 @@ function renderServers() {
     <button class="btn-sm" onclick="openLogModal('${s.id}','${esc(s.name)}')">≡ Logs</button>
     <button class="btn-sm" onclick="openInlineConfig('${s.id}','${esc(s.name)}')">⚙ Config</button>
     <button class="btn-sm" onclick="openInlineFiles('${s.id}','${esc(s.name)}')">📁 Files</button>
+    ${cloudState.googleLinked   ? `<button class="btn-sm" onclick="cloudBackup('${s.id}','gdrive')"  >☁ GDrive</button>`   : ''}
+    ${cloudState.oneDriveLinked ? `<button class="btn-sm" onclick="cloudBackup('${s.id}','onedrive')">☁ OneDrive</button>` : ''}
   </div>
   <div class="card-fb" id="fb-${s.id}"></div>
 </div>`;
@@ -469,6 +474,145 @@ async function checkInternetReachability(s) {
             el.className = 'chip fail';
         }
     } catch { el.textContent = '🌐 ?'; }
+}
+
+// ── Cloud Integrations ──────────────────────────────────────────────────────
+async function loadCloudState() {
+    try {
+        const r = await apiFetch('/api/oauth/status');
+        if (r.ok) cloudState = await r.json();
+    } catch { /* non-fatal — cloudState stays as default */ }
+}
+
+function renderCloudIntegrations() {
+    function providerCard(id, icon, title, desc, linked, linkFn, credFn, idPlaceholder, secPlaceholder, folderLabel, folderPlaceholder, folderInputId, clientIdInputId, clientSecInputId) {
+        return `<div class="server-card" style="margin-bottom:12px">
+  <div class="card-top">
+    <div><div class="card-name">${icon} ${title}</div><div class="card-game">${desc}</div></div>
+    <span class="status-pill ${linked ? 's-started' : 's-stopped'}">${linked ? 'LINKED' : 'NOT LINKED'}</span>
+  </div>
+  <div class="cfg-grid" style="margin-top:8px">
+    <div class="cfg-field"><label>Client ID</label>
+      <input id="${clientIdInputId}" placeholder="${idPlaceholder}"></div>
+    <div class="cfg-field"><label>Client Secret</label>
+      <input id="${clientSecInputId}" type="password" placeholder="${secPlaceholder}"></div>
+    <div class="cfg-field cfg-full"><label>${folderLabel}</label>
+      <input id="${folderInputId}" placeholder="${folderPlaceholder}"></div>
+  </div>
+  <div class="card-actions" style="margin-top:8px">
+    <button class="btn-sm" onclick="${credFn}()">💾 Save Credentials</button>
+    <button class="btn-sm" onclick="${linkFn}()">🔗 ${linked ? 'Re-link' : 'Link'} ${title}</button>
+    ${linked ? `<button class="btn-danger" onclick="unlinkCloud('${id}')">✕ Unlink</button>` : ''}
+  </div>
+  <div class="card-fb" id="fb-${id}"></div>
+</div>`;
+    }
+
+    return `<div class="section-row"><span class="section-title">Cloud Integrations</span>
+  <button class="btn-sm" onclick="loadCloudState().then(renderView)">↻ Refresh</button></div>
+<p style="color:var(--muted);font-size:12px;margin-bottom:14px">
+  Link a cloud provider once — backups will appear on each server card as ☁ GDrive / ☁ OneDrive buttons.
+  Register your OAuth app first (see HOWTO_WEBAPI.md for step-by-step setup).
+</p>
+${providerCard('google','🔵','Google Drive','Upload server backups directly to Google Drive',
+  cloudState.googleLinked,'linkGoogle','saveGoogleCredentials',
+  '…apps.googleusercontent.com','GOCSPX-…',
+  'Drive Folder ID (optional — leave blank for My Drive root)',
+  'Folder ID from Drive URL','g-folder-id','g-client-id','g-client-sec')}
+${providerCard('onedrive','🔷','OneDrive','Upload server backups directly to Microsoft OneDrive',
+  cloudState.oneDriveLinked,'linkOneDrive','saveOneDriveCredentials',
+  'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx','Client secret value',
+  'OneDrive folder path (default: WGSM Backups)',
+  'WGSM Backups','od-folder-path','od-client-id','od-client-sec')}`;
+}
+
+async function saveGoogleCredentials() {
+    const cid = document.getElementById('g-client-id').value.trim();
+    const sec = document.getElementById('g-client-sec').value.trim();
+    const fid = document.getElementById('g-folder-id').value.trim();
+    const fb  = document.getElementById('fb-google');
+    if (!cid || !sec) { fb.textContent = 'Client ID and Secret are required.'; return; }
+    try {
+        const r = await apiFetch('/api/oauth/google/credentials',
+            { clientId: cid, clientSecret: sec, folderIdOrPath: fid }, 'POST');
+        const d = await r.json().catch(() => ({}));
+        fb.textContent = r.ok ? '✓ Saved. Now click Link Google Drive.' : (d.message ?? 'Failed.');
+    } catch (e) { fb.textContent = 'Error: ' + e.message; }
+}
+
+async function saveOneDriveCredentials() {
+    const cid = document.getElementById('od-client-id').value.trim();
+    const sec = document.getElementById('od-client-sec').value.trim();
+    const fp  = document.getElementById('od-folder-path').value.trim();
+    const fb  = document.getElementById('fb-onedrive');
+    if (!cid || !sec) { fb.textContent = 'Client ID and Secret are required.'; return; }
+    try {
+        const r = await apiFetch('/api/oauth/onedrive/credentials',
+            { clientId: cid, clientSecret: sec, folderIdOrPath: fp }, 'POST');
+        const d = await r.json().catch(() => ({}));
+        fb.textContent = r.ok ? '✓ Saved. Now click Link OneDrive.' : (d.message ?? 'Failed.');
+    } catch (e) { fb.textContent = 'Error: ' + e.message; }
+}
+
+function linkGoogle() {
+    const popup = window.open('/api/oauth/google/start', 'GoogleOAuth',
+        'width=540,height=660,scrollbars=yes,resizable=yes');
+    window.addEventListener('message', async function handler(e) {
+        if (e.data?.type === 'oauth-complete' && e.data?.provider === 'google') {
+            window.removeEventListener('message', handler);
+            await loadCloudState();
+            renderView();
+        }
+    });
+    if (!popup) alert('Popup was blocked. Allow popups for this page and try again.');
+}
+
+function linkOneDrive() {
+    const popup = window.open('/api/oauth/onedrive/start', 'OneDriveOAuth',
+        'width=540,height=660,scrollbars=yes,resizable=yes');
+    window.addEventListener('message', async function handler(e) {
+        if (e.data?.type === 'oauth-complete' && e.data?.provider === 'onedrive') {
+            window.removeEventListener('message', handler);
+            await loadCloudState();
+            renderView();
+        }
+    });
+    if (!popup) alert('Popup was blocked. Allow popups for this page and try again.');
+}
+
+async function unlinkCloud(provider) {
+    const fb = document.getElementById('fb-' + provider);
+    try {
+        const r = await apiFetch(`/api/oauth/${provider}/unlink`, null, 'DELETE');
+        if (r.ok) { await loadCloudState(); renderView(); }
+        else { const d = await r.json().catch(() => ({})); if (fb) fb.textContent = d.message ?? 'Failed.'; }
+    } catch (e) { if (fb) fb.textContent = 'Error: ' + e.message; }
+}
+
+async function cloudBackup(id, provider) {
+    const fb = document.getElementById('fb-' + id);
+    if (fb) fb.textContent = `Starting ${provider} backup…`;
+    try {
+        const r = await apiFetch(`/api/servers/${id}/backup?destination=${provider}`, null, 'POST');
+        const d = await r.json().catch(() => ({}));
+        if (!r.ok) { if (fb) fb.textContent = d.message ?? 'Failed.'; return; }
+        if (fb) fb.textContent = `☁ Backup running…`;
+        pollCloudJob(d.jobId, fb);
+    } catch (e) { if (fb) fb.textContent = 'Error: ' + e.message; }
+}
+
+async function pollCloudJob(jobId, fb) {
+    try {
+        const r = await apiFetch(`/api/cloud-backup/jobs/${jobId}`);
+        const d = await r.json().catch(() => ({}));
+        if (fb) fb.textContent = `☁ ${d.message ?? ''} (${d.progress ?? 0}%)`;
+        if (!d.status || d.status === 'running')
+            setTimeout(() => pollCloudJob(jobId, fb), 2000);
+        else if (d.status === 'done')
+            { if (fb) fb.textContent = '☁ Upload complete!'; }
+        else if (d.status === 'failed')
+            { if (fb) fb.textContent = `☁ Failed: ${d.message}`; }
+    } catch { setTimeout(() => pollCloudJob(jobId, fb), 3000); }
 }
 
 async function serverAction(id, cmd) {

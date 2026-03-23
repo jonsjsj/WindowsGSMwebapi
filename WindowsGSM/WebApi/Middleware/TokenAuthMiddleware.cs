@@ -29,7 +29,13 @@ namespace WindowsGSM.WebApi.Middleware
             var remote = context.Connection.RemoteIpAddress?.ToString() ?? "unknown";
 
             // Public routes — no token required
-            if (path.StartsWith("/ui") || path == "/" || path == "/api/info")
+            // OAuth start/callback routes are opened directly in a browser popup,
+            // so they cannot carry a Bearer token.
+            if (path.StartsWith("/ui") || path == "/" || path == "/api/info" ||
+                path.StartsWith("/api/oauth/google/start")    ||
+                path.StartsWith("/api/oauth/google/callback") ||
+                path.StartsWith("/api/oauth/onedrive/start")  ||
+                path.StartsWith("/api/oauth/onedrive/callback"))
             {
                 await _next(context);
                 return;

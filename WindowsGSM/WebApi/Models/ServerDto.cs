@@ -155,6 +155,30 @@ namespace WindowsGSM.WebApi.Models
         public string? DownloadUrl { get; set; }
     }
 
+    public class OAuthStatusDto
+    {
+        public bool GoogleLinked   { get; set; }
+        public bool OneDriveLinked { get; set; }
+    }
+
+    public class CloudBackupJobDto
+    {
+        public string  JobId      { get; set; } = string.Empty;
+        public string  ServerId   { get; set; } = string.Empty;
+        public string  Provider   { get; set; } = string.Empty; // "gdrive" | "onedrive"
+        public string  Status     { get; set; } = string.Empty; // "running" | "done" | "failed"
+        public int     Progress   { get; set; }                 // 0–100
+        public string  Message    { get; set; } = string.Empty;
+        public string? CloudFileId { get; set; }                // Drive file ID on success
+    }
+
+    public class OAuthCredentialsRequest
+    {
+        public string? ClientId     { get; set; }
+        public string? ClientSecret { get; set; }
+        public string? FolderIdOrPath { get; set; }
+    }
+
     public class StatusResponse
     {
         public bool Running { get; set; }
