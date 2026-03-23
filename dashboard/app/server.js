@@ -9,6 +9,11 @@ const PORT           = parseInt(process.env.PORT || '5680');
 const DATA_FILE      = process.env.DATA_FILE      || '/data/instances.json';
 const TEMPLATES_FILE = process.env.TEMPLATES_FILE || '/data/templates.json';
 
+// ── Trust proxy ────────────────────────────────────────────────────────────────
+// Required when running behind TrueNAS / Nginx / Traefik so that secure cookies
+// and OIDC redirect URLs are generated using the real external host, not localhost.
+app.set('trust proxy', 1);
+
 // ── Request log ring-buffer ───────────────────────────────────────────────
 const MAX_LOG   = 300;
 const reqLog    = [];
@@ -21,6 +26,37 @@ app.use((req, _res, next) => {
     addLog({ type: 'req', method: req.method, path: req.path });
     next();
 });
+
+// ── Health check (public — no auth required) ──────────────────────────────────
+app.get('/health', (_req, res) => res.json({ ok: true, uptime: process.uptime() }));
+
+// ── OIDC Authentication ────────────────────────────────────────────────────────
+// Enabled automatically when all five env vars are present.
+// If any are missing the app starts without auth (backward-compatible).
+const OIDC_ENABLED = !!(
+    process.env.ISSUER_BASE_URL &&
+    process.env.CLIENT_ID       &&
+    process.env.CLIENT_SECRET   &&
+    process.env.BASE_URL        &&
+    process.env.SECRET
+);
+
+if (OIDC_ENABLED) {
+    const { auth } = require('express-openid-connect');
+    app.use(auth({
+        authRequired:  true,
+        auth0Logout:   false,   // use standard OIDC logout, not Auth0-specific endpoint
+        idpLogout:     true,    // forward to IdP /end_session on logout
+        issuerBaseURL: process.env.ISSUER_BASE_URL,
+        baseURL:       process.env.BASE_URL,
+        clientID:      process.env.CLIENT_ID,
+        clientSecret:  process.env.CLIENT_SECRET,
+        secret:        process.env.SECRET,
+    }));
+    console.log(`OIDC auth enabled  (issuer: ${process.env.ISSUER_BASE_URL})`);
+} else {
+    console.warn('OIDC auth DISABLED — set ISSUER_BASE_URL, CLIENT_ID, CLIENT_SECRET, BASE_URL and SECRET to enable.');
+}
 
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));

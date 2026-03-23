@@ -10,6 +10,14 @@ services:
     environment:
       - PORT=5680
       - DATA_FILE=/data/instances.json
+      # ── OIDC Authentication ────────────────────────────────────────────────
+      # Uncomment and fill in all five vars to enable OIDC login (Authelia,
+      # Authentik, Auth0, etc.). Leave commented to run without authentication.
+      # - ISSUER_BASE_URL=https://auth.example.com          # IdP base URL
+      # - BASE_URL=http://your-truenas-ip:5680              # this app's external URL
+      # - CLIENT_ID=your-oidc-client-id
+      # - CLIENT_SECRET=your-oidc-client-secret
+      # - SECRET=change-me-to-a-random-32-plus-char-string  # session encryption key
     command: >
       sh -c "
         mkdir -p /app/public &&
