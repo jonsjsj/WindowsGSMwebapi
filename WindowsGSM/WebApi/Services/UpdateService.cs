@@ -17,7 +17,7 @@ namespace WindowsGSM.WebApi.Services
     {
         private const string GitHubOwner = "jonsjsj";
         private const string GitHubRepo  = "WindowsGSMwebapi";
-        private const string AssetName   = "WindowsGSM.exe";
+        private const string AssetName   = "WGSM.exe";
 
         private readonly ServerManagerService _serverManager;
 
