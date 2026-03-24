@@ -58,7 +58,7 @@ namespace WindowsGSM.WebApi.Controllers
             if (string.IsNullOrEmpty(filename))
                 return BadRequest(new ApiActionResult { Success = false, Message = "Invalid filename." });
 
-            var backupDir = Path.Combine(WgsmPath.AppDir, "backups");
+            var backupDir = WindowsGSM.Functions.ServerPath.GetBackups(id);
             Directory.CreateDirectory(backupDir);
             var destPath = Path.Combine(backupDir, filename);
 

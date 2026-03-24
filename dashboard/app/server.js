@@ -338,7 +338,15 @@ app.post('/api/migrate', async (req, res) => {
         });
         if (!uploadRes.ok) return res.status(502).json({ error: `Backup upload failed: HTTP ${uploadRes.status}` });
 
-        // 6. Apply source config to destination server
+        // 6. Trigger restore of the uploaded ZIP on the destination server
+        const restoreRes = await fetch(`${dst.url}/api/servers/${srcServerId}/restore`, {
+            method: 'POST', headers: { ...authDst, 'Content-Type': 'application/json' },
+            body:   JSON.stringify({ fileName: backupFile }),
+            signal: AbortSignal.timeout(120_000),
+        });
+        if (!restoreRes.ok) return res.status(502).json({ error: `Restore trigger failed: HTTP ${restoreRes.status}` });
+
+        // 7. Apply source config to destination server
         const patchRes = await fetch(`${dst.url}/api/servers/${srcServerId}/config`, {
             method: 'PATCH', headers: authDst,
             body: JSON.stringify({
