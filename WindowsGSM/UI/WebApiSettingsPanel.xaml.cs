@@ -20,9 +20,6 @@ namespace WindowsGSM.UI
         private WebApiConfig  _config = WebApiConfig.Load();
         private bool          _loading;
 
-        // Cached download URL from the last update check
-        private string? _pendingUpdateUrl;
-
         public WebApiSettingsPanel()
         {
             InitializeComponent();
@@ -38,7 +35,6 @@ namespace WindowsGSM.UI
             PanelKeys.Visibility       = TabKeys.IsChecked       == true ? Visibility.Visible : Visibility.Collapsed;
             PanelConnection.Visibility = TabConnection.IsChecked == true ? Visibility.Visible : Visibility.Collapsed;
             PanelBackup.Visibility     = TabBackup.IsChecked     == true ? Visibility.Visible : Visibility.Collapsed;
-            PanelUpdates.Visibility    = TabUpdates.IsChecked    == true ? Visibility.Visible : Visibility.Collapsed;
             PanelLog.Visibility        = TabLog.IsChecked        == true ? Visibility.Visible : Visibility.Collapsed;
         }
 
@@ -413,64 +409,6 @@ namespace WindowsGSM.UI
             var svc = new WindowsGSM.WebApi.Services.BackupService(_config);
             var (success, message, _) = await Task.Run(() => svc.CreateBackup());
             AppendLog(message);
-        }
-
-        // — Update ————————————————————————————————————————————————————————————
-
-        private async void OnCheckUpdate(object sender, RoutedEventArgs e)
-        {
-            UpdateStatusLabel.Text      = "Checking...";
-            ApplyUpdateButton.IsEnabled = false;
-            _pendingUpdateUrl           = null;
-
-            var svc = new WindowsGSM.WebApi.Services.UpdateService(
-                _server?.ServerManager ?? new WindowsGSM.WebApi.Services.ServerManagerService(null!));
-            var (hasUpdate, latestTag, downloadUrl, error) =
-                await svc.CheckForUpdateAsync();
-
-            if (error != null)
-            {
-                UpdateStatusLabel.Text = $"Check failed: {error}";
-                AppendLog($"Update check failed: {error}");
-                return;
-            }
-
-            var current = WindowsGSM.WebApi.Services.UpdateService.CurrentVersion;
-            if (hasUpdate)
-            {
-                _pendingUpdateUrl           = downloadUrl;
-                ApplyUpdateButton.IsEnabled = downloadUrl != null;
-                UpdateStatusLabel.Text      = $"Update available: {latestTag}";
-                AppendLog($"Update available: {latestTag} (current: {current})");
-                if (downloadUrl == null)
-                    AppendLog("  Warning: no WindowsGSM.exe asset found in the release.");
-            }
-            else
-            {
-                UpdateStatusLabel.Text = $"Up to date ({current})";
-                AppendLog($"Up to date: {current}");
-            }
-        }
-
-        private async void OnApplyUpdate(object sender, RoutedEventArgs e)
-        {
-            if (string.IsNullOrEmpty(_pendingUpdateUrl)) return;
-
-            ApplyUpdateButton.IsEnabled = false;
-            UpdateStatusLabel.Text      = "Downloading and applying update...";
-            AppendLog("Applying update — servers will be stopped and application will restart.");
-
-            var svc = new WindowsGSM.WebApi.Services.UpdateService(
-                _server?.ServerManager ?? new WindowsGSM.WebApi.Services.ServerManagerService(null!));
-            var (success, message) = await svc.ApplyUpdateAsync(_pendingUpdateUrl);
-
-            if (!success)
-            {
-                UpdateStatusLabel.Text      = "Update failed";
-                ApplyUpdateButton.IsEnabled = true;
-                AppendLog($"Update failed: {message}");
-            }
-            // On success the application shuts down — nothing to do here
         }
 
         // — Log ——————————————————————————————————————————————————————————————

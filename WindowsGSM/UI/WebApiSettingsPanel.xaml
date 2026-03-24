@@ -137,7 +137,6 @@
                 <RadioButton x:Name="TabKeys"       Style="{StaticResource TabNavButton}" Content="API Keys"   GroupName="WebApiTabs" Checked="OnTabChanged"/>
                 <RadioButton x:Name="TabConnection" Style="{StaticResource TabNavButton}" Content="Connection" GroupName="WebApiTabs" Checked="OnTabChanged"/>
                 <RadioButton x:Name="TabBackup"     Style="{StaticResource TabNavButton}" Content="Backup"     GroupName="WebApiTabs" Checked="OnTabChanged"/>
-                <RadioButton x:Name="TabUpdates"    Style="{StaticResource TabNavButton}" Content="Updates"    GroupName="WebApiTabs" Checked="OnTabChanged"/>
                 <RadioButton x:Name="TabLog"        Style="{StaticResource TabNavButton}" Content="Log"        GroupName="WebApiTabs" Checked="OnTabChanged"/>
             </StackPanel>
         </Border>
@@ -414,29 +413,6 @@
                                 <Button Style="{StaticResource GhostBtn}"
                                         Content="Create backup now" Click="OnCreateBackup"/>
                             </StackPanel>
-                        </StackPanel>
-                    </Border>
-
-                </StackPanel>
-
-                <!-- ── Updates tab ──────────────────────────────────────────── -->
-                <StackPanel x:Name="PanelUpdates" MaxWidth="680" Visibility="Collapsed">
-
-                    <Border Style="{StaticResource Card}">
-                        <StackPanel>
-                            <TextBlock Style="{StaticResource WgsmSectionHeader}" Text="APPLICATION UPDATE"/>
-                            <TextBlock Style="{StaticResource HintText}"
-                                       Text="Check GitHub for a new WGSM version. Apply will stop servers, swap the exe and restart automatically."/>
-                            <StackPanel Orientation="Horizontal">
-                                <Button Style="{StaticResource PrimaryBtn}"
-                                        Content="Check for update" Click="OnCheckUpdate"
-                                        Margin="0,0,10,0"/>
-                                <Button x:Name="ApplyUpdateButton" Style="{StaticResource GhostBtn}"
-                                        Content="Apply update" Click="OnApplyUpdate"
-                                        IsEnabled="False"/>
-                            </StackPanel>
-                            <TextBlock x:Name="UpdateStatusLabel" Foreground="{StaticResource WgsmMutedBrush}"
-                                       FontSize="12" Margin="0,10,0,0"/>
                         </StackPanel>
                     </Border>
 

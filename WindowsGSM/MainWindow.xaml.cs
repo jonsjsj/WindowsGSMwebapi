@@ -287,7 +287,6 @@ namespace WindowsGSM
             MahAppSwitch_DonorConnect.Toggled -= DonorConnect_IsCheckedChanged;
             MahAppSwitch_DonorConnect.IsOn = (key.GetValue(RegistryKeyName.DonorTheme) ?? false).ToString() == "True";
             MahAppSwitch_DonorConnect.Toggled += DonorConnect_IsCheckedChanged;
-            MahAppSwitch_SendStatistics.IsOn = (key.GetValue(RegistryKeyName.SendStatistics) ?? true).ToString() == "True";
             MahAppSwitch_DiscordBotAutoStart.IsOn = (key.GetValue(RegistryKeyName.DiscordBotAutoStart) ?? false).ToString() == "True";
             string color = (key.GetValue(RegistryKeyName.DonorColor) ?? string.Empty).ToString();
             comboBox_Themes.SelectionChanged -= ComboBox_Themes_SelectionChanged;
@@ -455,7 +454,7 @@ namespace WindowsGSM
 
             AutoStartServer();
 
-            if (MahAppSwitch_SendStatistics.IsOn)
+            if (SettingsPanel.IsOn_SendStatistics)
             {
                 SendGoogleAnalytics();
             }
@@ -1402,7 +1401,7 @@ namespace WindowsGSM
                 comboBox_InstallGameServer.IsEnabled = true;
                 progressbar_InstallProgress.IsIndeterminate = false;
 
-                if (MahAppSwitch_SendStatistics.IsOn)
+                if (SettingsPanel.IsOn_SendStatistics)
                 {
                     var analytics = new GoogleAnalytics();
                     analytics.SendGameServerInstall(newServerConfig.ServerID, servergame);
@@ -2103,7 +2102,7 @@ namespace WindowsGSM
 
             StartQuery(server);
 
-            if (MahAppSwitch_SendStatistics.IsOn)
+            if (SettingsPanel.IsOn_SendStatistics)
             {
                 var analytics = new GoogleAnalytics();
                 analytics.SendGameServerStart(server.ID, server.Game);
@@ -2969,7 +2968,7 @@ namespace WindowsGSM
 
             while (p != null && !p.HasExited)
             {
-                if (MahAppSwitch_SendStatistics.IsOn)
+                if (SettingsPanel.IsOn_SendStatistics)
                 {
                     var analytics = new GoogleAnalytics();
                     analytics.SendGameServerHeartBeat(server.Game, server.Name);
@@ -3352,7 +3351,7 @@ namespace WindowsGSM
         {
             using (var key = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\WindowsGSM", true))
             {
-                key?.SetValue(RegistryKeyName.SendStatistics, MahAppSwitch_SendStatistics.IsOn.ToString());
+                key?.SetValue(RegistryKeyName.SendStatistics, SettingsPanel.IsOn_SendStatistics.ToString());
             }
         }
 
@@ -4413,10 +4412,11 @@ namespace WindowsGSM
 
         private void HamburgerMenu_ItemClick(object sender, ItemClickEventArgs e)
         {
-            hMenu_Home.Visibility = (HamburgerMenuControl.SelectedIndex == 0) ? Visibility.Visible : Visibility.Hidden;
-            hMenu_Dashboard.Visibility = (HamburgerMenuControl.SelectedIndex == 1) ? Visibility.Visible : Visibility.Hidden;
+            hMenu_Home.Visibility     = (HamburgerMenuControl.SelectedIndex == 0) ? Visibility.Visible : Visibility.Hidden;
+            hMenu_Dashboard.Visibility  = (HamburgerMenuControl.SelectedIndex == 1) ? Visibility.Visible : Visibility.Hidden;
             hMenu_Discordbot.Visibility = (HamburgerMenuControl.SelectedIndex == 2) ? Visibility.Visible : Visibility.Hidden;
-            hMenu_WebApi.Visibility = (HamburgerMenuControl.SelectedIndex == 3) ? Visibility.Visible : Visibility.Hidden;
+            hMenu_WebApi.Visibility     = (HamburgerMenuControl.SelectedIndex == 3) ? Visibility.Visible : Visibility.Hidden;
+            hMenu_Settings.Visibility   = (HamburgerMenuControl.SelectedIndex == 4) ? Visibility.Visible : Visibility.Hidden;
 
             if (HamburgerMenuControl.SelectedIndex == 2)
             {
@@ -4447,10 +4447,6 @@ namespace WindowsGSM
             {
                 ToggleMahappFlyout(MahAppFlyout_ViewPlugins);
             }
-            else if (HamburgerMenuControl.SelectedOptionsIndex == 1)
-            {
-                ToggleMahappFlyout(MahAppFlyout_Settings);
-            }
 
             HamburgerMenuControl.SelectedOptionsIndex = -1;
 
@@ -4467,15 +4463,24 @@ namespace WindowsGSM
             {
                 HamburgerMenuControl.SelectedIndex = 2;
             }
+            else if (hMenu_WebApi.Visibility == Visibility.Visible)
+            {
+                HamburgerMenuControl.SelectedIndex = 3;
+            }
+            else if (hMenu_Settings.Visibility == Visibility.Visible)
+            {
+                HamburgerMenuControl.SelectedIndex = 4;
+            }
         }
 
         private async void HamburgerMenu_Loaded(object sender, RoutedEventArgs e)
         {
             HamburgerMenuControl.Visibility = Visibility.Visible;
-            hMenu_Home.Visibility = Visibility.Visible;
+            hMenu_Home.Visibility      = Visibility.Visible;
             hMenu_Dashboard.Visibility = Visibility.Hidden;
             hMenu_Discordbot.Visibility = Visibility.Hidden;
-            hMenu_WebApi.Visibility = Visibility.Hidden;
+            hMenu_WebApi.Visibility    = Visibility.Hidden;
+            hMenu_Settings.Visibility  = Visibility.Hidden;
 
             await Task.Delay(1); // Delay 0.001 sec due to a bug
             HamburgerMenuControl.SelectedIndex = 0;
@@ -4516,6 +4521,7 @@ namespace WindowsGSM
                 var manager = new ServerManagerService(this);
                 _webApiServer = new WebApiServer(config, network, manager);
                 WebApiPanel.Initialize(_webApiServer);
+                SettingsPanel.Initialize(_webApiServer);
 
                 // Async version check — log result to the Web API log window
                 _ = CheckForWebApiUpdateAsync();
@@ -4524,6 +4530,14 @@ namespace WindowsGSM
             {
                 System.Diagnostics.Debug.WriteLine($"[WebApi] Init failed: {ex.Message}");
             }
+        }
+
+        // Called by AppSettingsPanel when donor authentication succeeds or is cleared
+        public void OnDonorActivated(string donorType)
+        {
+            g_DonorType = donorType;
+            g_DiscordBot.SetDonorType(donorType);
+            comboBox_Themes.IsEnabled = !string.IsNullOrEmpty(donorType);
         }
 
         private async Task CheckForWebApiUpdateAsync()

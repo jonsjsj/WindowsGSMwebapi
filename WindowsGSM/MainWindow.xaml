@@ -333,6 +333,11 @@
          <webui:WebApiSettingsPanel x:Name="WebApiPanel" DockPanel.Dock="Top"/>
       </DockPanel>
 
+      <!-- Settings panel -->
+      <DockPanel Name="hMenu_Settings" Margin="200,0,0,0" Visibility="Hidden">
+         <webui:AppSettingsPanel x:Name="SettingsPanel" DockPanel.Dock="Top"/>
+      </DockPanel>
+
       <DockPanel Name="hMenu_Discordbot" Margin="200,0,0,0" Visibility="Visible">
          <Grid DockPanel.Dock="Top">
             <DockPanel Margin="10,10,10,10" DockPanel.Dock="Top">
@@ -425,7 +430,7 @@
                         <ColumnDefinition Width="1*"/>
                      </Grid.ColumnDefinitions>
 
-                     <DockPanel Grid.Column="0" Background="{DynamicResource MahApps.Brushes.Gray10}">
+                     <DockPanel Grid.Column="0" Background="{StaticResource WgsmSurfaceBrush}">
                         <Grid DockPanel.Dock="Left" Background="RoyalBlue" Height="Auto" Width="5"/>
                         <DockPanel Margin="15">
                            <DockPanel DockPanel.Dock="Top" Margin="0,0,0,10">
@@ -436,10 +441,10 @@
                               <Label DockPanel.Dock="Left" Content="0%" Padding="0" x:Name="dashboard_cpu_usage"/>
                               <Label DockPanel.Dock="Left" Content="" Padding="0"/>
                            </DockPanel>
-                           <mah:MetroProgressBar DockPanel.Dock="Left" Height="20" Value="30" Background="{DynamicResource MahApps.Brushes.Gray7}" Foreground="RoyalBlue" x:Name="dashboard_cpu_bar"/>
+                           <mah:MetroProgressBar DockPanel.Dock="Left" Height="20" Value="30" Background="{StaticResource WgsmSurface2Brush}" Foreground="RoyalBlue" x:Name="dashboard_cpu_bar"/>
                         </DockPanel>
                      </DockPanel>
-                     <DockPanel Grid.Column="2" Background="{DynamicResource MahApps.Brushes.Gray10}">
+                     <DockPanel Grid.Column="2" Background="{StaticResource WgsmSurfaceBrush}">
                         <Grid DockPanel.Dock="Left" Background="Purple" Height="Auto" Width="5"/>
                         <DockPanel Margin="15">
                            <DockPanel DockPanel.Dock="Top" Margin="0,0,0,10">
@@ -450,10 +455,10 @@
                               <Label DockPanel.Dock="Left" Content="0%" Padding="0" x:Name="dashboard_ram_usage"/>
                               <Label DockPanel.Dock="Right" Content="/" Padding="0" HorizontalAlignment="Right" x:Name="dashboard_ram_ratio"/>
                            </DockPanel>
-                           <mah:MetroProgressBar DockPanel.Dock="Left" Height="20" Value="50" Background="{DynamicResource MahApps.Brushes.Gray7}" Foreground="Purple" x:Name="dashboard_ram_bar"/>
+                           <mah:MetroProgressBar DockPanel.Dock="Left" Height="20" Value="50" Background="{StaticResource WgsmSurface2Brush}" Foreground="Purple" x:Name="dashboard_ram_bar"/>
                         </DockPanel>
                      </DockPanel>
-                     <DockPanel Grid.Column="4" Background="{DynamicResource MahApps.Brushes.Gray10}">
+                     <DockPanel Grid.Column="4" Background="{StaticResource WgsmSurfaceBrush}">
                         <Grid DockPanel.Dock="Left" Background="ForestGreen" Height="Auto" Width="5"/>
                         <DockPanel Margin="15">
                            <DockPanel DockPanel.Dock="Top" Margin="0,0,0,10">
@@ -465,7 +470,7 @@
                               <Label DockPanel.Dock="Left" Content="0%" Padding="0" x:Name="dashboard_disk_usage"/>
                               <Label DockPanel.Dock="Right" Content="/" Padding="0" HorizontalAlignment="Right" x:Name="dashboard_disk_ratio"/>
                            </DockPanel>
-                           <mah:MetroProgressBar DockPanel.Dock="Left" Height="20" Value="50" Background="{DynamicResource MahApps.Brushes.Gray7}" Foreground="ForestGreen" x:Name="dashboard_disk_bar"/>
+                           <mah:MetroProgressBar DockPanel.Dock="Left" Height="20" Value="50" Background="{StaticResource WgsmSurface2Brush}" Foreground="ForestGreen" x:Name="dashboard_disk_bar"/>
                         </DockPanel>
                      </DockPanel>
                   </Grid>
@@ -482,7 +487,7 @@
                         <ColumnDefinition Width="1*"/>
                      </Grid.ColumnDefinitions>
 
-                     <DockPanel Grid.Column="0" Background="{DynamicResource MahApps.Brushes.Gray10}">
+                     <DockPanel Grid.Column="0" Background="{StaticResource WgsmSurfaceBrush}">
                         <Grid DockPanel.Dock="Left" Background="MediumVioletRed" Height="Auto" Width="5"/>
                         <DockPanel Margin="15">
                            <DockPanel DockPanel.Dock="Top" Margin="0,0,0,10">
@@ -493,10 +498,10 @@
                               <Label DockPanel.Dock="Left" Content="0%" Padding="0" x:Name="dashboard_servers_usage"/>
                               <Label DockPanel.Dock="Right" Content="/" Padding="0" HorizontalAlignment="Right" x:Name="dashboard_servers_ratio"/>
                            </DockPanel>
-                           <mah:MetroProgressBar DockPanel.Dock="Left" Height="20" Value="30" Background="{DynamicResource MahApps.Brushes.Gray7}" Foreground="MediumVioletRed" x:Name="dashboard_servers_bar"/>
+                           <mah:MetroProgressBar DockPanel.Dock="Left" Height="20" Value="30" Background="{StaticResource WgsmSurface2Brush}" Foreground="MediumVioletRed" x:Name="dashboard_servers_bar"/>
                         </DockPanel>
                      </DockPanel>
-                     <DockPanel Grid.Column="2" Background="{DynamicResource MahApps.Brushes.Gray10}">
+                     <DockPanel Grid.Column="2" Background="{StaticResource WgsmSurfaceBrush}">
                         <Grid DockPanel.Dock="Left" Background="SpringGreen" Height="Auto" Width="5"/>
                         <DockPanel Margin="15">
                            <DockPanel DockPanel.Dock="Top" Margin="0,0,0,10">
@@ -507,10 +512,10 @@
                               <Label DockPanel.Dock="Left" Content="0%" Padding="0" x:Name="dashboard_started_usage"/>
                               <Label DockPanel.Dock="Right" Content="/" Padding="0" HorizontalAlignment="Right" x:Name="dashboard_started_ratio"/>
                            </DockPanel>
-                           <mah:MetroProgressBar DockPanel.Dock="Left" Height="20" Value="50" Background="{DynamicResource MahApps.Brushes.Gray7}" Foreground="SpringGreen" x:Name="dashboard_started_bar"/>
+                           <mah:MetroProgressBar DockPanel.Dock="Left" Height="20" Value="50" Background="{StaticResource WgsmSurface2Brush}" Foreground="SpringGreen" x:Name="dashboard_started_bar"/>
                         </DockPanel>
                      </DockPanel>
-                     <DockPanel Grid.Column="4" Background="{DynamicResource MahApps.Brushes.Gray10}">
+                     <DockPanel Grid.Column="4" Background="{StaticResource WgsmSurfaceBrush}">
                         <Grid DockPanel.Dock="Left" Background="Goldenrod" Height="Auto" Width="5"/>
                         <DockPanel Margin="15">
                            <DockPanel DockPanel.Dock="Top">
@@ -873,6 +878,11 @@
                         <BitmapImage UriSource="pack://application:,,,/WindowsGSM;component/Images/HMenu/WebApi.ico" />
                      </mah:HamburgerMenuImageItem.Thumbnail>
                   </mah:HamburgerMenuImageItem>
+                  <mah:HamburgerMenuImageItem Label="Settings">
+                     <mah:HamburgerMenuImageItem.Thumbnail>
+                        <BitmapImage UriSource="pack://application:,,,/WindowsGSM;component/Images/HMenu/Settings.ico" />
+                     </mah:HamburgerMenuImageItem.Thumbnail>
+                  </mah:HamburgerMenuImageItem>
                </mah:HamburgerMenuItemCollection>
             </mah:HamburgerMenu.ItemsSource>
 
@@ -881,11 +891,6 @@
                   <mah:HamburgerMenuImageItem Label="Plugins">
                      <mah:HamburgerMenuImageItem.Thumbnail>
                         <BitmapImage UriSource="pack://application:,,,/WindowsGSM;component/Images/HMenu/ViewPlugins.ico" />
-                     </mah:HamburgerMenuImageItem.Thumbnail>
-                  </mah:HamburgerMenuImageItem>
-                  <mah:HamburgerMenuImageItem Label="Settings">
-                     <mah:HamburgerMenuImageItem.Thumbnail>
-                        <BitmapImage UriSource="pack://application:,,,/WindowsGSM;component/Images/HMenu/Settings.ico" />
                      </mah:HamburgerMenuImageItem.Thumbnail>
                   </mah:HamburgerMenuImageItem>
                </mah:HamburgerMenuItemCollection>
