@@ -4,6 +4,135 @@ All notable changes to WGSM (Windows Game Server Manager) are documented here.
 
 ---
 
+## v1.0.47 — Unreleased
+
+### New Features
+- **Port Monitor panel** — new HamburgerMenu item showing all game server, Web API, and Docker ports with live local-listen and external-reachability checks (portchecker.co for TCP, Docker `docker ps` for container ports).
+- **Auto-Start Servers in Settings** — Startup tab now lists every configured game server with a per-server auto-start toggle; changes write to `WindowsGSM.cfg` immediately.
+- **Server Lock (password protection)** — optional password gate on the Start and Edit Config actions; SHA-256 hash stored in registry under `ServerLockEnabled` / `ServerLockHash`.
+- **Backup upload endpoint** — `POST /api/servers/{id}/backups/upload` accepts `application/octet-stream` with filename from `X-Backup-Filename` header; used by the TrueNAS dashboard migration feature.
+
+### Bug Fixes
+- **IP scope (LAN mode)** — `ScopeBindingMiddleware` now allows link-local (169.254.x.x / APIPA), CGNAT (100.64–100.127.x.x / Tailscale), IPv6 link-local (fe80::/10), and IPv6 unique-local (fc00::/7) — unusual VPN/VM subnets no longer get a 403.
+
+---
+
+## v1.0.46
+
+### Changes
+- **AppSettingsPanel** — Settings promoted from flyout to dedicated HamburgerMenu item (index 4); Updates tab moved from Web API panel to the About & Updates tab in the new Settings panel.
+- **Hardware acceleration fix** — `System.Windows.Interop.RenderOptions` delegation moved to `MainWindow.ApplyHardwareAcceleration()` to work around WPF wpftmp compilation restriction on `net8.0-windows`.
+
+---
+
+## v1.0.45
+
+### Bug Fixes
+- Build pipeline fix for self-contained `win-x64` publish step.
+
+---
+
+## v1.0.44
+
+### Changes
+- WgsmDark theme brush tokens (`WgsmBgBrush`, `WgsmSurfaceBrush`, etc.) applied to Dashboard metric cards.
+
+---
+
+## v1.0.43
+
+### Changes
+- Donor Connect flow moved to AppSettingsPanel with `OnDonorActivated` bridge on MainWindow.
+
+---
+
+## v1.0.42
+
+### Changes
+- `IsOn_SendStatistics` exposed as public property on AppSettingsPanel; all four flyout references in `MainWindow.xaml.cs` replaced.
+
+---
+
+## v1.0.41
+
+### Changes
+- AppSettingsPanel UserControl created (General / Startup / About & Updates tabs) replacing the Settings flyout.
+- Settings item removed from `OptionsItemsSource` and added as main `ItemsSource` entry (index 4).
+
+---
+
+## v1.0.40
+
+### Changes
+- Initial Web API redesign: WebApiSettingsPanel refactored; dark-theme card styles introduced.
+
+---
+
+## v1.0.39
+
+### New Features
+- **App Update panel** — Added App Update card to the Web API Settings panel with Check / Apply buttons and full error messages on failure.
+
+---
+
+## v1.0.38
+
+### Bug Fixes
+- **WPF thread error on install** — All `gameServer.*` method calls in the install job are now dispatched to the WPF UI thread via `Application.Current.Dispatcher.Invoke`.
+
+---
+
+## v1.0.37
+
+### Bug Fixes
+- **GitHub rate limit on update check** — Switched from the GitHub JSON API (`/releases/latest`) to following the HTML redirect, which has no rate limit and requires no API key.
+
+---
+
+## v1.0.36
+
+### New Features
+- **Install Wizard** — `POST /api/servers/install` with `PATCH /api/servers/{id}/config` for pre-populating port, query port, max players, and map before first start.
+- **Disk stats** — disk free / used shown in the dashboard header.
+
+### Bug Fixes
+- CPU PID tracking fixed so CPU usage per server updates correctly after a restart.
+
+---
+
+## v1.0.35
+
+### New Features
+- **File Manager** — `GET/POST/DELETE /api/servers/{id}/files` endpoints for browsing, uploading, and deleting server files.
+- **Config editor** — `GET/PATCH /api/servers/{id}/config` for reading and writing `WindowsGSM.cfg` values.
+- **Backup downloads** — `GET /api/backup/list` and `GET /api/backups/{file}` for downloading backup ZIPs.
+- Docker-style sidebar + card UI for the web dashboard.
+- Auto-refresh every 5 seconds on the server list.
+
+---
+
+## v1.0.34
+
+### New Features
+- **Plugin registry** — 87 game plugins embedded; `GET /api/games` returns all installable games.
+- **Plugin install** — `POST /api/servers/install` triggers a background install job with `GET /api/servers/install/{jobId}` polling.
+
+---
+
+## v1.0.33
+
+### New Features
+- **Initial Web API release** — Kestrel HTTP server embedded in WGSM; token-based auth (`Authorization: Bearer …`); endpoints for start / stop / restart / update / backup; A2S query support.
+
+---
+
+## v1.0.32
+
+### Changes
+- Internal build; stabilisation of Web API bootstrap and dependency injection wiring.
+
+---
+
 ## v1.0.31 — Unreleased
 
 ### New Features

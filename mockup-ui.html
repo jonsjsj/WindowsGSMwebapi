@@ -1,0 +1,1059 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>WGSM UI Mockup – Full</title>
+<style>
+:root {
+  --bg:#0D0D0D; --surface:#111111; --surface2:#1A1A1A;
+  --border:#222222; --muted:#888; --text:#E0E0E0;
+  --accent:#00D4AA; --red:#FF4D4D; --yellow:#F0A500;
+  --r:6px; --font:'Segoe UI',system-ui,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#000;display:flex;align-items:center;justify-content:center;
+     min-height:100vh;font-family:var(--font);padding:24px}
+
+/* ── Window ─────────────────────────── */
+.win{width:1180px;height:720px;background:var(--bg);border:1px solid var(--border);
+     border-radius:8px;display:flex;flex-direction:column;overflow:hidden;
+     box-shadow:0 20px 60px rgba(0,0,0,.85)}
+
+/* ── Title bar ──────────────────────── */
+.tbar{height:34px;background:var(--surface);border-bottom:1px solid var(--border);
+      display:flex;align-items:center;padding:0 12px;flex-shrink:0;user-select:none}
+.tbar-ico{width:15px;height:15px;background:var(--accent);border-radius:3px;margin-right:8px}
+.tbar-title{font-size:12px;color:var(--muted);flex:1}
+.tbar-btns{display:flex;gap:6px}
+.tb{width:12px;height:12px;border-radius:50%}
+.tb-c{background:var(--red)}.tb-m{background:var(--yellow)}.tb-x{background:#3a3}
+
+/* ── Right window commands (Website/Discord/Patreon/Hide) ── */
+.tbar-rcmds{display:flex;gap:1px;margin-right:10px}
+.rcmd-btn{background:transparent;border:none;color:var(--muted);font-size:11px;
+          padding:4px 10px;cursor:pointer;font-family:var(--font)}
+.rcmd-btn:hover{color:var(--text)}
+
+/* ── Body ───────────────────────────── */
+.body{display:flex;flex:1;overflow:hidden}
+
+/* ── Sidebar ────────────────────────── */
+.sidebar{width:190px;background:var(--surface);border-right:1px solid var(--border);
+         display:flex;flex-direction:column;flex-shrink:0}
+.sb-logo{padding:16px 14px 12px;display:flex;align-items:center;gap:9px;
+         border-bottom:1px solid var(--border)}
+.sb-logo-ico{width:26px;height:26px;background:var(--accent);border-radius:5px;
+             display:flex;align-items:center;justify-content:center;
+             font-size:11px;font-weight:700;color:#000}
+.sb-logo-txt{font-size:13px;font-weight:600;color:var(--text)}
+.sb-lbl{padding:14px 14px 5px;font-size:10px;font-weight:600;text-transform:uppercase;
+        letter-spacing:.08em;color:var(--muted)}
+.nav{display:flex;align-items:center;gap:9px;padding:8px 14px;cursor:pointer;
+     color:var(--muted);font-size:12.5px;position:relative;transition:all .12s}
+.nav:hover{background:var(--surface2);color:var(--text)}
+.nav.on{color:var(--accent);background:rgba(0,212,170,.07)}
+.nav.on::before{content:'';position:absolute;left:0;top:4px;bottom:4px;
+                width:3px;background:var(--accent);border-radius:0 2px 2px 0}
+.nav-ic{width:15px;text-align:center;font-size:13px;opacity:.75}
+.nav.on .nav-ic{opacity:1}
+.sb-spc{flex:1}
+.sb-ver{padding:10px 14px;font-size:10px;color:var(--muted);border-top:1px solid var(--border)}
+
+/* ── Content ────────────────────────── */
+.content{flex:1;overflow:hidden;background:var(--bg);display:flex;flex-direction:column}
+.panel{display:none;flex-direction:column;flex:1;overflow:hidden}
+.panel.on{display:flex}
+
+/* ── Panel header ───────────────────── */
+.ph{padding:16px 20px 13px;border-bottom:1px solid var(--border);flex-shrink:0}
+.ph h2{font-size:17px;font-weight:600;color:var(--text)}
+.ph p{font-size:11px;color:var(--muted);margin-top:2px}
+
+/* ── Scrollable body ─────────────────── */
+.pb{flex:1;overflow-y:auto;padding:16px 20px}
+
+/* ── Card ───────────────────────────── */
+.card{background:var(--surface);border:1px solid var(--border);
+      border-radius:var(--r);margin-bottom:14px}
+.ch{padding:10px 14px 9px;border-bottom:1px solid var(--border);
+    font-size:10px;font-weight:700;text-transform:uppercase;
+    letter-spacing:.08em;color:var(--muted)}
+.cb{padding:14px}
+
+/* ── Field row ──────────────────────── */
+.fr{display:flex;align-items:center;justify-content:space-between;
+    padding:9px 0;border-bottom:1px solid rgba(255,255,255,.035)}
+.fr:last-child{border-bottom:none;padding-bottom:0}
+.fr:first-child{padding-top:0}
+.fl{flex:1}
+.fl b{display:block;font-size:12.5px;font-weight:400;color:var(--text)}
+.fl small{font-size:11px;color:var(--muted);margin-top:1px;display:block}
+
+/* ── Toggle ─────────────────────────── */
+.tog{width:34px;height:19px;background:var(--surface2);border:1px solid var(--border);
+     border-radius:10px;position:relative;cursor:pointer;flex-shrink:0;transition:background .2s}
+.tog.on{background:var(--accent);border-color:var(--accent)}
+.tog::after{content:'';position:absolute;width:13px;height:13px;background:#fff;
+            border-radius:50%;top:2px;left:2px;transition:transform .2s}
+.tog.on::after{transform:translateX(15px)}
+
+/* ── Button ─────────────────────────── */
+.btn{padding:6px 13px;border-radius:var(--r);font-size:11.5px;font-weight:500;
+     cursor:pointer;border:none;font-family:var(--font)}
+.ba{background:var(--accent);color:#000}
+.bg{background:transparent;border:1px solid var(--border);color:var(--text)}
+.bd{background:transparent;border:1px solid var(--red);color:var(--red)}
+.ba:hover{filter:brightness(1.1)}.bg:hover{background:var(--surface2)}
+.btn-sm{padding:4px 9px;font-size:11px}
+
+/* ── Input ──────────────────────────── */
+.inp{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);
+     padding:5px 9px;font-size:12px;color:var(--text);font-family:var(--font)}
+.inp:focus{outline:1px solid var(--accent)}
+.sel{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);
+     padding:5px 9px;font-size:12px;color:var(--text);font-family:var(--font);cursor:pointer}
+
+/* ── Sub-tabs ───────────────────────── */
+.tabs-wrap{padding:12px 20px 0;flex-shrink:0;border-bottom:1px solid var(--border);
+           background:var(--surface)}
+.tabs{display:flex;gap:0}
+.tab{padding:7px 15px;font-size:11.5px;font-weight:500;cursor:pointer;color:var(--muted);
+     background:transparent;border:none;border-bottom:2px solid transparent;
+     transition:all .12s;font-family:var(--font)}
+.tab:hover{color:var(--text)}
+.tab.on{color:var(--accent);border-bottom-color:var(--accent)}
+.tp{display:none}.tp.on{display:block}
+
+/* ── Badge / pill ───────────────────── */
+.badge{display:inline-block;padding:2px 7px;border-radius:3px;font-size:10px;font-weight:700}
+.bg-g{background:rgba(0,212,170,.14);color:var(--accent)}
+.bg-r{background:rgba(255,77,77,.14);color:var(--red)}
+.bg-m{background:var(--surface2);color:var(--muted)}
+.bg-y{background:rgba(240,165,0,.14);color:var(--yellow)}
+
+/* ── Status dot ─────────────────────── */
+.dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.dot-g{background:var(--accent)}.dot-r{background:var(--red)}.dot-m{background:var(--muted)}
+
+/* ── Metrics grid ───────────────────── */
+.mgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
+.mc{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px}
+.mc-lbl{font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:6px}
+.mc-val{font-size:24px;font-weight:700;color:var(--text);line-height:1}
+.mc-val.a{color:var(--accent)}.mc-val.r{color:var(--red)}
+.mc-sub{font-size:11px;color:var(--muted);margin-top:3px}
+.mbar{height:4px;background:var(--surface2);border-radius:2px;margin-top:7px;overflow:hidden}
+.mbar-f{height:100%;background:var(--accent);border-radius:2px}
+
+/* ── Server datagrid ─────────────────── */
+.dg{width:100%;border-collapse:collapse;font-size:11.5px}
+.dg th{padding:6px 10px;text-align:left;font-size:10px;text-transform:uppercase;
+       letter-spacing:.07em;color:var(--muted);font-weight:600;
+       border-bottom:1px solid var(--border);background:var(--surface)}
+.dg td{padding:7px 10px;color:var(--text);border-bottom:1px solid rgba(255,255,255,.035)}
+.dg tr.sel-row td{background:rgba(0,212,170,.07)}
+.dg td.muted{color:var(--muted)}
+
+/* ── Action toolbar ──────────────────── */
+.toolbar{display:flex;gap:4px;padding:8px 12px;background:var(--surface);
+         border-bottom:1px solid var(--border);flex-wrap:wrap;flex-shrink:0}
+.tbtn{padding:5px 12px;font-size:11px;font-weight:600;letter-spacing:.04em;
+      border-radius:4px;cursor:pointer;border:none;font-family:var(--font)}
+.tbtn-start{background:#1a3d2e;border:1px solid #2a6b4a;color:var(--accent)}
+.tbtn-stop{background:#3d1a1a;border:1px solid #6b2a2a;color:var(--red)}
+.tbtn-restart{background:#2d2a0e;border:1px solid #5a5010;color:var(--yellow)}
+.tbtn-act{background:var(--surface2);border:1px solid var(--border);color:var(--text)}
+
+/* ── Menu bar ────────────────────────── */
+.mbar-strip{display:flex;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0}
+.mitem{padding:6px 12px;font-size:12px;color:var(--muted);cursor:pointer;position:relative}
+.mitem:hover{background:var(--surface2);color:var(--text)}
+
+/* ── Bottom split (server detail + console) ── */
+.bsplit{display:flex;flex:1;overflow:hidden;border-top:1px solid var(--border)}
+.bpanel-l{width:460px;flex-shrink:0;border-right:1px solid var(--border);overflow-y:auto;padding:10px}
+.bpanel-r{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.console-area{flex:1;background:#000;font-family:Consolas,monospace;font-size:11px;
+              color:#ccc;padding:8px;overflow-y:auto;white-space:pre}
+.console-bar{height:28px;background:#111;border-top:1px solid var(--border);
+             display:flex;align-items:stretch}
+.console-bar .inp{flex:1;border-radius:0;border:none;background:#0a0a0a;
+                  font-family:Consolas,monospace;font-size:11px;padding:4px 8px;height:100%}
+.console-bar .btn{border-radius:0;height:100%;padding:0 14px;font-size:11px}
+.console-hdr{height:26px;background:#000;border-bottom:1px solid #111;display:flex;align-items:center;padding:0 4px;gap:4px}
+.console-hdr .btn{padding:3px 8px;font-size:10px}
+
+/* ── Per-server controls ─────────────── */
+.sc-row{display:flex;align-items:center;gap:6px;padding:4px 0;font-size:11.5px;color:var(--text)}
+.sc-lbl{min-width:110px;color:var(--muted);font-size:11px}
+.sc-group{display:flex;gap:10px;flex-wrap:wrap;margin:4px 0}
+.sc-sep{height:1px;background:var(--border);margin:6px 0}
+
+/* ── Discord bot ─────────────────────── */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.full-col{margin-top:14px}
+.dg-admin{width:100%;border-collapse:collapse;font-size:11.5px}
+.dg-admin th{padding:6px 10px;text-align:left;font-size:10px;text-transform:uppercase;
+             letter-spacing:.07em;color:var(--muted);border-bottom:1px solid var(--border);background:var(--surface2)}
+.dg-admin td{padding:7px 10px;color:var(--text);border-bottom:1px solid rgba(255,255,255,.035);font-family:Consolas,monospace;font-size:11px}
+
+/* ── API key row ─────────────────────── */
+.key-row{display:flex;align-items:center;justify-content:space-between;
+         padding:7px 10px;background:var(--bg);border-radius:4px;margin-bottom:4px;
+         border:1px solid var(--border)}
+.key-name{font-size:12px;color:var(--text)}
+.key-val{font-family:Consolas,monospace;font-size:11px;color:var(--muted)}
+
+/* ── Log console ─────────────────────── */
+.log-box{background:var(--bg);border:1px solid var(--border);border-radius:4px;
+         font-family:Consolas,monospace;font-size:10.5px;color:#aaa;padding:8px;
+         height:180px;overflow-y:auto;white-space:pre-wrap}
+
+/* ── Live chart mock ─────────────────── */
+.chart-mock{height:100px;background:var(--surface);border:1px solid var(--border);
+            border-radius:var(--r);display:flex;align-items:flex-end;padding:8px;gap:3px;
+            margin-top:12px}
+.chart-bar{flex:1;background:rgba(0,212,170,.4);border-radius:2px 2px 0 0;min-width:4px}
+
+/* ── Links ───────────────────────────── */
+.link-row{display:flex;align-items:center;gap:8px;padding:8px 0;
+          border-bottom:1px solid rgba(255,255,255,.04);cursor:pointer;
+          color:var(--accent);font-size:12.5px}
+.link-row:last-child{border-bottom:none}
+
+/* ── Scrollbar ───────────────────────── */
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+
+/* ── kv rows in About ─────────────────── */
+.kvr{display:flex;align-items:center;justify-content:space-between;
+     padding:8px 0;border-bottom:1px solid rgba(255,255,255,.035)}
+.kvr:last-child{border-bottom:none}
+.kvr-k{font-size:11px;color:var(--muted)}
+.kvr-v{font-size:12.5px;color:var(--text);font-weight:500}
+.kvr-v.new{color:var(--accent)}
+
+/* ── Radio group ──────────────────────── */
+.radio-grp{display:flex;flex-direction:column;gap:8px}
+.radio-item{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--text);cursor:pointer}
+.radio-dot{width:14px;height:14px;border-radius:50%;border:2px solid var(--border);
+           flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.radio-dot.on{border-color:var(--accent)}
+.radio-dot.on::after{content:'';width:6px;height:6px;background:var(--accent);border-radius:50%}
+
+/* ── Flyout overlay (hidden, shown as note) ── */
+.flyout-note{background:rgba(0,212,170,.06);border:1px solid rgba(0,212,170,.2);
+             border-radius:var(--r);padding:8px 12px;font-size:11px;color:var(--muted);
+             margin-bottom:10px}
+.flyout-note strong{color:var(--accent)}
+
+/* ── Hint text ──────────────────────── */
+.hint{font-size:11px;color:#555;margin-bottom:10px;line-height:1.5}
+
+/* ── Slider mock ─────────────────────── */
+.slider-row{display:flex;align-items:center;gap:8px}
+.slider-mock{flex:1;height:4px;background:var(--surface2);border-radius:2px;
+             position:relative;cursor:pointer;max-width:80px}
+.slider-mock::after{content:'';position:absolute;left:30%;top:-4px;width:12px;height:12px;
+                    background:var(--text);border-radius:50%;cursor:grab}
+
+/* ── Section header inside card ──────── */
+.sch{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;
+     color:var(--muted);margin:12px 0 6px;padding-top:10px;border-top:1px solid rgba(255,255,255,.04)}
+.sch:first-child{margin-top:0;padding-top:0;border-top:none}
+</style>
+</head>
+<body>
+<div class="win">
+
+  <!-- ── Title bar ───────────────────────────────────── -->
+  <div class="tbar">
+    <div class="tbar-ico"></div>
+    <div class="tbar-title">WGSM – Windows Game Server Manager</div>
+    <div class="tbar-rcmds">
+      <button class="rcmd-btn">Website</button>
+      <button class="rcmd-btn">Discord</button>
+      <button class="rcmd-btn">Patreon</button>
+      <button class="rcmd-btn">Hide</button>
+    </div>
+    <div class="tbar-btns">
+      <div class="tb tb-m"></div>
+      <div class="tb tb-x"></div>
+      <div class="tb tb-c"></div>
+    </div>
+  </div>
+
+  <div class="body">
+
+    <!-- ── Sidebar ─────────────────────────────────────── -->
+    <nav class="sidebar">
+      <div class="sb-logo">
+        <div class="sb-logo-ico">W</div>
+        <div class="sb-logo-txt">WGSM</div>
+      </div>
+
+      <div class="sb-lbl">Main</div>
+      <div class="nav on" data-p="home"><span class="nav-ic">&#9632;</span> Home</div>
+      <div class="nav" data-p="dashboard"><span class="nav-ic">&#9636;</span> Dashboard</div>
+
+      <div class="sb-lbl">Features</div>
+      <div class="nav" data-p="discord"><span class="nav-ic">&#9670;</span> Discord Bot</div>
+      <div class="nav" data-p="webapi"><span class="nav-ic">&#9672;</span> Web API</div>
+
+      <div class="sb-lbl">Options</div>
+      <div class="nav" data-p="plugins"><span class="nav-ic">&#10022;</span> Plugins</div>
+
+      <div class="sb-spc"></div>
+      <div class="nav" data-p="settings"><span class="nav-ic">&#9881;</span> Settings</div>
+      <div class="sb-ver">v1.0.44</div>
+    </nav>
+
+    <!-- ── Content area ─────────────────────────────────── -->
+    <div class="content">
+
+      <!-- ════════════════════════════════════════════════
+           HOME PANEL
+           ════════════════════════════════════════════════ -->
+      <div class="panel on" id="p-home">
+        <!-- Menu bar -->
+        <div class="mbar-strip">
+          <div class="mitem">Servers ▾</div>
+          <div class="mitem">Actions ▾</div>
+          <div class="mitem">Browse ▾</div>
+          <div class="mitem">Tools ▾</div>
+          <div class="mitem">Help ▾</div>
+        </div>
+        <!-- Action toolbar -->
+        <div class="toolbar">
+          <button class="tbtn tbtn-start">START</button>
+          <button class="tbtn tbtn-stop">STOP</button>
+          <button class="tbtn tbtn-restart">RESTART</button>
+          <button class="tbtn tbtn-stop">KILL</button>
+          <button class="tbtn tbtn-act">TOGGLE CONSOLE</button>
+          <button class="tbtn tbtn-act">UPDATE</button>
+          <button class="tbtn tbtn-act">BACKUP</button>
+          <button class="tbtn tbtn-act">MANAGE ADDONS</button>
+        </div>
+        <!-- Server grid -->
+        <div style="overflow-x:auto;flex-shrink:0;border-bottom:1px solid var(--border);max-height:170px;overflow-y:auto">
+          <table class="dg">
+            <thead>
+              <tr>
+                <th>ID</th><th>PID</th><th>MOD</th><th>Status</th>
+                <th>Server Name</th><th>IP Address</th><th>Port</th>
+                <th>Query Port</th><th>Map</th><th>Players</th><th>Uptime</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="sel-row">
+                <td>1</td><td>4821</td><td class="muted">CS2</td>
+                <td><span class="badge bg-g">Started</span></td>
+                <td>Counter-Strike 2 #1</td><td class="muted">0.0.0.0</td>
+                <td class="muted">27015</td><td class="muted">27016</td>
+                <td class="muted">de_dust2</td><td class="muted">64</td><td class="muted">2h 14m</td>
+              </tr>
+              <tr>
+                <td>2</td><td>7330</td><td class="muted">MCPE</td>
+                <td><span class="badge bg-g">Started</span></td>
+                <td>Survival World</td><td class="muted">0.0.0.0</td>
+                <td class="muted">19132</td><td class="muted">19133</td>
+                <td class="muted">—</td><td class="muted">20</td><td class="muted">18h 30m</td>
+              </tr>
+              <tr>
+                <td>3</td><td>—</td><td class="muted">VLH</td>
+                <td><span class="badge bg-r">Stopped</span></td>
+                <td>Viking Realm</td><td class="muted">0.0.0.0</td>
+                <td class="muted">2456</td><td class="muted">2457</td>
+                <td class="muted">—</td><td class="muted">10</td><td class="muted">—</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <!-- Bottom split -->
+        <div class="bsplit">
+          <!-- Left: per-server controls -->
+          <div class="bpanel-l">
+            <div class="sc-row">
+              <span class="sc-lbl">Process Priority</span>
+              <div class="slider-row">
+                <div class="slider-mock"></div>
+                <input class="inp" style="width:90px;font-size:11px" readonly value="Normal">
+              </div>
+              <button class="btn bg btn-sm" style="margin-left:6px">Set Affinity</button>
+              <input class="inp" style="width:60px;font-size:10px;margin-left:4px" readonly value="FF">
+              <button class="btn bg btn-sm" style="margin-left:4px">Edit Config</button>
+            </div>
+            <div class="sc-sep"></div>
+            <div class="sc-row">
+              <span class="sc-lbl">Restart Crontab</span>
+              <div class="tog" onclick="this.classList.toggle('on')"></div>
+              <button class="btn bg btn-sm" style="margin-left:6px">Edit</button>
+              <input class="inp" style="width:90px;font-size:10px;margin-left:4px" readonly value="0 4 * * *">
+              <input class="inp" style="width:120px;font-size:10px;margin-left:4px" readonly placeholder="Next run…">
+            </div>
+            <div class="sc-row" style="margin-top:4px">
+              <span class="sc-lbl">Discord Alert</span>
+              <div class="tog on" onclick="this.classList.toggle('on')"></div>
+              <button class="btn bg btn-sm" style="margin-left:6px">Edit</button>
+              <button class="btn bg btn-sm">Set Message</button>
+              <button class="btn bg btn-sm">Settings</button>
+              <button class="btn bg btn-sm">Test Alert</button>
+            </div>
+            <div class="sc-row" style="margin-top:4px">
+              <span class="sc-lbl">Embed Console</span>
+              <div class="tog on" onclick="this.classList.toggle('on')"></div>
+              <span class="sc-lbl" style="margin-left:12px">Update on Start</span>
+              <div class="tog" onclick="this.classList.toggle('on')"></div>
+              <span class="sc-lbl" style="margin-left:12px">Backup on Start</span>
+              <div class="tog" onclick="this.classList.toggle('on')"></div>
+            </div>
+            <div class="sc-row">
+              <span class="sc-lbl">Auto Start</span>
+              <div class="tog on" onclick="this.classList.toggle('on')"></div>
+              <span class="sc-lbl" style="margin-left:12px">Auto Restart</span>
+              <div class="tog on" onclick="this.classList.toggle('on')"></div>
+              <span class="sc-lbl" style="margin-left:12px">Auto Update</span>
+              <div class="tog" onclick="this.classList.toggle('on')"></div>
+            </div>
+            <div class="sc-sep"></div>
+            <div style="font-size:10px;color:var(--muted);margin-bottom:3px;display:flex;align-items:center;justify-content:space-between">
+              <span>Log:</span>
+              <button class="btn bg btn-sm">CLEAR</button>
+            </div>
+            <div class="log-box">[10:42:15] Server started successfully
+[10:42:16] Map: de_dust2
+[10:44:01] Player "Alice" connected
+[10:51:30] Server tick: 128hz</div>
+          </div>
+          <!-- Right: server console -->
+          <div class="bpanel-r">
+            <div class="console-hdr">
+              <button class="btn bg btn-sm">✔ Auto Scroll</button>
+              <div style="flex:1"></div>
+              <button class="btn bg btn-sm">CLEAR</button>
+            </div>
+            <div class="console-area">Counter-Strike 2 Server v1.39.3.5
+[CS2] Map: de_dust2
+[CS2] Network: 128-tick
+[CS2] Players: 64/64
+[CS2] Warming up…
+[CS2] Game started</div>
+            <div class="console-bar">
+              <input class="inp" placeholder="Enter server command…" style="font-size:11px">
+              <button class="btn ba" style="border-radius:0">Send</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ════════════════════════════════════════════════
+           DASHBOARD PANEL
+           ════════════════════════════════════════════════ -->
+      <div class="panel" id="p-dashboard">
+        <div class="ph"><h2>Dashboard</h2><p>System resource usage and server overview</p></div>
+        <div class="pb">
+
+          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:8px">SYSTEM METRICS</div>
+          <div class="mgrid">
+            <div class="mc">
+              <div class="mc-lbl">CPU</div>
+              <div class="mc-val">34<span style="font-size:13px;color:var(--muted)">%</span></div>
+              <div class="mc-sub" id="cpu-type">Intel Core i9-13900K</div>
+              <div class="mbar"><div class="mbar-f" style="width:34%"></div></div>
+            </div>
+            <div class="mc">
+              <div class="mc-lbl">Memory</div>
+              <div class="mc-val">19.4<span style="font-size:13px;color:var(--muted)"> GB</span></div>
+              <div class="mc-sub">of 64 GB  ·  30%</div>
+              <div class="mbar"><div class="mbar-f" style="width:30%;background:purple"></div></div>
+            </div>
+            <div class="mc">
+              <div class="mc-lbl">Disk (C:)</div>
+              <div class="mc-val">412<span style="font-size:13px;color:var(--muted)"> GB</span></div>
+              <div class="mc-sub">of 2 TB  ·  21%</div>
+              <div class="mbar"><div class="mbar-f" style="width:21%;background:forestgreen"></div></div>
+            </div>
+          </div>
+
+          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:8px;margin-top:4px">GAME SERVERS</div>
+          <div class="mgrid">
+            <div class="mc">
+              <div class="mc-lbl">Servers</div>
+              <div class="mc-val">3<span style="font-size:13px;color:var(--muted)"> installed</span></div>
+              <div class="mc-sub">2 running / 1 stopped</div>
+              <div class="mbar"><div class="mbar-f" style="width:67%;background:mediumvioletred"></div></div>
+            </div>
+            <div class="mc">
+              <div class="mc-lbl">Online</div>
+              <div class="mc-val a">2</div>
+              <div class="mc-sub">Started server count</div>
+              <div class="mbar"><div class="mbar-f" style="width:67%;background:springgreen"></div></div>
+            </div>
+            <div class="mc">
+              <div class="mc-lbl">Active Players</div>
+              <div class="mc-val a">72</div>
+              <div class="mc-sub">across all running servers</div>
+            </div>
+          </div>
+
+          <!-- Live chart mock -->
+          <div class="card" style="margin-top:4px">
+            <div class="ch">Players Over Time (LiveCharts)</div>
+            <div class="cb" style="padding:10px">
+              <div class="chart-mock">
+                <div class="chart-bar" style="height:20%"></div>
+                <div class="chart-bar" style="height:35%"></div>
+                <div class="chart-bar" style="height:55%"></div>
+                <div class="chart-bar" style="height:70%"></div>
+                <div class="chart-bar" style="height:65%"></div>
+                <div class="chart-bar" style="height:80%"></div>
+                <div class="chart-bar" style="height:90%"></div>
+                <div class="chart-bar" style="height:85%"></div>
+                <div class="chart-bar" style="height:95%"></div>
+                <div class="chart-bar" style="height:88%"></div>
+                <div class="chart-bar" style="height:92%"></div>
+                <div class="chart-bar" style="height:78%"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ════════════════════════════════════════════════
+           DISCORD BOT PANEL
+           ════════════════════════════════════════════════ -->
+      <div class="panel" id="p-discord">
+        <div class="ph"><h2>Discord Bot</h2><p>Remote control game servers via Discord commands</p></div>
+        <div class="pb">
+
+          <!-- Status + Invite -->
+          <div class="card">
+            <div class="ch">Status</div>
+            <div class="cb">
+              <div class="fr">
+                <div class="fl">
+                  <b>DISCORD BOT</b>
+                  <small>Usage: Remote control the game servers with Discord</small>
+                  <small style="margin-top:4px">Available commands: <span style="font-family:Consolas,monospace;color:var(--accent)">!start !stop !restart !status !players</span></small>
+                </div>
+                <div style="display:flex;gap:8px;align-items:center">
+                  <button class="btn bg">Invite</button>
+                </div>
+              </div>
+              <div class="fr">
+                <div class="fl"><b>Enable Bot</b></div>
+                <div class="tog" onclick="this.classList.toggle('on')"></div>
+              </div>
+              <div class="fr">
+                <div class="fl"><b>Auto Start</b><small>Start bot automatically when WGSM launches</small></div>
+                <div class="tog" onclick="this.classList.toggle('on')"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="two-col">
+            <!-- Credentials -->
+            <div class="card">
+              <div class="ch">Credentials</div>
+              <div class="cb">
+                <div class="fr" style="flex-direction:column;align-items:flex-start;gap:5px">
+                  <div class="fl"><b>Bot Token</b></div>
+                  <div style="display:flex;gap:6px;width:100%">
+                    <input class="inp" style="flex:1" value="••••••••••••••••••••" readonly>
+                    <button class="btn bg btn-sm">Edit</button>
+                  </div>
+                </div>
+                <div class="fr" style="flex-direction:column;align-items:flex-start;gap:5px;padding-top:10px">
+                  <div class="fl"><b>Bot Prefix</b></div>
+                  <div style="display:flex;gap:6px">
+                    <input class="inp" style="width:60px" value="!">
+                    <button class="btn bg btn-sm">Edit</button>
+                  </div>
+                </div>
+                <div class="fr" style="flex-direction:column;align-items:flex-start;gap:5px;padding-top:10px">
+                  <div class="fl"><b>Bot Name</b></div>
+                  <input class="inp" style="width:100%" readonly value="WGSM#1234">
+                </div>
+              </div>
+            </div>
+
+            <!-- Alert Settings -->
+            <div class="card">
+              <div class="ch">Discord Alert Settings</div>
+              <div class="cb">
+                <div class="fr">
+                  <div class="fl"><b>Discord Alert</b><small>Enable webhook alerts for this server</small></div>
+                  <div style="display:flex;gap:6px;align-items:center">
+                    <button class="btn bg btn-sm">Edit</button>
+                    <button class="btn bg btn-sm">Set Msg</button>
+                    <button class="btn bg btn-sm">Test</button>
+                    <div class="tog on" onclick="this.classList.toggle('on')"></div>
+                  </div>
+                </div>
+                <div class="sch">Alert Types</div>
+                <div class="fr">
+                  <div class="fl"><b>Auto Start Alert</b></div>
+                  <div class="tog on" onclick="this.classList.toggle('on')"></div>
+                </div>
+                <div class="fr">
+                  <div class="fl"><b>Auto Restart Alert</b></div>
+                  <div class="tog on" onclick="this.classList.toggle('on')"></div>
+                </div>
+                <div class="fr">
+                  <div class="fl"><b>Auto Update Alert</b></div>
+                  <div class="tog" onclick="this.classList.toggle('on')"></div>
+                </div>
+                <div class="fr">
+                  <div class="fl"><b>Restart Crontab Alert</b></div>
+                  <div class="tog on" onclick="this.classList.toggle('on')"></div>
+                </div>
+                <div class="fr">
+                  <div class="fl"><b>Crash Alert</b></div>
+                  <div class="tog on" onclick="this.classList.toggle('on')"></div>
+                </div>
+                <div class="fr">
+                  <div class="fl"><b>Auto IP Update</b></div>
+                  <div class="tog" onclick="this.classList.toggle('on')"></div>
+                </div>
+                <div class="fr">
+                  <div class="fl"><b>Skip User Setup</b></div>
+                  <div class="tog" onclick="this.classList.toggle('on')"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Admin List -->
+          <div class="card">
+            <div class="ch" style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px 9px">
+              <span>Admin List</span>
+              <div style="display:flex;gap:6px">
+                <button class="btn bg btn-sm">Add Admin ID</button>
+                <button class="btn bg btn-sm">Edit Server ID</button>
+                <button class="btn bd btn-sm">Remove</button>
+              </div>
+            </div>
+            <div style="overflow-x:auto">
+              <table class="dg-admin">
+                <thead>
+                  <tr><th>Admin ID</th><th>Server IDs</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td>123456789012345678</td><td>1,2,3</td></tr>
+                  <tr><td>987654321098765432</td><td>1</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Bot Log -->
+          <div class="card">
+            <div class="ch">Discord Bot Log</div>
+            <div class="cb" style="padding:10px">
+              <div class="log-box">[10:42] Bot started
+[10:42] Connected to Discord
+[10:43] User "Admin#1234" used !status
+[10:43] Replied with server status</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ════════════════════════════════════════════════
+           WEB API PANEL
+           ════════════════════════════════════════════════ -->
+      <div class="panel" id="p-webapi">
+        <div class="tabs-wrap">
+          <div class="tabs">
+            <button class="tab on" data-tp="wapi-general">General</button>
+            <button class="tab" data-tp="wapi-keys">API Keys</button>
+            <button class="tab" data-tp="wapi-conn">Connection</button>
+            <button class="tab" data-tp="wapi-backup">Backup</button>
+            <button class="tab" data-tp="wapi-log">Log</button>
+          </div>
+        </div>
+        <div class="pb">
+
+          <!-- General -->
+          <div class="tp on" id="tp-wapi-general">
+            <div class="card">
+              <div class="cb">
+                <div class="fr">
+                  <div class="fl">
+                    <b style="font-size:14px">Web API Server</b>
+                    <small>Not running</small>
+                  </div>
+                  <div style="display:flex;gap:8px">
+                    <button class="btn ba">Start</button>
+                    <button class="btn bd" disabled style="opacity:.4">Stop</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="ch">Instance Identity</div>
+              <div class="cb">
+                <div class="hint">Name shown on the WGSM.WEB dashboard to identify this machine.</div>
+                <div style="display:flex;align-items:center;gap:8px">
+                  <span style="font-size:12px;color:var(--muted);min-width:110px">Instance name</span>
+                  <input class="inp" style="flex:1" value="My Gaming Rig">
+                  <button class="btn ba btn-sm">Save</button>
+                </div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="ch">Startup</div>
+              <div class="cb">
+                <div class="fr">
+                  <div class="fl"><b>Start Web API automatically when WGSM launches</b></div>
+                  <div class="tog on" onclick="this.classList.toggle('on')"></div>
+                </div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="ch">Connection URLs</div>
+              <div class="cb">
+                <div class="fr">
+                  <span style="font-size:12px;color:var(--muted);min-width:80px">Localhost</span>
+                  <span style="color:var(--accent);cursor:pointer;font-size:12px">http://localhost:7876</span>
+                </div>
+                <div class="fr">
+                  <span style="font-size:12px;color:var(--muted);min-width:80px">LAN</span>
+                  <span style="color:var(--accent);cursor:pointer;font-size:12px">http://192.168.1.10:7876</span>
+                </div>
+                <div class="fr">
+                  <span style="font-size:12px;color:var(--muted);min-width:80px">Public</span>
+                  <span style="color:var(--muted);font-size:12px">—</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- API Keys -->
+          <div class="tp" id="tp-wapi-keys">
+            <div class="card">
+              <div class="ch">API Keys</div>
+              <div class="cb">
+                <div class="hint">Each key allows one client (e.g. WGSM.WEB dashboard) to connect. Use separate keys per device so you can revoke individually.</div>
+                <div class="key-row">
+                  <div>
+                    <div class="key-name">Dashboard</div>
+                    <div class="key-val">wgsm_••••••••••••••••••</div>
+                  </div>
+                  <button class="btn bd btn-sm">Revoke</button>
+                </div>
+                <div class="key-row">
+                  <div>
+                    <div class="key-name">Mobile</div>
+                    <div class="key-val">wgsm_••••••••••••••••••</div>
+                  </div>
+                  <button class="btn bd btn-sm">Revoke</button>
+                </div>
+                <div class="sch">Add New Key</div>
+                <div style="display:flex;align-items:center;gap:8px;margin-top:4px">
+                  <span style="font-size:12px;color:var(--muted);min-width:70px">Key name</span>
+                  <input class="inp" style="flex:1" value="Dashboard">
+                  <button class="btn ba btn-sm">Add key</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Connection -->
+          <div class="tp" id="tp-wapi-conn">
+            <div class="card">
+              <div class="ch">Port</div>
+              <div class="cb">
+                <div class="hint">Default: 7876. Open this port in your firewall for LAN or external access.</div>
+                <div style="display:flex;align-items:center;gap:8px">
+                  <span style="font-size:12px;color:var(--muted);min-width:70px">API port</span>
+                  <input class="inp" style="width:80px;text-align:center" value="7876">
+                </div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="ch">Access Scope</div>
+              <div class="cb">
+                <div class="radio-grp">
+                  <label class="radio-item">
+                    <div class="radio-dot on"></div>
+                    Local only (localhost access)
+                  </label>
+                  <label class="radio-item">
+                    <div class="radio-dot"></div>
+                    Allow LAN access (same network)
+                  </label>
+                  <label class="radio-item">
+                    <div class="radio-dot"></div>
+                    Allow external access (public internet — use HTTPS)
+                  </label>
+                </div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="ch">HTTPS (Optional)</div>
+              <div class="cb">
+                <div class="hint">Import a certificate and private key (.pem) to enable HTTPS.</div>
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+                  <span style="font-size:12px;color:var(--muted);min-width:120px">Certificate (.pem)</span>
+                  <input class="inp" style="flex:1" readonly value="No certificate imported">
+                  <button class="btn bg btn-sm">Import cert</button>
+                </div>
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+                  <span style="font-size:12px;color:var(--muted);min-width:120px">Private key (.pem)</span>
+                  <input class="inp" style="flex:1" readonly value="No key imported">
+                  <button class="btn bg btn-sm">Import key</button>
+                </div>
+                <div class="fr">
+                  <div class="fl"><b>Enable HTTPS redirect (HTTP → HTTPS)</b></div>
+                  <div class="tog" onclick="this.classList.toggle('on')"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Backup -->
+          <div class="tp" id="tp-wapi-backup">
+            <div class="card">
+              <div class="ch">Backup Destinations</div>
+              <div class="cb">
+                <div class="hint">ZIP server configs and saves. Leave a path empty to skip that destination.</div>
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+                  <span style="font-size:12px;color:var(--muted);min-width:110px">Local path</span>
+                  <input class="inp" style="flex:1" placeholder="e.g. C:\Backups\WGSM">
+                  <button class="btn bg btn-sm">Browse</button>
+                </div>
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+                  <span style="font-size:12px;color:var(--muted);min-width:110px">OneDrive path</span>
+                  <input class="inp" style="flex:1" placeholder="e.g. C:\Users\You\OneDrive\WGSM Backups">
+                </div>
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+                  <span style="font-size:12px;color:var(--muted);min-width:110px">Google Drive path</span>
+                  <input class="inp" style="flex:1" placeholder="e.g. G:\My Drive\WGSM Backups">
+                </div>
+                <div style="display:flex;gap:8px">
+                  <button class="btn ba">Save paths</button>
+                  <button class="btn bg">Create backup now</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Log -->
+          <div class="tp" id="tp-wapi-log">
+            <div class="card">
+              <div class="ch">Web API Log</div>
+              <div class="cb" style="padding:10px">
+                <div class="log-box" style="height:420px">[10:42:00] Web API started on port 7876
+[10:42:00] Listening on http://localhost:7876
+[10:42:05] GET /api/servers → 200 OK (12ms)
+[10:43:11] POST /api/servers/1/start → 200 OK (38ms)
+[10:50:00] GET /api/status → 200 OK (4ms)</div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ════════════════════════════════════════════════
+           PLUGINS PANEL
+           ════════════════════════════════════════════════ -->
+      <div class="panel" id="p-plugins">
+        <div class="ph"><h2>Plugins</h2><p>Installed plugin modules that extend game server support</p></div>
+        <div style="display:flex;align-items:center;justify-content:space-between;
+                    padding:10px 20px;border-bottom:1px solid var(--border);
+                    background:var(--surface);flex-shrink:0">
+          <div style="display:flex;align-items:center;gap:20px">
+            <div style="font-size:12px;color:var(--muted)">Installed <span style="font-size:16px;font-weight:700;color:var(--accent)">12</span></div>
+            <div style="font-size:12px;color:var(--muted)">Loaded <span style="font-size:16px;font-weight:700;color:var(--accent)">10</span></div>
+            <div style="font-size:12px;color:var(--muted)">Failed <span style="font-size:16px;font-weight:700;color:var(--red)">2</span></div>
+          </div>
+          <div style="display:flex;gap:8px">
+            <button class="btn bg">Reload</button>
+            <button class="btn ba">Import Plugin</button>
+          </div>
+        </div>
+        <div class="pb">
+          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:8px">LOADED PLUGINS</div>
+          <div class="card">
+            <div class="cb" style="padding:8px">
+              <div class="key-row"><div class="key-name">SteamCMD Games</div><span class="badge bg-g">Loaded</span></div>
+              <div class="key-row"><div class="key-name">Minecraft Variants</div><span class="badge bg-g">Loaded</span></div>
+              <div class="key-row"><div class="key-name">Valve Games</div><span class="badge bg-g">Loaded</span></div>
+              <div class="key-row"><div class="key-name">UnknownPlugin v0.1</div><span class="badge bg-r">Failed</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ════════════════════════════════════════════════
+           SETTINGS PANEL
+           ════════════════════════════════════════════════ -->
+      <div class="panel" id="p-settings">
+        <div class="tabs-wrap">
+          <div class="tabs">
+            <button class="tab on" data-tp="set-general">General</button>
+            <button class="tab" data-tp="set-startup">Startup</button>
+            <button class="tab" data-tp="set-about">About &amp; Updates</button>
+          </div>
+        </div>
+        <div class="pb">
+
+          <!-- General settings (previously the Settings flyout) -->
+          <div class="tp on" id="tp-set-general">
+            <div class="card">
+              <div class="ch">Display</div>
+              <div class="cb">
+                <div class="fr">
+                  <div class="fl"><b>Theme</b><small>Color scheme for the application</small></div>
+                  <select class="sel">
+                    <option>WGSM Dark</option>
+                    <option>WGSM Dark (Donor Only)</option>
+                    <option>Light</option>
+                  </select>
+                </div>
+                <div class="fr">
+                  <div class="fl"><b>Dark Theme</b><small>Toggle between dark and light mode</small></div>
+                  <div class="tog on" onclick="this.classList.toggle('on')"></div>
+                </div>
+                <div class="fr">
+                  <div class="fl"><b>Hardware Acceleration</b><small>Use GPU rendering for the UI</small></div>
+                  <div class="tog on" onclick="this.classList.toggle('on')"></div>
+                </div>
+                <div class="fr">
+                  <div class="fl"><b>UI Animation</b><small>Enable transition animations</small></div>
+                  <div class="tog on" onclick="this.classList.toggle('on')"></div>
+                </div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="ch">Behavior</div>
+              <div class="cb">
+                <div class="fr">
+                  <div class="fl"><b>Auto Restart WGSM on Crash</b><small>Automatically relaunch the app if it crashes</small></div>
+                  <div class="tog on" onclick="this.classList.toggle('on')"></div>
+                </div>
+                <div class="fr">
+                  <div class="fl"><b>Send Statistics</b><small>Send anonymous usage data to help improve WGSM</small></div>
+                  <div class="tog" onclick="this.classList.toggle('on')"></div>
+                </div>
+                <div class="fr">
+                  <div class="fl"><b>Donor Connect (Patreon)</b><small>Enable donor-exclusive features</small></div>
+                  <div class="tog" onclick="this.classList.toggle('on')"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Startup settings -->
+          <div class="tp" id="tp-set-startup">
+            <div class="card">
+              <div class="ch">Windows Startup</div>
+              <div class="cb">
+                <div class="fr">
+                  <div class="fl"><b>Start WGSM on Login</b><small>Adds WGSM to the Windows registry Run key</small></div>
+                  <div class="tog on" onclick="this.classList.toggle('on')"></div>
+                </div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="ch">Auto-Start Servers</div>
+              <div class="cb">
+                <div class="hint">Individual per-server auto-start is also configurable in the Home panel.</div>
+                <div class="fr">
+                  <div class="fl"><b>Counter-Strike 2 #1</b></div>
+                  <div class="tog on" onclick="this.classList.toggle('on')"></div>
+                </div>
+                <div class="fr">
+                  <div class="fl"><b>Survival World</b></div>
+                  <div class="tog" onclick="this.classList.toggle('on')"></div>
+                </div>
+                <div class="fr">
+                  <div class="fl"><b>Viking Realm</b></div>
+                  <div class="tog" onclick="this.classList.toggle('on')"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- About & Updates (moved from Web API → Updates tab) -->
+          <div class="tp" id="tp-set-about">
+            <div class="card">
+              <div class="ch">Application Update</div>
+              <div class="cb">
+                <div class="hint">Check GitHub for a new WGSM version. Apply will stop all servers, install the update, and restart automatically.</div>
+                <div class="kvr">
+                  <span class="kvr-k">Installed version</span>
+                  <span class="kvr-v">1.0.44</span>
+                </div>
+                <div class="kvr">
+                  <span class="kvr-k">Latest version</span>
+                  <span class="kvr-v new">1.0.45 ↑ available</span>
+                </div>
+                <div style="display:flex;gap:8px;margin-top:12px;align-items:center">
+                  <button class="btn bg">Check for update</button>
+                  <button class="btn ba">Apply update</button>
+                  <span style="font-size:11px;color:var(--muted)" id="update-status"></span>
+                </div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="ch">About</div>
+              <div class="cb">
+                <div class="kvr">
+                  <span class="kvr-k">Application</span>
+                  <span class="kvr-v">WGSM – Windows Game Server Manager</span>
+                </div>
+                <div class="kvr">
+                  <span class="kvr-k">Build</span>
+                  <span class="kvr-v">1.0.44.0</span>
+                </div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="ch">Links</div>
+              <div class="cb" style="padding:0 14px">
+                <div class="link-row">↗ Online Documentation</div>
+                <div class="link-row">↗ Report an Issue</div>
+                <div class="link-row">↗ Discord Server</div>
+                <div class="link-row">↗ Website</div>
+                <div class="link-row">↗ Patreon</div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div><!-- /content -->
+  </div><!-- /body -->
+</div><!-- /win -->
+
+<script>
+// Sidebar nav switching
+document.querySelectorAll('.nav').forEach(n => {
+  n.addEventListener('click', () => {
+    document.querySelectorAll('.nav').forEach(x => x.classList.remove('on'));
+    n.classList.add('on');
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('on'));
+    document.getElementById('p-' + n.dataset.p).classList.add('on');
+  });
+});
+
+// Sub-tab switching
+document.querySelectorAll('.tab').forEach(t => {
+  t.addEventListener('click', () => {
+    const panel = t.closest('.panel, .win');
+    panel.querySelectorAll('.tab').forEach(x => x.classList.remove('on'));
+    t.classList.add('on');
+    panel.querySelectorAll('.tp').forEach(p => p.classList.remove('on'));
+    const id = 'tp-' + t.dataset.tp;
+    document.getElementById(id).classList.add('on');
+  });
+});
+</script>
+</body>
+</html>

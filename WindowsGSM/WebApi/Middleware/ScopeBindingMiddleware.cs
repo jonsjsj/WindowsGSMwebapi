@@ -70,12 +70,24 @@ namespace WindowsGSM.WebApi.Middleware
         private bool IsLanOrLoopback(IPAddress ip)
         {
             if (IPAddress.IsLoopback(ip)) return true;
-            // RFC 1918 private ranges
+
+            // IPv6 link-local (fe80::/10) and unique-local (fc00::/7)
+            if (ip.AddressFamily == System.Net.Sockets.AddressFamily.InterNetworkV6)
+            {
+                var b = ip.GetAddressBytes();
+                if ((b[0] & 0xFE) == 0xFC) return true; // fc00::/7 — unique local
+                if (b[0] == 0xFE && (b[1] & 0xC0) == 0x80) return true; // fe80::/10 — link-local
+                return false;
+            }
+
             var bytes = ip.GetAddressBytes();
             if (bytes.Length != 4) return false;
-            return bytes[0] == 10
-                || (bytes[0] == 172 && bytes[1] >= 16 && bytes[1] <= 31)
-                || (bytes[0] == 192 && bytes[1] == 168);
+
+            return bytes[0] == 10                                               // RFC 1918 10.0.0.0/8
+                || (bytes[0] == 172 && bytes[1] >= 16 && bytes[1] <= 31)       // RFC 1918 172.16.0.0/12
+                || (bytes[0] == 192 && bytes[1] == 168)                         // RFC 1918 192.168.0.0/16
+                || (bytes[0] == 169 && bytes[1] == 254)                         // RFC 3927 169.254.0.0/16 link-local (APIPA / VMs)
+                || (bytes[0] == 100 && bytes[1] >= 64 && bytes[1] <= 127);     // RFC 6598 100.64.0.0/10 CGNAT (Tailscale, carrier NAT)
         }
     }
 }

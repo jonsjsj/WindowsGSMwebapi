@@ -247,6 +247,32 @@
                         </StackPanel>
                     </Border>
 
+                    <!-- Security -->
+                    <Border Style="{StaticResource Card}">
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource WgsmSectionHeader}" Text="SECURITY"/>
+
+                            <Grid Margin="0,10,0,4">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                    <TextBlock Text="Require Password" Foreground="#E0E0E0" FontSize="13"/>
+                                    <TextBlock Text="Password-protect the Start server and Edit Config actions" Style="{StaticResource HintText}"/>
+                                </StackPanel>
+                                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="8,0,0,0">
+                                    <Button x:Name="SetPasswordButton" Content="Change" Style="{StaticResource GhostBtn}"
+                                            Margin="0,0,8,0" Click="OnSetPassword" Visibility="Collapsed"/>
+                                    <mah:ToggleSwitch x:Name="Switch_ServerLock"
+                                                      OnContent="" OffContent=""
+                                                      VerticalAlignment="Center"
+                                                      Toggled="OnServerLock_Toggled"/>
+                                </StackPanel>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+
                 </StackPanel>
 
                 <!-- ── Startup tab ─────────────────────────────────────────── -->
@@ -270,6 +296,19 @@
                                                   VerticalAlignment="Center"
                                                   Toggled="OnStartOnBoot_Toggled"/>
                             </Grid>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Auto-Start Servers -->
+                    <Border Style="{StaticResource Card}">
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource WgsmSectionHeader}" Text="AUTO-START SERVERS"/>
+                            <TextBlock Text="Toggle auto-start per server. Changes take effect immediately."
+                                       Style="{StaticResource HintText}" Margin="0,2,0,8"/>
+                            <StackPanel x:Name="AutoStartServersList"/>
+                            <TextBlock x:Name="AutoStartNoServersLabel"
+                                       Text="No servers configured yet." Foreground="#555" FontSize="11"
+                                       Visibility="Collapsed"/>
                         </StackPanel>
                     </Border>
                 </StackPanel>

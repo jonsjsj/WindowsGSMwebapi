@@ -7,9 +7,12 @@ using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Net;
+using System.Security.Cryptography;
+using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
 using WindowsGSM.WebApi.Services;
 
 namespace WindowsGSM.UI
@@ -85,6 +88,12 @@ namespace WindowsGSM.UI
                 Switch_DonorConnect.IsOn = donorActive;
                 Switch_DonorConnect.Toggled += OnDonorConnect_Toggled;
 
+                bool lockEnabled = RegistryGet("ServerLockEnabled", "False") == "True";
+                Switch_ServerLock.Toggled -= OnServerLock_Toggled;
+                Switch_ServerLock.IsOn = lockEnabled;
+                Switch_ServerLock.Toggled += OnServerLock_Toggled;
+                SetPasswordButton.Visibility = lockEnabled ? Visibility.Visible : Visibility.Collapsed;
+
                 ThemeComboBox.IsEnabled = donorActive;
                 string savedColor = RegistryGet("DonorColor", MainWindow.DEFAULT_THEME);
                 ThemeComboBox.SelectionChanged -= OnThemeSelectionChanged;
@@ -104,6 +113,51 @@ namespace WindowsGSM.UI
             PanelGeneral.Visibility = TabGeneral.IsChecked == true ? Visibility.Visible : Visibility.Collapsed;
             PanelStartup.Visibility = TabStartup.IsChecked == true ? Visibility.Visible : Visibility.Collapsed;
             PanelAbout.Visibility   = TabAbout.IsChecked   == true ? Visibility.Visible : Visibility.Collapsed;
+            if (TabStartup.IsChecked == true) LoadAutoStartServers();
+        }
+
+        private void LoadAutoStartServers()
+        {
+            AutoStartServersList.Children.Clear();
+            bool any = false;
+            for (int i = 1; i <= MainWindow.MAX_SERVER; i++)
+            {
+                var cfg = new Functions.ServerConfig(i.ToString());
+                if (string.IsNullOrEmpty(cfg.ServerGame)) continue;
+                any = true;
+                AutoStartServersList.Children.Add(BuildAutoStartRow(cfg));
+            }
+            AutoStartNoServersLabel.Visibility = any ? Visibility.Collapsed : Visibility.Visible;
+        }
+
+        private UIElement BuildAutoStartRow(Functions.ServerConfig cfg)
+        {
+            var grid = new Grid { Margin = new Thickness(0, 6, 0, 0) };
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+
+            var mutedBrush = new SolidColorBrush(Color.FromRgb(0x55, 0x55, 0x55));
+            var label  = new TextBlock { Text = $"#{cfg.ServerID} — {cfg.ServerName}", Foreground = new SolidColorBrush(Color.FromRgb(0xE0, 0xE0, 0xE0)), FontSize = 13 };
+            var hint   = new TextBlock { Text = cfg.ServerGame, Foreground = mutedBrush, FontSize = 11 };
+            var stack  = new StackPanel();
+            stack.Children.Add(label);
+            stack.Children.Add(hint);
+
+            var toggle = new ToggleSwitch
+            {
+                IsOn = cfg.AutoStart, OnContent = "", OffContent = "",
+                VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(8, 0, 0, 0)
+            };
+            var capturedId = cfg.ServerID;
+            toggle.Toggled += (s, _) =>
+                Functions.ServerConfig.SetSetting(capturedId, Functions.ServerConfig.SettingName.AutoStart,
+                    ((ToggleSwitch)s).IsOn ? "1" : "0");
+
+            Grid.SetColumn(stack,  0);
+            Grid.SetColumn(toggle, 1);
+            grid.Children.Add(stack);
+            grid.Children.Add(toggle);
+            return grid;
         }
 
         // ── Display toggles ───────────────────────────────────────────────────
@@ -263,6 +317,48 @@ namespace WindowsGSM.UI
             ThemeHelper.Apply(Switch_DarkTheme.IsOn);
             return (false, string.Empty);
         }
+
+        // ── Security (server lock) ────────────────────────────────────────────
+
+        private async void OnServerLock_Toggled(object sender, EventArgs e)
+        {
+            if (_loading) return;
+            if (Switch_ServerLock.IsOn)
+            {
+                string? pw = await PromptNewPassword();
+                if (pw == null) { _loading = true; Switch_ServerLock.IsOn = false; _loading = false; return; }
+                RegistrySet("ServerLockEnabled", "True");
+                RegistrySet("ServerLockHash", HashPassword(pw));
+                SetPasswordButton.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                RegistrySet("ServerLockEnabled", "False");
+                SetPasswordButton.Visibility = Visibility.Collapsed;
+            }
+        }
+
+        private async void OnSetPassword(object sender, RoutedEventArgs e)
+        {
+            string? pw = await PromptNewPassword();
+            if (pw == null) return;
+            RegistrySet("ServerLockHash", HashPassword(pw));
+            await (MetroOwner?.ShowMessageAsync("Password Updated", "Server lock password has been changed.") ?? Task.CompletedTask);
+        }
+
+        private async Task<string?> PromptNewPassword()
+        {
+            var owner = MetroOwner;
+            if (owner == null) return null;
+            string? pw1 = await owner.ShowInputAsync("Set Password", "Enter a new server lock password:", new MetroDialogSettings { AffirmativeButtonText = "Next" });
+            if (string.IsNullOrEmpty(pw1)) return null;
+            string? pw2 = await owner.ShowInputAsync("Confirm Password", "Re-enter the password to confirm:", new MetroDialogSettings { AffirmativeButtonText = "Set" });
+            if (pw1 != pw2) { await owner.ShowMessageAsync("Mismatch", "Passwords do not match."); return null; }
+            return pw1;
+        }
+
+        private static string HashPassword(string pw) =>
+            Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(pw)));
 
         // ── App Update ────────────────────────────────────────────────────────
 

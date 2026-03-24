@@ -1712,6 +1712,7 @@ namespace WindowsGSM
         {
             var server = (ServerTable)ServerGrid.SelectedItem;
             if (server == null) { return; }
+            if (!await CheckServerLock()) return;
 
             // Reload WindowsGSM.cfg on start
             SaveServerConfigToServerMetadata(server.ID, new ServerConfig(server.ID));
@@ -3829,10 +3830,11 @@ namespace WindowsGSM
             ToggleMahappFlyout(MahAppFlyout_SetAffinity);
         }
 
-        private void Button_EditConfig_Click(object sender, RoutedEventArgs e)
+        private async void Button_EditConfig_Click(object sender, RoutedEventArgs e)
         {
             var server = (ServerTable)ServerGrid.SelectedItem;
             if (server == null) { return; }
+            if (!await CheckServerLock()) return;
 
             if (Refresh_EditConfig_Data(server.ID))
             {
@@ -4417,6 +4419,8 @@ namespace WindowsGSM
             hMenu_Discordbot.Visibility = (HamburgerMenuControl.SelectedIndex == 2) ? Visibility.Visible : Visibility.Hidden;
             hMenu_WebApi.Visibility     = (HamburgerMenuControl.SelectedIndex == 3) ? Visibility.Visible : Visibility.Hidden;
             hMenu_Settings.Visibility   = (HamburgerMenuControl.SelectedIndex == 4) ? Visibility.Visible : Visibility.Hidden;
+            hMenu_Ports.Visibility      = (HamburgerMenuControl.SelectedIndex == 5) ? Visibility.Visible : Visibility.Hidden;
+            if (HamburgerMenuControl.SelectedIndex == 5) PortsPanel.RefreshAll();
 
             if (HamburgerMenuControl.SelectedIndex == 2)
             {
@@ -4471,6 +4475,10 @@ namespace WindowsGSM
             {
                 HamburgerMenuControl.SelectedIndex = 4;
             }
+            else if (hMenu_Ports.Visibility == Visibility.Visible)
+            {
+                HamburgerMenuControl.SelectedIndex = 5;
+            }
         }
 
         private async void HamburgerMenu_Loaded(object sender, RoutedEventArgs e)
@@ -4481,6 +4489,7 @@ namespace WindowsGSM
             hMenu_Discordbot.Visibility = Visibility.Hidden;
             hMenu_WebApi.Visibility    = Visibility.Hidden;
             hMenu_Settings.Visibility  = Visibility.Hidden;
+            hMenu_Ports.Visibility     = Visibility.Hidden;
 
             await Task.Delay(1); // Delay 0.001 sec due to a bug
             HamburgerMenuControl.SelectedIndex = 0;
@@ -4522,6 +4531,7 @@ namespace WindowsGSM
                 _webApiServer = new WebApiServer(config, network, manager);
                 WebApiPanel.Initialize(_webApiServer);
                 SettingsPanel.Initialize(_webApiServer);
+                PortsPanel.Initialize(config.Port);
 
                 // Async version check — log result to the Web API log window
                 _ = CheckForWebApiUpdateAsync();
@@ -4543,6 +4553,23 @@ namespace WindowsGSM
         public void ApplyHardwareAcceleration(bool isOn)
         {
             RenderOptions.ProcessRenderMode = isOn ? System.Windows.Interop.RenderMode.SoftwareOnly : System.Windows.Interop.RenderMode.Default;
+        }
+
+        private async Task<bool> CheckServerLock()
+        {
+            using var key = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\WindowsGSM");
+            if (key?.GetValue("ServerLockEnabled")?.ToString() != "True") return true;
+            var storedHash = key.GetValue("ServerLockHash")?.ToString() ?? string.Empty;
+            var settings = new MetroDialogSettings { AffirmativeButtonText = "Unlock", NegativeButtonText = "Cancel" };
+            string? pw = await this.ShowInputAsync("Server Lock", "Enter password to continue:", settings);
+            if (pw == null) return false;
+            var hash = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(pw)));
+            if (!string.Equals(hash, storedHash, StringComparison.OrdinalIgnoreCase))
+            {
+                await this.ShowMessageAsync("Access Denied", "Incorrect password.");
+                return false;
+            }
+            return true;
         }
 
         private async Task CheckForWebApiUpdateAsync()

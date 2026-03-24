@@ -338,6 +338,11 @@
          <webui:AppSettingsPanel x:Name="SettingsPanel" DockPanel.Dock="Top"/>
       </DockPanel>
 
+      <!-- Ports panel -->
+      <DockPanel Name="hMenu_Ports" Margin="200,0,0,0" Visibility="Hidden">
+         <webui:PortsPanel x:Name="PortsPanel" DockPanel.Dock="Top"/>
+      </DockPanel>
+
       <DockPanel Name="hMenu_Discordbot" Margin="200,0,0,0" Visibility="Visible">
          <Grid DockPanel.Dock="Top">
             <DockPanel Margin="10,10,10,10" DockPanel.Dock="Top">
@@ -881,6 +886,11 @@
                   <mah:HamburgerMenuImageItem Label="Settings">
                      <mah:HamburgerMenuImageItem.Thumbnail>
                         <BitmapImage UriSource="pack://application:,,,/WindowsGSM;component/Images/HMenu/Settings.ico" />
+                     </mah:HamburgerMenuImageItem.Thumbnail>
+                  </mah:HamburgerMenuImageItem>
+                  <mah:HamburgerMenuImageItem Label="Ports">
+                     <mah:HamburgerMenuImageItem.Thumbnail>
+                        <BitmapImage UriSource="pack://application:,,,/WindowsGSM;component/Images/HMenu/Ports.ico" />
                      </mah:HamburgerMenuImageItem.Thumbnail>
                   </mah:HamburgerMenuImageItem>
                </mah:HamburgerMenuItemCollection>
