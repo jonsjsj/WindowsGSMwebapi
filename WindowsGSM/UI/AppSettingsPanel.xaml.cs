@@ -10,7 +10,6 @@ using System.Net;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Interop;
 using WindowsGSM.WebApi.Services;
 
 namespace WindowsGSM.UI
@@ -120,9 +119,8 @@ namespace WindowsGSM.UI
         {
             if (_loading) return;
             RegistrySet("HardWareAcceleration", Switch_HardwareAcceleration.IsOn.ToString());
-            RenderOptions.ProcessRenderMode = Switch_HardwareAcceleration.IsOn
-                ? RenderMode.SoftwareOnly
-                : RenderMode.Default;
+            if (Application.Current.MainWindow is MainWindow mw)
+                mw.ApplyHardwareAcceleration(Switch_HardwareAcceleration.IsOn);
         }
 
         private void OnUIAnimation_Toggled(object sender, EventArgs e)

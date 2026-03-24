@@ -4540,6 +4540,11 @@ namespace WindowsGSM
             comboBox_Themes.IsEnabled = !string.IsNullOrEmpty(donorType);
         }
 
+        public void ApplyHardwareAcceleration(bool isOn)
+        {
+            RenderOptions.ProcessRenderMode = isOn ? System.Windows.Interop.RenderMode.SoftwareOnly : System.Windows.Interop.RenderMode.Default;
+        }
+
         private async Task CheckForWebApiUpdateAsync()
         {
             try
