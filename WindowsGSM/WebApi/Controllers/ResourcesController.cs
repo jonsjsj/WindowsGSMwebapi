@@ -54,6 +54,8 @@ namespace WindowsGSM.WebApi.Controllers
             {
                 var gcInfo = GC.GetGCMemoryInfo();
                 summary.SystemTotalRamMb = Math.Round(gcInfo.TotalAvailableMemoryBytes / (1024.0 * 1024.0), 0);
+                if (summary.SystemTotalRamMb > 0)
+                    summary.RamPercent = Math.Round(summary.TotalRamMb / summary.SystemTotalRamMb * 100, 1);
             }
             catch { /* best-effort */ }
 

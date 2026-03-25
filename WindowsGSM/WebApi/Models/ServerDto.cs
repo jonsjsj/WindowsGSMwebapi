@@ -21,6 +21,9 @@ namespace WindowsGSM.WebApi.Models
         public bool?   GamePortReachable         { get; set; }
         public bool?   QueryPortReachable        { get; set; }
         public bool?   GamePortInternetReachable { get; set; }
+        public string  Address => string.IsNullOrWhiteSpace(ServerIp) || ServerIp == "0.0.0.0"
+                                  ? ServerPort
+                                  : $"{ServerIp}:{ServerPort}";
     }
 
     public class ServerConfigDto
@@ -102,6 +105,7 @@ namespace WindowsGSM.WebApi.Models
         public int    OnlineServers     { get; set; }
         public double TotalCpuPercent   { get; set; }
         public double TotalRamMb        { get; set; }
+        public double RamPercent        { get; set; }
         public double SystemTotalRamMb  { get; set; }
         public double DiskTotalGb       { get; set; }
         public double DiskUsedGb        { get; set; }
