@@ -212,6 +212,7 @@ header{background:var(--surface);border-bottom:1px solid var(--border);height:48
       <div class="sb-sect">Server</div>
       <button class="nav-btn" id="nav-config" onclick="showView('config')">⚙ Configuration</button>
       <button class="nav-btn" id="nav-files"  onclick="showView('files')">📁 File Manager</button>
+      <button class="nav-btn" id="nav-mods"   onclick="showView('mods')">🧩 Mod Manager</button>
       <button class="nav-btn" id="nav-backup" onclick="showView('backup')">⊟ Backup</button>
       <div class="sb-sect">Info</div>
       <button class="nav-btn" id="nav-update"    onclick="showView('update')">⬆ App Update</button>
@@ -368,6 +369,7 @@ function renderView() {
         case 'logs':      el.innerHTML = renderLogsView();          break;
         case 'config':    el.innerHTML = renderConfigChooser();     break;
         case 'files':     el.innerHTML = renderFilesChooser();      break;
+        case 'mods':      el.innerHTML = renderModsChooser();       break;
         case 'backup':    el.innerHTML = renderBackupView();        loadBackupData(); break;
         case 'cfgbackup': el.innerHTML = renderConfigBackupView();        break;
         case 'cloud':     el.innerHTML = renderCloudIntegrations(); loadCloudState().then(renderView); break;
@@ -741,18 +743,28 @@ async function openInlineConfig(id, name) {
     const r = await apiFetch(`/api/servers/${id}/config`);
     if (!r.ok) { area.innerHTML = `<div class="empty">Failed to load config.</div>`; return; }
     const c = await r.json();
+
+    const pParam = c.serverParam ?? '';
+    const pwdMatch = pParam.match(/-password\s+"([^"]+)"|-password\s+([^ ]+)/i);
+    const pwd = pwdMatch ? (pwdMatch[1] || pwdMatch[2]) : '';
+    const crossplay = pParam.toLowerCase().includes('-crossplay');
+    const pub = pParam.toLowerCase().includes('-public 1');
+
     area.innerHTML = `<div style="margin-top:16px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px">
 <div style="font-weight:600;font-size:13px;margin-bottom:14px">⚙ ${esc(name)}</div>
 <div class="cfg-grid">
   <div class="cfg-field"><label>Server Name</label><input id="sc-name" value="${esc(c.serverName??'')}"/></div>
   <div class="cfg-field"><label>Max Players</label><input id="sc-max" value="${esc(c.maxPlayers??'')}"/></div>
+  <div class="cfg-field"><label>Server Password</label><input id="sc-pwd" value="${esc(pwd)}"/></div>
   <div class="cfg-field"><label>Server IP</label><input id="sc-ip" value="${esc(c.serverIp??'')}"/></div>
   <div class="cfg-field"><label>Server Port</label><input id="sc-port" value="${esc(c.serverPort??'')}"/></div>
   <div class="cfg-field"><label>Query Port</label><input id="sc-qport" value="${esc(c.queryPort??'')}"/></div>
   <div class="cfg-field"><label>Map / World</label><input id="sc-map" value="${esc(c.serverMap??'')}"/></div>
-  <div class="cfg-field cfg-full"><label>Launch Parameters</label><input id="sc-param" value="${esc(c.serverParam??'')}"/></div>
+  <div class="cfg-field cfg-full"><label>Raw Launch Parameters</label><input id="sc-param" value="${esc(c.serverParam??'')}"/></div>
   <div class="cfg-field cfg-full"><label>GSLT Token</label><input id="sc-gslt" value="${esc(c.serverGslt??'')}"/></div>
   <div class="cfg-checks">
+    <label class="cfg-check"><input type="checkbox" id="sc-crossplay" ${crossplay?'checked':''}> Enable Crossplay</label>
+    <label class="cfg-check"><input type="checkbox" id="sc-public" ${pub?'checked':''}> Public Server</label>
     ${['autoRestart:Auto Restart','autoStart:Auto Start','autoUpdate:Auto Update','updateOnStart:Update on Start','backupOnStart:Backup on Start','discordAlert:Discord Alerts'].map(x => {
         const [k,l] = x.split(':');
         return `<label class="cfg-check"><input type="checkbox" id="sc-${k}" ${c[k]?'checked':''}> ${l}</label>`;
@@ -769,6 +781,15 @@ async function openInlineConfig(id, name) {
 }
 
 async function saveInlineConfig(id) {
+    let pParam = document.getElementById('sc-param')?.value || '';
+    const pwd = document.getElementById('sc-pwd')?.value || '';
+    const xp = document.getElementById('sc-crossplay')?.checked;
+    const pub = document.getElementById('sc-public')?.checked;
+    pParam = pParam.replace(/-password\s+"[^"]+"/ig, '').replace(/-password\s+[^ ]+/ig, '').replace(/-crossplay/ig, '').replace(/-public\s+\d/ig, '').trim();
+    if (pwd) pParam += ` -password "${pwd}"`;
+    if (xp)  pParam += ` -crossplay`;
+    if (pub) pParam += ` -public 1`;
+
     const body = {
         serverName:    document.getElementById('sc-name')?.value,
         serverIp:      document.getElementById('sc-ip')?.value,
@@ -776,7 +797,7 @@ async function saveInlineConfig(id) {
         queryPort:     document.getElementById('sc-qport')?.value,
         maxPlayers:    document.getElementById('sc-max')?.value,
         serverMap:     document.getElementById('sc-map')?.value,
-        serverParam:   document.getElementById('sc-param')?.value,
+        serverParam:   pParam,
         serverGslt:    document.getElementById('sc-gslt')?.value,
         discordWebhook:document.getElementById('sc-webhook')?.value,
         autoRestart:   document.getElementById('sc-autoRestart')?.checked,
@@ -1346,6 +1367,117 @@ function scrollToBottom(id) {
 function esc(s) { return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 function fmtMb(mb) { return mb >= 1024 ? (mb/1024).toFixed(1)+' GB' : mb.toFixed(0)+' MB'; }
 function fmtBytes(b) { return b < 1024 ? b+'B' : b < 1048576 ? (b/1024).toFixed(1)+'KB' : (b/1048576).toFixed(1)+'MB'; }
+
+// ── Mod Manager ────────────────────────────────────────────────────────────
+function renderModsChooser() {
+    const valheimServers = servers.filter(s => s.game?.toLowerCase().includes('valheim'));
+    const rows = valheimServers.map(s => `<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:12px">
+  <div style="flex:1"><div style="font-weight:600">${esc(s.name)}</div><div style="font-size:11px;color:var(--muted)">${esc(s.game)}</div></div>
+  <button class="btn-sm" onclick="openInlineMods('${s.id}','${esc(s.name)}')">🧩 Manage Mods</button>
+</div>`).join('');
+    return `<div class="section-row"><span class="section-title">Mod Manager (Thunderstore)</span></div>
+<div style="color:var(--muted);font-size:12px;margin-bottom:14px">Install and toggle mods for supported games (Valheim). Server must be stopped before editing mods!</div>
+${rows || '<div class="empty">No Valheim servers found.</div>'}
+<div id="inline-mods-area"></div>`;
+}
+
+let TS_CACHE = null;
+
+async function openInlineMods(id, name) {
+    showView('mods');
+    const area = document.getElementById('inline-mods-area');
+    if (!area) return;
+    area.innerHTML = `<div style="margin-top:16px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px">
+<div style="font-weight:600;font-size:13px;margin-bottom:14px">🧩 ${esc(name)}</div>
+<div class="spinner" style="margin:20px auto"></div></div>`;
+
+    // 1. Load installed mods from server
+    const r1 = await apiFetch('/api/servers/' + id + '/mods');
+    const installed = r1.ok ? await r1.json() : [];
+
+    // 2. Fetch/Cach Thunderstore JSON
+    if (!TS_CACHE) {
+        try {
+            const r2 = await apiFetch('/api/mods/thunderstore');
+            if (r2.ok) TS_CACHE = await r2.json();
+        } catch { TS_CACHE = []; }
+    }
+
+    const tsgames = TS_CACHE || [];
+
+    area.innerHTML = `<div style="margin-top:16px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px;display:flex;flex-direction:column;gap:16px;">
+<div style="font-weight:600;font-size:13px">Installed Mods (${installed.length || 0})</div>
+<div style="display:flex;flex-direction:column;gap:8px;">
+${installed.length ? installed.map(m => `<div style="display:flex;justify-content:space-between;align-items:center;background:var(--surface2);padding:10px 14px;border-radius:6px;border:1px solid var(--border)">
+  <div style="font-weight:600;font-size:12px;color:${m.enabled ? 'var(--text)' : 'var(--muted)'}">${esc(m.name)}</div>
+  <div style="display:flex;gap:6px">
+     <button class="btn-sm" onclick="toggleMod('${id}', '${m.id}', ${!m.enabled})">${m.enabled ? 'Disable' : 'Enable'}</button>
+     <button class="btn-danger" onclick="deleteMod('${id}', '${m.id}')">Delete</button>
+  </div>
+</div>`).join('') : '<div class="empty" style="padding:10px;">No mods installed.</div>'}
+</div>
+
+<div style="height:1px;background:var(--border);margin:8px 0;"></div>
+
+<div style="font-weight:600;font-size:13px">Get New Mods (Thunderstore)</div>
+<div style="display:flex;gap:8px">
+  <input class="install-search" id="ts-search" placeholder="Search Thunderstore..." autocomplete="off" oninput="filterTsMods('${id}')">
+</div>
+<div id="ts-results" style="max-height:300px;overflow-y:auto;border:1px solid var(--border);border-radius:6px;padding:8px;background:var(--bg)"></div>
+
+</div>`;
+
+    // Initial filter logic
+    filterTsMods(id);
+}
+
+function filterTsMods(serverId) {
+    const q = (document.getElementById('ts-search')?.value || '').toLowerCase();
+    const res = document.getElementById('ts-results');
+    if (!res) return;
+    if (!TS_CACHE || !TS_CACHE.length) { res.innerHTML = '<div class="empty">Thunderstore API unavailable.</div>'; return; }
+    if (!q) { res.innerHTML = '<div class="empty" style="padding:10px;">Type to search thousands of Valheim mods...</div>'; return; }
+
+    const matches = TS_CACHE.filter(m => m.name.toLowerCase().includes(q) || m.owner.toLowerCase().includes(q)).slice(0, 15);
+    
+    res.innerHTML = matches.map(m => {
+        const latest = m.versions[0];
+        const dl = latest.download_url;
+        return `<div style="display:flex;justify-content:space-between;align-items:center;padding:10px;border-bottom:1px solid var(--border)">
+  <div><div style="font-weight:600;font-size:12px;color:var(--accent)">${esc(m.name)}</div><div style="font-size:11px;color:var(--muted)">by ${esc(m.owner)} · ${esc(latest.version_number)}</div></div>
+  <button class="btn-primary" onclick="installMod('${serverId}', '${dl}', this)">Install</button>
+</div>`;
+    }).join('');
+}
+
+async function installMod(serverId, dlUrl, btn) {
+    if (!confirm("Are you sure? Server mapping will restart if running!")) return;
+    btn.disabled = true;
+    btn.textContent = 'Downloading...';
+    try {
+        const r = await apiFetch(\`/api/servers/\${serverId}/mods/install?downloadUrl=\${encodeURIComponent(dlUrl)}\`, null, 'POST');
+        if (r.ok) {
+            btn.textContent = 'Installed!';
+            btn.style.background = 'var(--green)';
+            setTimeout(() => openInlineMods(serverId, 'Refresh...'), 1500);
+        } else {
+            const err = await r.json().catch(()=>({}));
+            btn.textContent = 'Failed: ' + (err.message||'error');
+            btn.style.background = 'var(--red)';
+        }
+    } catch(e) { btn.textContent = 'Failed'; btn.style.background = 'var(--red)'; }
+}
+
+async function toggleMod(serverId, modId, enable) {
+    await apiFetch(\`/api/servers/\${serverId}/mods/\${modId}/toggle?enable=\${enable}\`, null, 'PATCH');
+    openInlineMods(serverId, 'Refresh...');
+}
+
+async function deleteMod(serverId, modId) {
+    if(!confirm("Delete this mod from the server?")) return;
+    await apiFetch(\`/api/servers/\${serverId}/mods/\${modId}\`, null, 'DELETE');
+    openInlineMods(serverId, 'Refresh...');
+}
 
 // ── Boot ───────────────────────────────────────────────────────────────────
 document.getElementById('token-input').addEventListener('keydown', e => { if (e.key==='Enter') connect(); });
