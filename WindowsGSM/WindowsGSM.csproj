@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net8.0-windows8.0</TargetFramework>
     <OutputType>WinExe</OutputType>
@@ -265,6 +265,7 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Images\HMenu\Dashboard.ico" />
+    <Resource Include="Images\HMenu\Ports.ico" />
     <Resource Include="Images\HMenu\Home.ico" />
   </ItemGroup>
   <ItemGroup>
@@ -326,7 +327,7 @@
   <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
-  <!-- Plugin registry — embedded so it works inside the single-file exe -->
+  <!-- Plugin registry � embedded so it works inside the single-file exe -->
   <ItemGroup>
     <EmbeddedResource Include="WebApi\plugins-registry.json" />
   </ItemGroup>
