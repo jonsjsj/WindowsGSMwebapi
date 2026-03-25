@@ -1,4 +1,4 @@
-﻿using NCrontab;
+using NCrontab;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -6,7 +6,7 @@ using System.IO;
 using System.Security.AccessControl;
 using System.Text;
 using System.Threading.Tasks;
-using static WGSM.MainWindow;
+using static WindowsGSM.MainWindow;
 
 namespace WindowsGSM.Functions
 {
