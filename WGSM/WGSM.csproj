@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net8.0-windows8.0</TargetFramework>
     <OutputType>WinExe</OutputType>
@@ -58,7 +58,7 @@
     <ApplicationIcon>Images\WGSM.ico</ApplicationIcon>
   </PropertyGroup>
   <PropertyGroup>
-    <StartupObject>WGSM.Program</StartupObject>
+    <StartupObject>WindowsGSM.Program</StartupObject>
   </PropertyGroup>
   <PropertyGroup>
     <ManifestCertificateThumbprint>67313EA18C45619B45D69B99247C435B6106EBCC</ManifestCertificateThumbprint>

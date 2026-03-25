@@ -406,7 +406,7 @@ namespace WindowsGSM.UI
         {
             if (_server == null) return;
             AppendLog("Creating backup...");
-            var svc = new WGSM.WebApi.Services.BackupService(_config);
+            var svc = new WindowsGSM.WebApi.Services.BackupService(_config);
             var (success, message, _) = await Task.Run(() => svc.CreateBackup());
             AppendLog(message);
         }

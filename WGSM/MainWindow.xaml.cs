@@ -1,4 +1,4 @@
-﻿using ControlzEx.Theming;
+using ControlzEx.Theming;
 using LiveCharts;
 using LiveCharts.Wpf;
 using MahApps.Metro.Controls;
@@ -4576,12 +4576,12 @@ namespace WindowsGSM
         {
             try
             {
-                var svc = new WGSM.WebApi.Services.UpdateService(
+                var svc = new WindowsGSM.WebApi.Services.UpdateService(
                     _webApiServer!.ServerManager);
                 var (hasUpdate, latestTag, _, error) = await svc.CheckForUpdateAsync()
                     .ConfigureAwait(false);
 
-                var current = WGSM.WebApi.Services.UpdateService.CurrentVersion;
+                var current = WindowsGSM.WebApi.Services.UpdateService.CurrentVersion;
                 if (error == null && hasUpdate)
                     _webApiServer!.Logger.Log(
                         $"[Update] New version available: {latestTag} (current: {current}). " +
