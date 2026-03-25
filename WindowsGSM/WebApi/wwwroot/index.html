@@ -1370,14 +1370,14 @@ function fmtBytes(b) { return b < 1024 ? b+'B' : b < 1048576 ? (b/1024).toFixed(
 
 // ── Mod Manager ────────────────────────────────────────────────────────────
 function renderModsChooser() {
-    const valheimServers = servers.filter(s => s.game?.toLowerCase().includes('valheim'));
-    const rows = valheimServers.map(s => `<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:12px">
+    const allServers = servers;
+    const rows = allServers.map(s => `<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:12px">
   <div style="flex:1"><div style="font-weight:600">${esc(s.name)}</div><div style="font-size:11px;color:var(--muted)">${esc(s.game)}</div></div>
   <button class="btn-sm" onclick="openInlineMods('${s.id}','${esc(s.name)}')">🧩 Manage Mods</button>
 </div>`).join('');
     return `<div class="section-row"><span class="section-title">Mod Manager (Thunderstore)</span></div>
-<div style="color:var(--muted);font-size:12px;margin-bottom:14px">Install and toggle mods for supported games (Valheim). Server must be stopped before editing mods!</div>
-${rows || '<div class="empty">No Valheim servers found.</div>'}
+<div style="color:var(--muted);font-size:12px;margin-bottom:14px">Install and manage BepInEx mods for your game servers. Server must be stopped before editing mods!</div>
+${rows || '<div class="empty">No servers found.</div>'}
 <div id="inline-mods-area"></div>`;
 }
 
