@@ -1,6 +1,6 @@
-# WindowsGSM Web API — How-To Guide
+# WGSM Web API — How-To Guide
 
-Embedded REST API + web dashboard for WindowsGSM. Runs inside the WGSM WPF application on Windows. Exposes game servers over HTTP so they can be managed remotely via browser or the TrueNAS dashboard.
+Embedded REST API + web dashboard for WGSM. Runs inside the WGSM WPF application on Windows. Exposes game servers over HTTP so they can be managed remotely via browser or the TrueNAS dashboard.
 
 **Current version:** v1.0.42
 
@@ -10,21 +10,21 @@ Embedded REST API + web dashboard for WindowsGSM. Runs inside the WGSM WPF appli
 
 ### Option A — Full Installer (recommended for new installs)
 
-1. Download `WGSM-Full-Setup-{ver}.exe` from the [Releases page](https://github.com/jonsjsj/WindowsGSMwebapi/releases).
-2. Run the installer. It installs both WindowsGSM and the Web API.
-3. Launch `WindowsGSM.exe`.
+1. Download `WGSM-Full-Setup-{ver}.exe` from the [Releases page](https://github.com/jonsjsj/WGSMwebapi/releases).
+2. Run the installer. It installs both WGSM and the Web API.
+3. Launch `WGSM.exe`.
 
 ### Option B — Addon Installer (existing WGSM install)
 
 1. Download `WGSM-Addon-Setup-{ver}.exe` from Releases.
-2. Run the installer on the machine that already has WindowsGSM installed.
-3. Restart WindowsGSM.
+2. Run the installer on the machine that already has WGSM installed.
+3. Restart WGSM.
 
 ### Option C — Manual (single exe swap)
 
-1. Download `WindowsGSM.exe` from Releases.
-2. Stop WindowsGSM.
-3. Replace the existing `WindowsGSM.exe`.
+1. Download `WGSM.exe` from Releases.
+2. Stop WGSM.
+3. Replace the existing `WGSM.exe`.
 4. Restart.
 
 ---
@@ -33,7 +33,7 @@ Embedded REST API + web dashboard for WindowsGSM. Runs inside the WGSM WPF appli
 
 ### 1. Enable the Web API
 
-1. Open WindowsGSM.
+1. Open WGSM.
 2. Go to **Settings → Web API**.
 3. Set the **Port** (default: `5000`).
 4. Set the **Scope**:
@@ -260,7 +260,7 @@ All file paths are validated with `Path.GetFullPath` against `servers/{id}/serve
 - Wire format: `[16 B random salt][16 B random IV][ciphertext]`
 - The password is never stored; loss of password means the backup cannot be decrypted
 
-**After importing:** Stop and restart the Web API in WindowsGSM to apply the restored tokens and settings.
+**After importing:** Stop and restart the Web API in WGSM to apply the restored tokens and settings.
 
 ### App Self-Update
 
@@ -292,7 +292,7 @@ The `ResourceMonitorService` samples CPU usage on a 5-second interval per tracke
 ## Server File Layout
 
 ```
-WindowsGSM/
+WGSM/
   servers/
     {id}/
       serverfiles/    ← game files (File Manager root)
@@ -314,9 +314,9 @@ WindowsGSM/
 
 ### Manual
 
-1. Download `WindowsGSM.exe` from [Releases](https://github.com/jonsjsj/WindowsGSMwebapi/releases).
-2. Stop WindowsGSM.
-3. Replace `WindowsGSM.exe`.
+1. Download `WGSM.exe` from [Releases](https://github.com/jonsjsj/WGSMwebapi/releases).
+2. Stop WGSM.
+3. Replace `WGSM.exe`.
 4. Restart.
 
 > **Note:** Users on versions before v1.0.37 must update manually. The old update check uses the GitHub JSON API which has a 60 req/hr rate limit and returns 403 when exceeded.
@@ -333,7 +333,7 @@ WindowsGSM/
 ### Build
 
 ```bash
-dotnet publish WindowsGSM/WindowsGSM.csproj \
+dotnet publish WGSM/WGSM.csproj \
   -c Release \
   -r win-x64 \
   --self-contained true \
@@ -343,7 +343,7 @@ dotnet publish WindowsGSM/WindowsGSM.csproj \
 ### Release
 
 Push a tag matching `v*.*.*` to trigger the GitHub Actions workflow (`build-installer.yml`). The workflow builds on `windows-latest` using .NET 8 + MSBuild + NSIS and produces:
-- `WindowsGSM.exe`
+- `WGSM.exe`
 - `WGSM-Full-Setup-{ver}.exe`
 - `WGSM-Addon-Setup-{ver}.exe`
 

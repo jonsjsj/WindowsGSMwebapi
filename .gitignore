@@ -1,8 +1,8 @@
 .vs
 .idea
-WindowsGSM/bin/
-WindowsGSM/obj/
-WindowsGSM-Plugin-Development/bin/
-WindowsGSM-Plugin-Development/obj/
-WindowsGSM.sln.DotSettings.user
+WGSM/bin/
+WGSM/obj/
+WGSM-Plugin-Development/bin/
+WGSM-Plugin-Development/obj/
+WGSM.sln.DotSettings.user
 publish/

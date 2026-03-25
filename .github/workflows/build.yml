@@ -19,7 +19,7 @@ jobs:
         uses: microsoft/setup-msbuild@v2
 
       - name: Restore
-        run: msbuild WindowsGSM/WindowsGSM.csproj /t:Restore /p:Configuration=Release
+        run: msbuild WGSM/WGSM.csproj /t:Restore /p:Configuration=Release
 
       - name: Build
-        run: msbuild WindowsGSM/WindowsGSM.csproj /p:Configuration=Release /p:Platform=AnyCPU
+        run: msbuild WGSM/WGSM.csproj /p:Configuration=Release /p:Platform=AnyCPU

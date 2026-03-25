@@ -1,0 +1,34 @@
+title: Jon's Home Dashboard
+theme: dark
+color: slate
+headerStyle: clean
+
+layout:
+  - Media:
+      collapsible: true
+  - Agenda:
+      collapsible: true
+  - Automation:
+      collapsible: true
+  - Downloaders:
+      collapsible: true
+  - Infrastructure:
+      collapsible: true
+  - Games:
+      collapsible: true
+  - Productivity:
+      collapsible: true
+
+footer: true
+locale: nb_NO
+
+providers:
+  openweathermap: null
+
+themeConfig:
+  radius: 10px
+  spacing: 1.2rem
+  cardBlur: true
+  cardShadow: true
+  headerShadow: true
+  fontSize: medium

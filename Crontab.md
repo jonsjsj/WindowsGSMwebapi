@@ -1,6 +1,6 @@
 ## Improved Crontab Managing.
 Crontabs can now also Execute Windows commands and send Server Console Commands 
-They can now be configured by adding *.csv files to the server config folder (servers\\%ServerID%\\configs\\Crontab) (or click Browse => Server Configs in WindowsGSM while the server is marked, then create the folder Crontab if not existing.)
+They can now be configured by adding *.csv files to the server config folder (servers\\%ServerID%\\configs\\Crontab) (or click Browse => Server Configs in WGSM while the server is marked, then create the folder Crontab if not existing.)
 
 You can Add multiple lines to that csv file, and also add multiple files. WGSM will try to read all *.csv files in that folder.
 Comments can be added by 2 leading slashes "//" as first characters in that line

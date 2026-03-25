@@ -1,13 +1,13 @@
 # WGSM.WEB — TrueNAS Docker Dashboard: How-To Guide
 
-Multi-instance game server dashboard. Runs as a Docker container on TrueNAS Scale (or any Docker host). Aggregates multiple WindowsGSM Web API instances into one unified UI.
+Multi-instance game server dashboard. Runs as a Docker container on TrueNAS Scale (or any Docker host). Aggregates multiple WGSM Web API instances into one unified UI.
 
 ---
 
 ## Requirements
 
 - Docker / Docker Compose (or TrueNAS Scale Apps)
-- One or more Windows machines running **WindowsGSM Web API v1.0.33+**
+- One or more Windows machines running **WGSM Web API v1.0.33+**
 - Network access from the TrueNAS container to each Windows machine
 
 ---
@@ -114,7 +114,7 @@ The dashboard can update its own `index.html` from GitHub without restarting the
 2. Go to **Settings → Update Dashboard**.
 3. Click **Update Now**.
 
-This pulls the latest `index.html` from the `master` branch of `jonsjsj/WindowsGSMwebapi`. Refresh the browser after updating.
+This pulls the latest `index.html` from the `master` branch of `jonsjsj/WGSMwebapi`. Refresh the browser after updating.
 
 ---
 

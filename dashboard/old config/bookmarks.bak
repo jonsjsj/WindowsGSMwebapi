@@ -1,0 +1,8 @@
+bookmarks:
+  - Homelab:
+      - TrueNAS Docs:
+          href: https://www.truenas.com/docs/
+      - Proxmox Docs:
+          href: https://pve.proxmox.com/wiki/Main_Page
+      - OPNSense Docs:
+          href: https://docs.opnsense.org/

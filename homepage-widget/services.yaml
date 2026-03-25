@@ -1,0 +1,185 @@
+# ============================================================
+# WGSM Homepage Widgets
+# https://gethomepage.dev/widgets/services/customapi/
+#
+# Copy the widget blocks you want into your Homepage
+# services.yaml file. Replace the three placeholders:
+#
+#   WGSM_HOST  - IP or hostname of your WGSM machine
+#                e.g. 192.168.1.10  or  wgsm.local
+#   WGSM_PORT  - Web API port (default 5000)
+#   YOUR_TOKEN - Bearer token from WGSM Web API settings
+# ============================================================
+
+- Game Servers:
+
+    # ---- Widget A: Summary ----------------------------------------
+    # Best single widget. Shows online vs total server count,
+    # combined CPU %, total RAM used by game servers, and disk free.
+    # Refresh: every 15 s.
+    - WGSM:
+        icon: mdi-gamepad-variant
+        href: http://WGSM_HOST:WGSM_PORT
+        description: Windows Game Server Manager
+        widget:
+          type: customapi
+          url: http://WGSM_HOST:WGSM_PORT/api/resources/summary
+          refreshInterval: 15000
+          headers:
+            Authorization: Bearer YOUR_TOKEN
+          display: block
+          mappings:
+            - field: onlineServers
+              label: Online
+              format: number
+            - field: totalServers
+              label: Servers
+              format: number
+            - field: totalCpuPercent
+              label: CPU
+              format: float
+              suffix: "%"
+            - field: totalRamMb
+              label: RAM
+              format: float
+              scale: 0.001
+              suffix: " GB"
+            - field: diskFreeGb
+              label: Disk Free
+              format: float
+              suffix: " GB"
+
+    # ---- Widget B: Server List ------------------------------------
+    # One row per game server — name on the left, status on the right.
+    # Status values: Started | Stopped | Starting | Stopping | Restarting
+    # Refresh: every 15 s.
+    - WGSM Servers:
+        icon: mdi-server-network
+        href: http://WGSM_HOST:WGSM_PORT
+        widget:
+          type: customapi
+          url: http://WGSM_HOST:WGSM_PORT/api/servers
+          refreshInterval: 15000
+          headers:
+            Authorization: Bearer YOUR_TOKEN
+          display: dynamic-list
+          mappings:
+            name: name
+            label: status
+            limit: 20
+
+    # ---- Widget C: Performance Details ----------------------------
+    # Detailed resource breakdown: CPU, RAM used/total, disk used/free.
+    # Useful as a second row beneath Widget A.
+    - WGSM Performance:
+        icon: mdi-chart-line
+        href: http://WGSM_HOST:WGSM_PORT
+        widget:
+          type: customapi
+          url: http://WGSM_HOST:WGSM_PORT/api/resources/summary
+          refreshInterval: 10000
+          headers:
+            Authorization: Bearer YOUR_TOKEN
+          display: block
+          mappings:
+            - field: totalCpuPercent
+              label: CPU
+              format: float
+              suffix: "%"
+            - field: totalRamMb
+              label: RAM Used
+              format: float
+              scale: 0.001
+              suffix: " GB"
+            - field: systemTotalRamMb
+              label: RAM Total
+              format: float
+              scale: 0.001
+              suffix: " GB"
+            - field: diskUsedGb
+              label: Disk Used
+              format: float
+              suffix: " GB"
+            - field: diskFreeGb
+              label: Disk Free
+              format: float
+              suffix: " GB"
+            - field: diskTotalGb
+              label: Disk Total
+              format: float
+              suffix: " GB"
+
+    # ---- Widget D: Server Detail (single server) ------------------
+    # Replace SERVER_ID with the numeric ID (1, 2, 3 ...) of the server
+    # you want. Shows players online, CPU %, and RAM for that one server.
+    # Refresh: every 10 s.
+    - Valheim:
+        icon: mdi-sword
+        href: http://WGSM_HOST:WGSM_PORT
+        widget:
+          type: customapi
+          url: http://WGSM_HOST:WGSM_PORT/api/servers/SERVER_ID
+          refreshInterval: 10000
+          headers:
+            Authorization: Bearer YOUR_TOKEN
+          display: block
+          mappings:
+            - field: status
+              label: Status
+              format: text
+              remap:
+                - value: Started
+                  to: Online
+                - value: Stopped
+                  to: Offline
+                - value: Starting
+                  to: Starting...
+                - value: Stopping
+                  to: Stopping...
+                - value: Restarting
+                  to: Restarting...
+                - any: true
+                  to: Unknown
+            - field: playersCurrent
+              label: Players
+              format: number
+            - field: playersMax
+              label: Max Players
+              format: number
+            - field: cpuPercent
+              label: CPU
+              format: float
+              suffix: "%"
+            - field: ramMb
+              label: RAM
+              format: float
+              scale: 0.001
+              suffix: " GB"
+            - field: map
+              label: Map
+              format: text
+
+    # ---- Widget E: Instance Info (no auth required) ---------------
+    # Shows instance name, online/total count, and app version.
+    # Does NOT need a bearer token — useful for a public-facing page.
+    - WGSM Info:
+        icon: mdi-information-outline
+        href: http://WGSM_HOST:WGSM_PORT
+        widget:
+          type: customapi
+          url: http://WGSM_HOST:WGSM_PORT/api/info
+          refreshInterval: 30000
+          display: block
+          mappings:
+            - field: instanceName
+              label: Instance
+              format: text
+            - field: onlineServers
+              label: Online
+              format: number
+            - field: totalServers
+              label: Total
+              format: number
+            - field: appVersion
+              label: Version
+              format: text

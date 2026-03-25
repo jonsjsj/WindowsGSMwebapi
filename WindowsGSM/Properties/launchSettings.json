@@ -1,9 +1,0 @@
-{
-  "profiles": {
-    "WindowsGSM": {
-      "commandName": "Project",
-      "workingDirectory": ".",
-      "nativeDebugging": true
-    }
-  }
-}

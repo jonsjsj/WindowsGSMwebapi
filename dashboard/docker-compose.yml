@@ -21,9 +21,9 @@ services:
     command: >
       sh -c "
         mkdir -p /app/public &&
-        wget -q -O /app/server.js        https://raw.githubusercontent.com/jonsjsj/WindowsGSMwebapi/master/dashboard/app/server.js &&
-        wget -q -O /app/public/index.html https://raw.githubusercontent.com/jonsjsj/WindowsGSMwebapi/master/dashboard/app/public/index.html &&
-        wget -q -O /app/package.json      https://raw.githubusercontent.com/jonsjsj/WindowsGSMwebapi/master/dashboard/app/package.json &&
+        wget -q -O /app/server.js        https://raw.githubusercontent.com/jonsjsj/WGSMwebapi/master/dashboard/app/server.js &&
+        wget -q -O /app/public/index.html https://raw.githubusercontent.com/jonsjsj/WGSMwebapi/master/dashboard/app/public/index.html &&
+        wget -q -O /app/package.json      https://raw.githubusercontent.com/jonsjsj/WGSMwebapi/master/dashboard/app/package.json &&
         npm install --production --loglevel error &&
         node server.js
       "

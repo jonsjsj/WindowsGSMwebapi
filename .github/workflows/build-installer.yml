@@ -15,7 +15,7 @@ permissions:
 
 env:
   DOTNET_VERSION: '8.0.x'
-  PROJECT_PATH:   'WindowsGSM/WindowsGSM.csproj'
+  PROJECT_PATH:   'WGSM/WGSM.csproj'
   PUBLISH_DIR:    'publish'
   DIST_DIR:       'dist'
 
@@ -62,7 +62,7 @@ jobs:
         run: |
           $ver = "${{ steps.version.outputs.VERSION }}"
           $asmVer = "$ver.0"
-          $path = "WindowsGSM/Properties/AssemblyInfo.cs"
+          $path = "WGSM/Properties/AssemblyInfo.cs"
           (Get-Content $path) `
             -replace '\[assembly: AssemblyVersion\(".*?"\)\]', "[assembly: AssemblyVersion(`"$asmVer`")]" `
             -replace '\[assembly: AssemblyFileVersion\(".*?"\)\]', "[assembly: AssemblyFileVersion(`"$asmVer`")]" |
@@ -86,7 +86,7 @@ jobs:
         run: |
           New-Item -ItemType Directory -Force -Path "${{ env.PUBLISH_DIR }}\WebApi\wwwroot"
           Copy-Item -Recurse -Force `
-            "WindowsGSM\WebApi\wwwroot\*" `
+            "WGSM\WebApi\wwwroot\*" `
             "${{ env.PUBLISH_DIR }}\WebApi\wwwroot\"
 
       - name: Upload publish artifact

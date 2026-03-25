@@ -380,7 +380,7 @@ app.get('/api/logs', (_req, res) => res.json(reqLog.slice().reverse()));
 // ── Self-update: pull latest index.html from GitHub ──────────────────────
 
 const RAW_INDEX_URL =
-    'https://raw.githubusercontent.com/jonsjsj/WindowsGSMwebapi/master/dashboard/app/public/index.html';
+    'https://raw.githubusercontent.com/jonsjsj/WGSMwebapi/master/dashboard/app/public/index.html';
 
 app.post('/api/self-update', async (_req, res) => {
     try {

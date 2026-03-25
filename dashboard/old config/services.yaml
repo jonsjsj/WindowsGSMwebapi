@@ -1,0 +1,181 @@
+- Media:
+    - Plex:
+        icon: plex
+        href: http://192.168.68.250:32400/web
+        description: Media server
+        ping: http://192.168.68.250:32400
+
+    - Booklore:
+        icon: mdi-bookshelf
+        href: http://192.168.68.250:30260
+        description: Book metadata manager
+        ping: http://192.168.68.250:30260
+
+- Downloaders:
+    - qBittorrent:
+        icon: qbittorrent
+        href: http://192.168.68.250:10095
+        description: Torrent client
+        ping: http://192.168.68.250:10095
+        widget:
+          type: qbittorrent
+          url: http://192.168.68.250:10095
+          username: jonsj
+          password: "c2:i.eyUEcqFNGN"
+
+    - Qui:
+        icon: autobrr
+        href: http://192.168.68.250:7476
+        description: qBittorrent Web UI
+        ping: http://192.168.68.250:7476
+
+- Automation:
+    - Prowlarr:
+        icon: prowlarr
+        href: http://192.168.68.250:30050
+        description: Indexer manager
+        ping: http://192.168.68.250:30050
+        widget:
+          type: prowlarr
+          url: http://192.168.68.250:30050
+          key: a4f2b0100f6e46b8a7b6f9777b2a5079
+
+    - Sonarr:
+        icon: sonarr
+        href: http://192.168.68.250:30027/calendar
+        description: TV automation
+        ping: http://192.168.68.250:30027
+        widget:
+          type: sonarr
+          url: http://192.168.68.250:30027
+          key: 7a4366c9b58c43399252b619b3c97714
+
+    - Radarr:
+        icon: radarr
+        href: http://192.168.68.250:30025/calendar
+        description: Movie automation
+        ping: http://192.168.68.250:30025
+        widget:
+          type: radarr
+          url: http://192.168.68.250:30025
+          key: 701500b4a47f4be6b2d388202a052179
+
+    - Chaptarr:
+        icon: mdi-book-open-page-variant
+        href: http://192.168.68.250:8789/calendar
+        description: Chapter metadata tool
+        ping: http://192.168.68.250:8789
+
+    - CleanupArr:
+        icon: mdi-delete-sweep
+        href: http://192.168.68.250:30263
+        description: Media cleanup automation
+        ping: http://192.168.68.250:30263
+
+    - HuntArr:
+        icon: mdi-magnify
+        href: http://192.168.68.250:30262
+        description: Missing media finder
+        ping: http://192.168.68.250:30262
+
+    - Profilarr:
+        icon: mdi-account-cog
+        href: http://192.168.68.250:30223
+        description: Quality profile automation
+        ping: http://192.168.68.250:30223
+
+# ============================
+#   AGENDA GROUP
+#   Calendar references Sonarr/Radarr in Automation
+# ============================
+
+- Agenda:
+    - Media Calendar:
+        icon: mdi-calendar-month
+        widget:
+          type: calendar
+          view: agenda
+          maxEvents: 10
+          showTime: true
+          previousDays: 3
+          integrations:
+            - type: sonarr
+              service_group: Automation
+              service_name: Sonarr
+              color: teal
+            - type: radarr
+              service_group: Automation
+              service_name: Radarr
+              color: amber
+            - type: ical
+              url: http://192.168.68.250:8789/feed/v1/calendar/Chaptarr.ics?pastDays=7&futureDays=28&apikey=e6ed1681812c4662be008deef4c79d92
+              name: Chaptarr
+              color: purple
+
+# ============================
+#   INFRASTRUCTURE GROUP
+#   TrueNAS, OPNSense, Proxmox, Homepage
+# ============================
+
+- Infrastructure:
+    - TrueNAS:
+        icon: truenas
+        href: https://192.168.68.250
+        description: Storage & system management
+        ping: https://192.168.68.250
+        widget:
+          type: truenas
+          url: https://192.168.68.250
+          key: 2-Gl1AtpjHbfNsjnYb6LLc8xzDVwaUshdfOtrI4OWDFXREDWP8wXk4QGkyoIHnSxSB
+          nasType: scale
+          enablePools: true
+          allowInsecure: true
+          pools:
+            - sharktank
+            - nvme
+
+    - OPNSense:
+        icon: opnsense
+        href: https://192.168.68.1
+        description: Router & firewall
+        ping: https://192.168.68.1
+        widget:
+          type: opnsense
+          url: https://192.168.68.1
+          username: fhtH46xRbAeU60gCluwPwxAkMZkkExp1tWz2TlEJth1v/93MYb153dIYolCvqTy/jltI4cRvocwJmjwI
+          password: k2CWGfJATDM3Ij60E3GI1qWD7kvkfayA0/0a0TK00pkt44YENi3mPRKYMKI+4cToGa1KSaR6xKMdt/eC
+
+    - Proxmox:
+        icon: proxmox
+        href: https://192.168.68.136:8006
+        description: Hypervisor
+        ping: https://192.168.68.136:8006
+
+    - Tailscale:
+        icon: tailscale
+        href: https://login.tailscale.com/admin/machines
+        description: Secure remote access
+        widget:
+          type: tailscale
+          deviceid: nPv7EAG8uB21CNTRL
+          key: tskey-api-kmiNg44Pnm11CNTRL-qSSQ6NLKbT1ZUVFu1RcbT1J3ULnokFKmP
+
+    - Homepage:
+        icon: homepage
+        href: http://192.168.68.250:3000
+        description: Dashboard UI
+        ping: http://192.168.68.250:3000
+
+- Games:
+    - Enshrouded Server:
+        icon: mdi-sword-cross
+        href: http://192.168.68.113:15636
+        description: Enshrouded dedicated server
+        ping: http://192.168.68.113:15636
+
+- Productivity:
+    - Planka:
+        icon: planka
+        href: http://192.168.68.250:30034
+        description: Project management
+        ping: http://192.168.68.250:30034

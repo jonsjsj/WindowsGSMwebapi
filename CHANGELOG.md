@@ -8,7 +8,7 @@ All notable changes to WGSM (Windows Game Server Manager) are documented here.
 
 ### New Features
 - **Port Monitor panel** — new HamburgerMenu item showing all game server, Web API, and Docker ports with live local-listen and external-reachability checks (portchecker.co for TCP, Docker `docker ps` for container ports).
-- **Auto-Start Servers in Settings** — Startup tab now lists every configured game server with a per-server auto-start toggle; changes write to `WindowsGSM.cfg` immediately.
+- **Auto-Start Servers in Settings** — Startup tab now lists every configured game server with a per-server auto-start toggle; changes write to `WGSM.cfg` immediately.
 - **Server Lock (password protection)** — optional password gate on the Start and Edit Config actions; SHA-256 hash stored in registry under `ServerLockEnabled` / `ServerLockHash`.
 - **Backup upload endpoint** — `POST /api/servers/{id}/backups/upload` accepts `application/octet-stream` with filename from `X-Backup-Filename` header; used by the TrueNAS dashboard migration feature.
 
@@ -104,7 +104,7 @@ All notable changes to WGSM (Windows Game Server Manager) are documented here.
 
 ### New Features
 - **File Manager** — `GET/POST/DELETE /api/servers/{id}/files` endpoints for browsing, uploading, and deleting server files.
-- **Config editor** — `GET/PATCH /api/servers/{id}/config` for reading and writing `WindowsGSM.cfg` values.
+- **Config editor** — `GET/PATCH /api/servers/{id}/config` for reading and writing `WGSM.cfg` values.
 - **Backup downloads** — `GET /api/backup/list` and `GET /api/backups/{file}` for downloading backup ZIPs.
 - Docker-style sidebar + card UI for the web dashboard.
 - Auto-refresh every 5 seconds on the server list.
@@ -216,7 +216,7 @@ All notable changes to WGSM (Windows Game Server Manager) are documented here.
 ## v1.0.21
 
 ### Changes
-- Program display name changed from **WindowsGSM** to **WGSM**.
+- Program display name changed from **WGSM** to **WGSM**.
 
 ---
 

@@ -1,0 +1,11 @@
+# ============================
+#   INFO WIDGETS (top bar)
+# ============================
+
+- type: resources
+  cpu: true
+  memory: true
+
+- type: search
+  provider: google
+  target: _blank

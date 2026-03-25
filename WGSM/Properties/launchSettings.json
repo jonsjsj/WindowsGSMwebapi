@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "WGSM": {
+      "commandName": "Project",
+      "workingDirectory": ".",
+      "nativeDebugging": true
+    }
+  }
+}

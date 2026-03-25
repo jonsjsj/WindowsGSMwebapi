@@ -1,7 +1,7 @@
 {
   "name": "wgsm-web",
   "version": "1.0.0",
-  "description": "WGSM.WEB — multi-instance WindowsGSM dashboard",
+  "description": "WGSM.WEB — multi-instance WGSM dashboard",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
