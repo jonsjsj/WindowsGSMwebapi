@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
-namespace WGSM.Functions
+namespace WindowsGSM.Functions
 {
     public class PluginMetadata
     {
@@ -63,12 +63,12 @@ namespace WGSM.Functions
                 FileName = Path.GetFileName(path)
             };
 
-            var compiler = new RoslynCompiler($"WGSM.Plugins.{Path.GetFileNameWithoutExtension(path)}", File.ReadAllText(path), new[] { typeof(Console), typeof(Console) }, pluginMetadata);
+            var compiler = new RoslynCompiler($"WindowsGSM.Plugins.{Path.GetFileNameWithoutExtension(path)}", File.ReadAllText(path), new[] { typeof(Console), typeof(Console) }, pluginMetadata);
             var type = compiler.Compile();
 
             try
             {
-                pluginMetadata.Type = shouldAwait ? await Task.Run(() => type.Assembly.GetType($"WGSM.Plugins.{Path.GetFileNameWithoutExtension(path)}")) : type.Assembly.GetType($"WGSM.Plugins.{Path.GetFileNameWithoutExtension(path)}");
+                pluginMetadata.Type = shouldAwait ? await Task.Run(() => type.Assembly.GetType($"WindowsGSM.Plugins.{Path.GetFileNameWithoutExtension(path)}")) : type.Assembly.GetType($"WindowsGSM.Plugins.{Path.GetFileNameWithoutExtension(path)}");
                 var plugin = GetPluginClass(pluginMetadata);
                 pluginMetadata.FullName = $"{plugin.FullName} [{pluginMetadata.FileName}]";
                 pluginMetadata.Plugin = plugin.Plugin;

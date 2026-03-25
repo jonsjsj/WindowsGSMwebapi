@@ -17,7 +17,7 @@ using System.Text;
 /// 
 /// </summary>
 
-namespace WGSM.GameServer.Engine
+namespace WindowsGSM.GameServer.Engine
 {
     public class Source
     {

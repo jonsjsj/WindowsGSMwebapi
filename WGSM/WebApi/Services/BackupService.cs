@@ -1,10 +1,10 @@
 using System;
 using System.IO;
 using System.IO.Compression;
-using WGSM.WebApi;
-using WGSM.WebApi.Models;
+using WindowsGSM.WebApi;
+using WindowsGSM.WebApi.Models;
 
-namespace WGSM.WebApi.Services
+namespace WindowsGSM.WebApi.Services
 {
     /// <summary>
     /// Creates ZIP backups of WGSM config/server files and copies them

@@ -5,9 +5,9 @@ using System.Windows;
 using System.Net;
 using Newtonsoft.Json.Linq;
 using System.Text.RegularExpressions;
-using WGSM.Functions;
+using WindowsGSM.Functions;
 
-namespace WGSM.GameServer
+namespace WindowsGSM.GameServer
 {
     class MC
     {

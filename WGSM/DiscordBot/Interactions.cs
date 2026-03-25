@@ -6,7 +6,7 @@ using Discord.WebSocket;
 using Discord.Interactions;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace WGSM.DiscordBot
+namespace WindowsGSM.DiscordBot
 {
     public class Interactions
     {

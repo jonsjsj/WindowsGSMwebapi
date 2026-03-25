@@ -5,9 +5,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
-using WGSM.Functions;
+using WindowsGSM.Functions;
 
-namespace WGSM.DiscordBot
+namespace WindowsGSM.DiscordBot
 {
     class Commands
     {

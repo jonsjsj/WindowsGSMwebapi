@@ -1,10 +1,10 @@
 using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using WGSM.WebApi.Models;
-using WGSM.WebApi.Services;
+using WindowsGSM.WebApi.Models;
+using WindowsGSM.WebApi.Services;
 
-namespace WGSM.WebApi.Middleware
+namespace WindowsGSM.WebApi.Middleware
 {
     /// <summary>
     /// Enforces the connection scope at the request level as a defence-in-depth layer.

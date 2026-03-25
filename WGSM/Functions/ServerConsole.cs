@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace WGSM.Functions
+namespace WindowsGSM.Functions
 {
     public class ServerConsole
     {

@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
-using WGSM.WebApi.Models;
-using WGSM.WebApi.Services;
+using WindowsGSM.WebApi.Models;
+using WindowsGSM.WebApi.Services;
 
-namespace WGSM.WebApi.Controllers
+namespace WindowsGSM.WebApi.Controllers
 {
     /// <summary>
     /// Exposes the job-polling endpoint for cloud backup operations.

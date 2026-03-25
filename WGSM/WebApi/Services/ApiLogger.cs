@@ -1,6 +1,6 @@
 using System;
 
-namespace WGSM.WebApi.Services
+namespace WindowsGSM.WebApi.Services
 {
     /// <summary>
     /// Shared logging sink that middleware and services write to.

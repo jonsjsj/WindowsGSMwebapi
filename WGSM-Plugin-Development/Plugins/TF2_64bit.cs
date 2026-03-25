@@ -2,10 +2,10 @@ using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
-using WGSM.Functions;
-using WGSM.GameServer.Engine;
+using WindowsGSM.Functions;
+using WindowsGSM.GameServer.Engine;
 
-namespace WGSM.Plugins
+namespace WindowsGSM.Plugins
 {
     public class TF2_64bit :SteamCMDAgent
     {

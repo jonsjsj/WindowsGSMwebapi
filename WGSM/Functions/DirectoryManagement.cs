@@ -2,7 +2,7 @@
 using System.IO;
 using System.Threading.Tasks;
 
-namespace WGSM.Functions
+namespace WindowsGSM.Functions
 {
     public static class DirectoryManagement
     {

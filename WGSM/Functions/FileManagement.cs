@@ -4,7 +4,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Threading.Tasks;
 
-namespace WGSM.Functions
+namespace WindowsGSM.Functions
 {
     public static class FileManagement
     {

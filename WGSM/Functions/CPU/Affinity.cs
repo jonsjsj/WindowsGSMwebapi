@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Text;
 
-namespace WGSM.Functions.CPU
+namespace WindowsGSM.Functions.CPU
 {
     static class Affinity
     {

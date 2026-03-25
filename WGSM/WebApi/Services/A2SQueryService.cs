@@ -4,7 +4,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace WGSM.WebApi.Services
+namespace WindowsGSM.WebApi.Services
 {
     /// <summary>
     /// Queries game servers using the A2S_INFO protocol (Source Engine query).

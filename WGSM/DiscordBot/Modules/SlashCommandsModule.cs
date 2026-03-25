@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Discord.Interactions;
-using WGSM.DiscordBot.Preconditions;
+using WindowsGSM.DiscordBot.Preconditions;
 
-namespace WGSM.DiscordBot.Modules
+namespace WindowsGSM.DiscordBot.Modules
 {
     [RequireAdmin]
     public class SlashCommandsModule : InteractionModuleBase<SocketInteractionContext>

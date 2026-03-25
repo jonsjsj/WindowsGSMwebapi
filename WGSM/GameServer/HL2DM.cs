@@ -1,4 +1,4 @@
-﻿namespace WGSM.GameServer
+﻿namespace WindowsGSM.GameServer
 {
     class HL2DM : Engine.Source
     {

@@ -3,7 +3,7 @@ using System.IO.Compression;
 using System.Net;
 using System.Threading.Tasks;
 
-namespace WGSM.GameServer.Addon
+namespace WindowsGSM.GameServer.Addon
 {
     class SourceMod
     {

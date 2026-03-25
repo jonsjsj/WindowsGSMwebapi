@@ -1,4 +1,4 @@
-﻿namespace WGSM.GameServer
+﻿namespace WindowsGSM.GameServer
 {
     class L4D2 : Engine.Source
     {

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Reflection;
 
-namespace WGSM
+namespace WindowsGSM
 {
     public class Program
     {

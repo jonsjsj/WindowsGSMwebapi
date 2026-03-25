@@ -1,4 +1,4 @@
-﻿namespace WGSM.DiscordBot
+﻿namespace WindowsGSM.DiscordBot
 {
     class AdminListItem
     {

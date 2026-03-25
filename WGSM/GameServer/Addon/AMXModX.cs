@@ -4,7 +4,7 @@ using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace WGSM.GameServer.Addon
+namespace WindowsGSM.GameServer.Addon
 {
     class AMXModX
     {

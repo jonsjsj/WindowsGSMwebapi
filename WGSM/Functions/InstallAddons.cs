@@ -5,7 +5,7 @@ using System.IO.Compression;
 using Newtonsoft.Json.Linq;
 using System.Linq;
 
-namespace WGSM.Functions
+namespace WindowsGSM.Functions
 {
     class InstallAddons
     {

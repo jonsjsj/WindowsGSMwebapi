@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics;
 
-namespace WGSM.Functions.CPU
+namespace WindowsGSM.Functions.CPU
 {
     static class Priority
     {

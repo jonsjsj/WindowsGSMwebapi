@@ -2,13 +2,13 @@
 using System.Diagnostics;
 using System.IO;
 using System;
-using WGSM.GameServer.Engine;
-using WGSM.Functions;
-using WGSM.GameServer.Query;
+using WindowsGSM.GameServer.Engine;
+using WindowsGSM.Functions;
+using WindowsGSM.GameServer.Query;
 using System.Threading;
 using System.Text;
 
-namespace WGSM.Plugins
+namespace WindowsGSM.Plugins
 {
     /// <summary>
     /// 

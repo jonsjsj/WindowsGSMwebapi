@@ -5,9 +5,9 @@ using System.IO;
 using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using WGSM.Functions;
+using WindowsGSM.Functions;
 
-namespace WGSM.GameServer
+namespace WindowsGSM.GameServer
 {
     class VTS
     {

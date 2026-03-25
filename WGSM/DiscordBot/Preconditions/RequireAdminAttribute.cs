@@ -3,7 +3,7 @@ using Discord.Interactions;
 using System;
 using System.Threading.Tasks;
 
-namespace WGSM.DiscordBot.Preconditions
+namespace WindowsGSM.DiscordBot.Preconditions
 {
     public class RequireAdminAttribute : PreconditionAttribute
     {

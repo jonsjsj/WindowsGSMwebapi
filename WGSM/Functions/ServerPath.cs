@@ -1,6 +1,6 @@
 ﻿using System.IO;
 
-namespace WGSM.Functions
+namespace WindowsGSM.Functions
 {
     public static class ServerPath
     {

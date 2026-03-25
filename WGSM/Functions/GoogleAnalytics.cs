@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 
 
-namespace WGSM.Functions
+namespace WindowsGSM.Functions
 {
 
     class GoogleAnalytics

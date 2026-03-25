@@ -2,7 +2,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 
-namespace WGSM.WebApi
+namespace WindowsGSM.WebApi
 {
     /// <summary>
     /// Provides the real executable directory.

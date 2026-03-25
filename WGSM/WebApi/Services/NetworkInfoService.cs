@@ -5,9 +5,9 @@ using System.Net.Http;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
-using WGSM.WebApi.Models;
+using WindowsGSM.WebApi.Models;
 
-namespace WGSM.WebApi.Services
+namespace WindowsGSM.WebApi.Services
 {
     /// <summary>
     /// Resolves the host's LAN IPv4 address and public IP.

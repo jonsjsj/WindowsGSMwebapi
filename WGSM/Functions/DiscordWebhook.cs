@@ -8,7 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Globalization;
 
-namespace WGSM.Functions
+namespace WindowsGSM.Functions
 {
     class DiscordWebhook
     {

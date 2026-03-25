@@ -4,10 +4,10 @@ using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using WGSM.Functions;
-using WGSM.GameServer.Engine;
+using WindowsGSM.Functions;
+using WindowsGSM.GameServer.Engine;
 
-namespace WGSM.GameServer
+namespace WindowsGSM.GameServer
 {
     class EGS :SteamCMDAgent
     {

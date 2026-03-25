@@ -1,4 +1,4 @@
-﻿namespace WGSM.GameServer
+﻿namespace WindowsGSM.GameServer
 {
     class TF2 : Engine.Source
     {

@@ -7,9 +7,9 @@ using System.Net;
 using System.Text.RegularExpressions;
 using System.Linq;
 using System.Text;
-using WGSM.Functions;
+using WindowsGSM.Functions;
 
-namespace WGSM.Installer
+namespace WindowsGSM.Installer
 {
     /// <summary>
     /// This script is very old, so it doesn't written in the best practice, but at least it works

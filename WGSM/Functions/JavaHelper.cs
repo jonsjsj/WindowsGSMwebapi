@@ -5,7 +5,7 @@ using System.Net;
 using System.IO;
 using System.Threading.Tasks;
 
-namespace WGSM.Functions
+namespace WindowsGSM.Functions
 {
     public class JavaHelper
     {

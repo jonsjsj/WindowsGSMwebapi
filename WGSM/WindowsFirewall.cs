@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using NetFwTypeLib;
 
-namespace WGSM
+namespace WindowsGSM
 {
     class WindowsFirewall
     {

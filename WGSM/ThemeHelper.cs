@@ -3,7 +3,7 @@ using System.Linq;
 using System.Windows;
 using ControlzEx.Theming;
 
-namespace WGSM
+namespace WindowsGSM
 {
     /// <summary>
     /// Swaps the WGSM colour-palette dictionary and the MahApps base theme in one call.

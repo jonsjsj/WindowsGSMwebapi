@@ -6,7 +6,7 @@ using System.Linq;
 using System.IO;
 using Microsoft.Win32;
 
-namespace WGSM
+namespace WindowsGSM
 {
     /// <summary>
     /// Interaction logic for App.xaml

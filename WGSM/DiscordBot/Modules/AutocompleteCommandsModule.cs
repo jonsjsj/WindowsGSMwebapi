@@ -5,10 +5,10 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
-using WGSM.DiscordBot.Preconditions;
+using WindowsGSM.DiscordBot.Preconditions;
 using System.Windows;
 
-namespace WGSM.DiscordBot.Modules
+namespace WindowsGSM.DiscordBot.Modules
 {
     [RequireAdmin]
     public class AutocompleteCommandsModule : InteractionModuleBase<SocketInteractionContext>

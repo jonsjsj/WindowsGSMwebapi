@@ -1,10 +1,10 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using WGSM.WebApi.Models;
-using WGSM.WebApi.Services;
+using WindowsGSM.WebApi.Models;
+using WindowsGSM.WebApi.Services;
 
-namespace WGSM.WebApi.Middleware
+namespace WindowsGSM.WebApi.Middleware
 {
     /// <summary>
     /// Validates the Authorization: Bearer {token} header on all /api/* requests.

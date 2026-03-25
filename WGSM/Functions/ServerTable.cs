@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using WGSM.GameServer.Query;
+using WindowsGSM.GameServer.Query;
 
-namespace WGSM.Functions
+namespace WindowsGSM.Functions
 {
     public class ServerTable
     {

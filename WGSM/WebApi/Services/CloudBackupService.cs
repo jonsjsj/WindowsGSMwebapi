@@ -9,10 +9,10 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using WGSM.WebApi;
-using WGSM.WebApi.Models;
+using WindowsGSM.WebApi;
+using WindowsGSM.WebApi.Models;
 
-namespace WGSM.WebApi.Services
+namespace WindowsGSM.WebApi.Services
 {
     /// <summary>
     /// Handles cloud backup jobs: creates a per-server ZIP archive and uploads it to

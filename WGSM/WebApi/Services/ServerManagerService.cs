@@ -5,10 +5,10 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
-using WGSM.Functions;
-using WGSM.WebApi.Models;
+using WindowsGSM.Functions;
+using WindowsGSM.WebApi.Models;
 
-namespace WGSM.WebApi.Services
+namespace WindowsGSM.WebApi.Services
 {
     /// <summary>
     /// Bridges the Web API into the existing WGSM server list.

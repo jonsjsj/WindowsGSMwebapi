@@ -1,4 +1,4 @@
-﻿namespace WGSM.Functions
+﻿namespace WindowsGSM.Functions
 {
     public class Plugin
     {

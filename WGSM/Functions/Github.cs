@@ -1,10 +1,10 @@
-﻿using System.Threading.Tasks;
+using System.Threading.Tasks;
 using System.IO;
 using System.Net;
 using System;
 using System.Collections.Generic;
 
-namespace WGSM.Functions
+namespace WindowsGSM.Functions
 {
     //Link: https://github.com/WGSM/Game-Server-Configs
 
@@ -24,7 +24,7 @@ namespace WGSM.Functions
             {
                 using (WebClient webClient = new WebClient())
                 {
-                    await webClient.DownloadFileTaskAsync($"https://github.com/WGSM/Game-Server-Configs/raw/master/{gameFullName.Replace(":", "")}/{System.IO.Path.GetFileName(filePath)}", filePath);
+                    await webClient.DownloadFileTaskAsync($"https://github.com/WindowsGSM/Game-Server-Configs/raw/master/{gameFullName.Replace(":", "")}/{System.IO.Path.GetFileName(filePath)}", filePath);
                 }
             }
             catch (Exception e)
@@ -59,7 +59,7 @@ namespace WGSM.Functions
                 // Download config file from github
                 using (WebClient webClient = new WebClient())
                 {
-                    await webClient.DownloadFileTaskAsync($"https://github.com/WGSM/Game-Server-Configs/raw/master/{serverGame.Replace(":", "")}/{Path.GetFileName(configPath)}", configPath);
+                    await webClient.DownloadFileTaskAsync($"https://github.com/WindowsGSM/Game-Server-Configs/raw/master/{serverGame.Replace(":", "")}/{Path.GetFileName(configPath)}", configPath);
                 }
 
                 // Replace values

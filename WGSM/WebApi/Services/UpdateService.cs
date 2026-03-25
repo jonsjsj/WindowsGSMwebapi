@@ -4,9 +4,9 @@ using System.IO;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Windows;
-using WGSM.WebApi;
+using WindowsGSM.WebApi;
 
-namespace WGSM.WebApi.Services
+namespace WindowsGSM.WebApi.Services
 {
     /// <summary>
     /// Checks GitHub Releases for a newer version of WGSM+WebAPI
@@ -16,7 +16,7 @@ namespace WGSM.WebApi.Services
     public class UpdateService
     {
         private const string GitHubOwner = "jonsjsj";
-        private const string GitHubRepo  = "WGSMwebapi";
+        private const string GitHubRepo  = "WindowsGSMwebapi";
 
         private readonly ServerManagerService _serverManager;
 

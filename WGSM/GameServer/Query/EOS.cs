@@ -8,7 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 
-namespace WGSM.GameServer.Query
+namespace WindowsGSM.GameServer.Query
 {
     public class EOS : IDisposable
     {

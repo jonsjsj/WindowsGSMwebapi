@@ -2,7 +2,7 @@
 using System.Windows;
 using MahApps.Metro.Controls.Dialogs;
 
-namespace WGSM.Functions
+namespace WindowsGSM.Functions
 {
     public static class UI
     {

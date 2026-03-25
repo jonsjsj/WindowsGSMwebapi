@@ -2,11 +2,11 @@
 using System.Text;
 using System.Diagnostics;
 using System.Threading.Tasks;
-using WGSM.Functions;
-using WGSM.GameServer.Engine;
-using WGSM.GameServer.Query;
+using WindowsGSM.Functions;
+using WindowsGSM.GameServer.Engine;
+using WindowsGSM.GameServer.Query;
 
-namespace WGSM.Plugins
+namespace WindowsGSM.Plugins
 {
     public class Skeleton_SteamCMDAgent : SteamCMDAgent
     {

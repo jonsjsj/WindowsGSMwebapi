@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 
-namespace WGSM.Functions
+namespace WindowsGSM.Functions
 {
     class BackupConfig
     {

@@ -2,7 +2,7 @@
 using System.Diagnostics;
 using System.IO;
 
-namespace WGSM.GameServer
+namespace WindowsGSM.GameServer
 {
     class SW
     {

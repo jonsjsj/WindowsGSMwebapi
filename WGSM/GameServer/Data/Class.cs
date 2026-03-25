@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
-using WGSM.Functions;
+using WindowsGSM.Functions;
 
-namespace WGSM.GameServer.Data
+namespace WindowsGSM.GameServer.Data
 {
     static class Class
     {

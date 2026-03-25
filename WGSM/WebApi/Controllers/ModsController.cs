@@ -5,9 +5,9 @@ using System.IO.Compression;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using WGSM.Functions;
+using WindowsGSM.Functions;
 
-namespace WGSM.WebApi.Controllers
+namespace WindowsGSM.WebApi.Controllers
 {
     [ApiController]
     public class ModsController : ControllerBase

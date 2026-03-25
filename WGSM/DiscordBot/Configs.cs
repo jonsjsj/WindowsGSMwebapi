@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using WGSM.Functions;
+using WindowsGSM.Functions;
 
-namespace WGSM.DiscordBot
+namespace WindowsGSM.DiscordBot
 {
     static class Configs
     {

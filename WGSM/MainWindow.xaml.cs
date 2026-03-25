@@ -2,8 +2,8 @@
 using LiveCharts;
 using LiveCharts.Wpf;
 using MahApps.Metro.Controls;
-using WGSM.WebApi.Models;
-using WGSM.WebApi.Services;
+using WindowsGSM.WebApi.Models;
+using WindowsGSM.WebApi.Services;
 using MahApps.Metro.Controls.Dialogs;
 using Microsoft.Win32;
 using NCrontab;
@@ -30,14 +30,14 @@ using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using WGSM.DiscordBot;
-using WGSM.Functions;
-using WGSM.GameServer.Query;
+using WindowsGSM.DiscordBot;
+using WindowsGSM.Functions;
+using WindowsGSM.GameServer.Query;
 using Label = System.Windows.Controls.Label;
 using MessageBox = System.Windows.MessageBox;
 using Orientation = System.Windows.Controls.Orientation;
 
-namespace WGSM
+namespace WindowsGSM
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml

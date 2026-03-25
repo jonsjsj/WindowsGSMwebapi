@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace WGSM.Properties {
+namespace WindowsGSM.Properties {
     using System;
     
     

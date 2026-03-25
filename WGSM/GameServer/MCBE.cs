@@ -7,9 +7,9 @@ using System.Text.RegularExpressions;
 using System.Windows;
 using System.Collections.Generic;
 using System;
-using WGSM.Functions;
+using WindowsGSM.Functions;
 
-namespace WGSM.GameServer
+namespace WindowsGSM.GameServer
 {
     class MCBE
     {

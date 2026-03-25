@@ -1,9 +1,9 @@
 using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using WGSM.WebApi.Services;
+using WindowsGSM.WebApi.Services;
 
-namespace WGSM.WebApi.Middleware
+namespace WindowsGSM.WebApi.Middleware
 {
     /// <summary>
     /// Logs every HTTP request: method, path, remote IP, response code, and elapsed time.

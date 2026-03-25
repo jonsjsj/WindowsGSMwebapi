@@ -5,11 +5,11 @@ using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using WGSM.Functions;
-using WGSM.GameServer.Query;
+using WindowsGSM.Functions;
+using WindowsGSM.GameServer.Query;
 using Newtonsoft.Json.Linq;
 
-namespace WGSM.Plugins
+namespace WindowsGSM.Plugins
 {
     public class NewPlugin
     {

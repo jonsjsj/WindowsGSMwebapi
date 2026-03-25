@@ -6,9 +6,9 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using WGSM.WebApi.Models;
+using WindowsGSM.WebApi.Models;
 
-namespace WGSM.WebApi.Controllers
+namespace WindowsGSM.WebApi.Controllers
 {
     /// <summary>
     /// Handles the OAuth 2.0 authorization-code flow for Google Drive and OneDrive.

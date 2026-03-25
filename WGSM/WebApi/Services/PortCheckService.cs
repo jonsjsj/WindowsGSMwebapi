@@ -2,7 +2,7 @@ using System;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 
-namespace WGSM.WebApi.Services
+namespace WindowsGSM.WebApi.Services
 {
     /// <summary>
     /// Checks whether a TCP port is reachable within a 1-second timeout.

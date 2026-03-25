@@ -2,7 +2,7 @@
 using System.IO;
 using System.Threading.Tasks;
 
-namespace WGSM.GameServer
+namespace WindowsGSM.GameServer
 {
     /// <summary>
     /// Barotrauma's console not working on Embed console

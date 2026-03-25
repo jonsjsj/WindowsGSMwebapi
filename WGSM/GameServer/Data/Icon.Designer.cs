@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace WGSM.GameServer.Data {
+namespace WindowsGSM.GameServer.Data {
     using System;
     
     

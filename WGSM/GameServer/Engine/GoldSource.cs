@@ -3,7 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Text;
 
-namespace WGSM.GameServer.Engine
+namespace WindowsGSM.GameServer.Engine
 {
     public class GoldSource
     {

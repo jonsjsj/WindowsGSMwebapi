@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
-using WGSM.WebApi;
+using WindowsGSM.WebApi;
 
-namespace WGSM.WebApi.Controllers
+namespace WindowsGSM.WebApi.Controllers
 {
     /// <summary>
     /// Serves the single-page frontend app for any /ui/* request.

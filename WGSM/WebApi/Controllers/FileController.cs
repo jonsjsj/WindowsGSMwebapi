@@ -4,10 +4,10 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using WGSM.Functions;
-using WGSM.WebApi.Models;
+using WindowsGSM.Functions;
+using WindowsGSM.WebApi.Models;
 
-namespace WGSM.WebApi.Controllers
+namespace WindowsGSM.WebApi.Controllers
 {
     /// <summary>
     /// Exposes the game server's serverfiles directory for browsing, reading and writing.

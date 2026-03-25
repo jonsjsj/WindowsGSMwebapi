@@ -5,9 +5,9 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using WGSM.WebApi.Models;
+using WindowsGSM.WebApi.Models;
 
-namespace WGSM.WebApi.Controllers
+namespace WindowsGSM.WebApi.Controllers
 {
     /// <summary>
     /// Provides AES-256-CBC encrypted export and import of the Web API config file

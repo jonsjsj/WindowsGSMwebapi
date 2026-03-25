@@ -16,7 +16,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 
-namespace WGSM.UI
+namespace WindowsGSM.UI
 {
     public partial class PortsPanel : UserControl
     {

@@ -1,13 +1,13 @@
 ﻿using System.Threading.Tasks;
 using System.Diagnostics;
 using System.IO;
-using WGSM.GameServer.Engine;
-using WGSM.Functions;
+using WindowsGSM.GameServer.Engine;
+using WindowsGSM.Functions;
 using System.Text;
 using System.Collections.Generic;
 using System;
 
-namespace WGSM.Plugins
+namespace WindowsGSM.Plugins
 {
     //https://www.reddit.com/r/dayz/comments/afad51/automatically_update_and_sync_your_steam_workshop/
     public class DayZAuto : SteamCMDAgent

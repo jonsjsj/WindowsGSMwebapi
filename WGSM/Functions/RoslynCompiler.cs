@@ -8,7 +8,7 @@ using System.Runtime.Loader;
 using System;
 using ICSharpCode.SharpZipLib.Zip;
 using System.Text;
-using WGSM.Functions;
+using WindowsGSM.Functions;
 using Microsoft.Extensions.DependencyModel;
 
 public class RoslynCompiler

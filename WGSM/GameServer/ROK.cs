@@ -6,7 +6,7 @@ using System.IO;
 /// ROK server has a Server.exe which is good. But redirect standard input fail
 /// </summary>
 
-namespace WGSM.GameServer
+namespace WindowsGSM.GameServer
 {
     class ROK : Engine.Unity
     {

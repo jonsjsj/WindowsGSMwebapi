@@ -5,7 +5,7 @@ using System.IO.Compression;
 using System.Net;
 using System.Text.RegularExpressions;
 
-namespace WGSM.GameServer
+namespace WindowsGSM.GameServer
 {
     class MCPE
     {

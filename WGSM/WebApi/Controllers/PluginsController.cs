@@ -7,10 +7,10 @@ using System.Reflection;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using WGSM.WebApi;
-using WGSM.WebApi.Services;
+using WindowsGSM.WebApi;
+using WindowsGSM.WebApi.Services;
 
-namespace WGSM.WebApi.Controllers
+namespace WindowsGSM.WebApi.Controllers
 {
     [ApiController]
     public class PluginsController : ControllerBase

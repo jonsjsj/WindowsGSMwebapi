@@ -5,7 +5,7 @@ using System.Management;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 
-namespace WGSM.Functions
+namespace WindowsGSM.Functions
 {
     static class ProcessManagement
     {

@@ -1,15 +1,15 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
-using WGSM.Functions;
-using WGSM.GameServer.Query;
-using WGSM.GameServer.Engine;
+using WindowsGSM.Functions;
+using WindowsGSM.GameServer.Query;
+using WindowsGSM.GameServer.Engine;
 using System.IO;
 using Newtonsoft.Json;
 using System.Text;
 using System.Threading;
 
-namespace WGSM.Plugins
+namespace WindowsGSM.Plugins
 {
     public class NuclearDawn : SteamCMDAgent
     {

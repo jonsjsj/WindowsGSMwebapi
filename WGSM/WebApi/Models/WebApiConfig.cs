@@ -4,9 +4,9 @@ using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using WGSM.WebApi;
+using WindowsGSM.WebApi;
 
-namespace WGSM.WebApi.Models
+namespace WindowsGSM.WebApi.Models
 {
     public enum ConnectionScope { LocalOnly = 0, LAN = 1, External = 2 }
 

@@ -9,10 +9,10 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using Microsoft.Win32;
-using WGSM.WebApi.Models;
-using WGSM.WebApi.Services;
+using WindowsGSM.WebApi.Models;
+using WindowsGSM.WebApi.Services;
 
-namespace WGSM.UI
+namespace WindowsGSM.UI
 {
     public partial class WebApiSettingsPanel : UserControl
     {

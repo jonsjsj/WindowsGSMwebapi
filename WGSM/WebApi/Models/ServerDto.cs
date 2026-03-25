@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace WGSM.WebApi.Models
+namespace WindowsGSM.WebApi.Models
 {
     public class ServerDto
     {

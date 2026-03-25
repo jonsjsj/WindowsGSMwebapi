@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 
-namespace WGSM.Functions
+namespace WindowsGSM.Functions
 {
     static class ServerCache
     {

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace WGSM.GameServer.Query
+namespace WindowsGSM.GameServer.Query
 {
     public interface QueryTemplate
     {

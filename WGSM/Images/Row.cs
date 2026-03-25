@@ -1,4 +1,4 @@
-﻿namespace WGSM.Images
+﻿namespace WindowsGSM.Images
 {
     class Row
     {

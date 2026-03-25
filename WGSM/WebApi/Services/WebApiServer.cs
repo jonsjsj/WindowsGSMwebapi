@@ -1,7 +1,7 @@
 using System;
 using System.IO;
 using System.Security.Cryptography.X509Certificates;
-using WGSM.WebApi;
+using WindowsGSM.WebApi;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
@@ -9,12 +9,12 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using WGSM.WebApi.Controllers;
-using WGSM.WebApi.Middleware;
-using WGSM.WebApi.Models;
-using WGSM.WebApi.Services;
+using WindowsGSM.WebApi.Controllers;
+using WindowsGSM.WebApi.Middleware;
+using WindowsGSM.WebApi.Models;
+using WindowsGSM.WebApi.Services;
 
-namespace WGSM.WebApi.Services
+namespace WindowsGSM.WebApi.Services
 {
     /// <summary>
     /// Hosts the ASP.NET Core Kestrel server inside the existing WPF process.

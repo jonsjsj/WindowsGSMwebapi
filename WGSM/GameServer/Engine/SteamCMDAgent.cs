@@ -2,7 +2,7 @@
 using System.Diagnostics;
 using System.IO;
 
-namespace WGSM.GameServer.Engine
+namespace WindowsGSM.GameServer.Engine
 {
     public class SteamCMDAgent
     {

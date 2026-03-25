@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using static WGSM.MainWindow;
 
-namespace WGSM.Functions
+namespace WindowsGSM.Functions
 {
     public enum CrontabType
     {

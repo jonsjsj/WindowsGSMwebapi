@@ -5,9 +5,9 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
-using WGSM.Functions;
+using WindowsGSM.Functions;
 
-namespace WGSM.GameServer.Query
+namespace WindowsGSM.GameServer.Query
 {
     public class A2S: QueryTemplate
     {

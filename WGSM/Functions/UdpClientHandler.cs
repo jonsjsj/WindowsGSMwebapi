@@ -4,7 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 
-namespace WGSM.Functions
+namespace WindowsGSM.Functions
 {
     /// <summary>
     /// UDP client utils

@@ -13,9 +13,9 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
-using WGSM.WebApi.Services;
+using WindowsGSM.WebApi.Services;
 
-namespace WGSM.UI
+namespace WindowsGSM.UI
 {
     public partial class AppSettingsPanel : UserControl
     {
