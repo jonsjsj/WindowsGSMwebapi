@@ -1586,7 +1586,13 @@ async function runMigration(mode) {
 // ── Changelog view ─────────────────────────────────────────────────────────
 function renderChangelog() {
     const releases = [
-      { version:'v1.0.35', date:'2026-03-22', title:'Config Management, File Editor, Templates & Migration',
+      { version:'v1.0.36', date:'2026-04-26', title:'Password & Port Fields, Delete Server',
+        items:[
+          ['new','<strong>Password field</strong> — install form now accepts an optional server password forwarded to the truenas-gsm backend at install time'],
+          ['new','<strong>Game Port &amp; Query Port fields</strong> — specify ports explicitly during install; leave blank for automatic assignment from the backend port pool (27000–27500 range)'],
+          ['new','<strong>Delete server button</strong> — each server card now has a 🗑 Delete button that calls the API and removes the card from the UI on success'],
+        ]},
+      { version:'v1.0.35', date:'2026-03-22', title:'Config Management, File Editor, Templates & Migration', date:'2026-03-22', title:'Config Management, File Editor, Templates & Migration',
         items:[
           ['new','<strong>Server Config Editor</strong> — edit WGSM server settings (name, ports, players, auto-start, Discord) directly in the dashboard via ⚙ Config button on each server card'],
           ['new','<strong>File Browser &amp; Editor</strong> — browse, edit and save server config files (INI, JSON, YAML, CFG, etc.) and download any file via 📁 Files button'],
