@@ -1123,6 +1123,7 @@ function serverCard(inst, s, d) {
     <button class="btn-action btn-logs"    onclick="openLogModal('${inst.id}','${s.id}','${esc(s.name)}')">≡ Logs</button>
     <button class="btn-action" style="color:var(--accent)"       onclick="openServerConfig('${inst.id}','${s.id}','${esc(s.name)}')">⚙ Config</button>
     <button class="btn-action" style="color:var(--muted)"        onclick="openFileEditor('${inst.id}','${s.id}','${esc(s.name)}')">📁 Files</button>
+    <button class="btn-action" style="color:var(--red);margin-left:auto" onclick="deleteServer('${inst.id}','${s.id}','${esc(s.name)}')">🗑 Delete</button>
   </div>
   <div class="card-fb" id="fb-${inst.id}-${s.id}"></div>
 </div>`;
@@ -1148,6 +1149,24 @@ async function serverAction(instanceId, serverId, cmd) {
         await fetchInstance(state.instances.find(i => i.id === instanceId));
         renderView();
     }, 1500);
+}
+
+
+async function deleteServer(instanceId, serverId, serverName) {
+    if (!confirm(`Delete server "${serverName}"?\n\nThis cannot be undone.`)) return;
+    const fb   = document.getElementById(`fb-${instanceId}-${serverId}`);
+    const card = document.getElementById(`card-${instanceId}-${serverId}`);
+    if (fb) fb.textContent = 'Deleting…';
+    card?.querySelectorAll('button').forEach(b => b.disabled = true);
+    const { ok, data } = await proxyDelete(instanceId, `api/servers/${serverId}`);
+    if (!ok) {
+        if (fb) fb.textContent = data?.message ?? 'Delete failed.';
+        card?.querySelectorAll('button').forEach(b => b.disabled = false);
+        return;
+    }
+    card?.remove();
+    await fetchInstance(state.instances.find(i => i.id === instanceId));
+    renderView();
 }
 
 // ── Log modal ──────────────────────────────────────────────────────────────
@@ -1710,6 +1729,18 @@ ${!onlineInsts.length ? '<div class="hint hint-orange">No online instances. Add 
       <label>Server Name</label>
       <input id="inst-name" placeholder="My Game Server" style="width:100%;background:var(--bg);border:1px solid var(--border);border-radius:5px;color:var(--text);padding:7px 10px;font-size:12px;outline:none;font-family:inherit"/>
     </div>
+    <div class="form-field">
+      <label>Password <span style="color:var(--muted);font-weight:400">(optional)</span></label>
+      <input id="inst-password" type="password" placeholder="Leave blank for no password" style="width:100%;background:var(--bg);border:1px solid var(--border);border-radius:5px;color:var(--text);padding:7px 10px;font-size:12px;outline:none;font-family:inherit"/>
+    </div>
+    <div class="form-field">
+      <label>Game Port</label>
+      <input id="inst-port" type="number" placeholder="27015 (auto if blank)" style="width:100%;background:var(--bg);border:1px solid var(--border);border-radius:5px;color:var(--text);padding:7px 10px;font-size:12px;outline:none;font-family:inherit"/>
+    </div>
+    <div class="form-field">
+      <label>Query Port</label>
+      <input id="inst-query-port" type="number" placeholder="27016 (auto if blank)" style="width:100%;background:var(--bg);border:1px solid var(--border);border-radius:5px;color:var(--text);padding:7px 10px;font-size:12px;outline:none;font-family:inherit"/>
+    </div>
     <div class="form-field form-full">
       <label>Game</label>
       <input id="inst-game-search" placeholder="Search games…" oninput="filterInstallGames()" style="width:100%;background:var(--bg);border:1px solid var(--border);border-radius:5px;color:var(--text);padding:7px 10px;font-size:12px;outline:none;font-family:inherit;margin-bottom:6px"/>
@@ -1772,7 +1803,10 @@ function filterInstallGames() {
 async function startInstall() {
     const instId  = document.getElementById('inst-inst-sel')?.value;
     const game    = document.getElementById('inst-game-sel')?.value;
-    const name    = document.getElementById('inst-name')?.value?.trim() || game;
+    const name      = document.getElementById('inst-name')?.value?.trim() || game;
+    const password  = document.getElementById('inst-password')?.value?.trim() || '';
+    const port      = parseInt(document.getElementById('inst-port')?.value) || null;
+    const queryPort = parseInt(document.getElementById('inst-query-port')?.value) || null;
     const btn     = document.getElementById('inst-btn');
     const status  = document.getElementById('inst-status');
     const logWrap = document.getElementById('inst-log-wrap');
@@ -1787,7 +1821,7 @@ async function startInstall() {
     logEl.textContent = '';
     installJobId = null;
 
-    const { ok, data } = await proxyPost(instId, 'api/servers/install', { game, serverName: name });
+    const { ok, data } = await proxyPost(instId, 'api/servers/install', { game, serverName: name, password, port, queryPort });
     if (!ok) {
         status.style.color = 'var(--red)';
         status.textContent = '✗ ' + (data?.message ?? 'Failed to start install');

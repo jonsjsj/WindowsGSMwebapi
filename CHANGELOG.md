@@ -7,6 +7,9 @@ All notable changes to WGSM (Windows Game Server Manager) are documented here.
 ## v1.0.47 — Unreleased
 
 ### New Features
+- **Dashboard: Password field** — install form now includes an optional password field; value is forwarded as `password` in the `POST /api/servers/install` body so the truenas-gsm backend can pass it to the game server at launch.
+- **Dashboard: Game Port / Query Port fields** — install form exposes explicit Game Port and Query Port inputs; both are sent in the install payload and are left blank for auto-assignment by the backend port-pool logic.
+- **Dashboard: Delete server** — server cards now have a 🗑 Delete button; clicking it confirms via dialog then calls `DELETE /api/servers/{id}` through the existing `proxyDelete` helper and removes the card from the UI on success.
 - **Port Monitor panel** — new HamburgerMenu item showing all game server, Web API, and Docker ports with live local-listen and external-reachability checks (portchecker.co for TCP, Docker `docker ps` for container ports).
 - **Auto-Start Servers in Settings** — Startup tab now lists every configured game server with a per-server auto-start toggle; changes write to `WGSM.cfg` immediately.
 - **Server Lock (password protection)** — optional password gate on the Start and Edit Config actions; SHA-256 hash stored in registry under `ServerLockEnabled` / `ServerLockHash`.
