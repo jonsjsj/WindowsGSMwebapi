@@ -1,0 +1,23 @@
+services:
+  truenas-gsm:
+    build: .
+    container_name: truenas-gsm
+    restart: unless-stopped
+    ports:
+      - "7880:7876"         # 7880 externally so it doesn't clash with Windows GSM instances
+    environment:
+      - PORT=7876
+      - HOST_NAME=truenas-gsm
+      - API_TOKEN=changeme  # ← change this — must match token in wgsm-web instances.json
+      - DATA_DIR=/data
+      - DATA_ROOT=/gameservers
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock   # control sibling containers
+      - /mnt/nvme/apps/truenas-gsm/data:/data        # servers.json + backups
+      - /mnt/nvme/apps/truenas-gsm/gameservers:/gameservers  # per-server data dirs
+    networks:
+      - gsm-net
+
+networks:
+  gsm-net:
+    driver: bridge

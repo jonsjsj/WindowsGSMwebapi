@@ -1,0 +1,9 @@
+{
+  "name": "truenas-gsm",
+  "version": "1.0.0",
+  "description": "Docker-native Linux game server manager — compatible with wgsm-web dashboard",
+  "main": "server.js",
+  "scripts": { "start": "node server.js" },
+  "dependencies": { "express": "^4.19.2" },
+  "engines": { "node": ">=18" }
+}

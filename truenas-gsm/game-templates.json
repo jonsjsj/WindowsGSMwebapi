@@ -1,0 +1,267 @@
+[
+  {
+    "id": "minecraft-java",
+    "game": "Minecraft Java",
+    "image": "itzg/minecraft-server:latest",
+    "defaultPort": 25565,
+    "defaultQueryPort": 25565,
+    "defaultMaxPlayers": 20,
+    "ports": [
+      "__game__/tcp",
+      "__game__/udp"
+    ],
+    "defaultEnv": {
+      "EULA": "TRUE",
+      "TYPE": "VANILLA",
+      "VERSION": "LATEST",
+      "MEMORY": "2G",
+      "ENABLE_RCON": "true",
+      "RCON_PASSWORD": "rconpass",
+      "RCON_PORT": "25575"
+    },
+    "extraArgs": "-p 25575:25575",
+    "consoleExec": "rcon-cli --password rconpass",
+    "notes": "Supports VANILLA, FORGE, FABRIC, PAPER, PURPUR via TYPE env var.",
+    "fileRoot": "/data"
+  },
+  {
+    "id": "minecraft-bedrock",
+    "game": "Minecraft Bedrock",
+    "image": "itzg/minecraft-bedrock-server:latest",
+    "defaultPort": 19132,
+    "defaultQueryPort": 19132,
+    "defaultMaxPlayers": 20,
+    "ports": [
+      "__game__/udp"
+    ],
+    "defaultEnv": {
+      "EULA": "TRUE",
+      "SERVER_NAME": "Bedrock Server",
+      "DIFFICULTY": "normal",
+      "GAMEMODE": "survival"
+    },
+    "consoleExec": null,
+    "notes": "Official Bedrock dedicated server.",
+    "fileRoot": "/data"
+  },
+  {
+    "id": "valheim",
+    "game": "Valheim",
+    "image": "lloesche/valheim-server:latest",
+    "defaultPort": 2456,
+    "defaultQueryPort": 2457,
+    "defaultMaxPlayers": 10,
+    "ports": [
+      "2456-2457/udp"
+    ],
+    "defaultEnv": {
+      "SERVER_NAME": "Valheim Server",
+      "SERVER_PORT": "2456",
+      "WORLD_NAME": "Dedicated",
+      "SERVER_PASS": "secret",
+      "SERVER_PUBLIC": "false",
+      "BEPINEX": "false"
+    },
+    "consoleExec": null,
+    "notes": "~1GB SteamCMD auto-install on first launch.",
+    "fileRoot": "/config"
+  },
+  {
+    "id": "terraria",
+    "game": "Terraria",
+    "image": "ryshe/terraria:latest",
+    "defaultPort": 7777,
+    "defaultQueryPort": 7777,
+    "defaultMaxPlayers": 8,
+    "ports": [
+      "__game__/tcp"
+    ],
+    "defaultEnv": {
+      "WORLD": "world1",
+      "MAXPLAYERS": "8",
+      "PASSWORD": "",
+      "DIFFICULTY": "0",
+      "AUTOCREATE": "2"
+    },
+    "consoleExec": null,
+    "notes": "Terraria vanilla dedicated server.",
+    "fileRoot": "/world"
+  },
+  {
+    "id": "factorio",
+    "game": "Factorio",
+    "image": "factoriotools/factorio:stable",
+    "defaultPort": 34197,
+    "defaultQueryPort": 34197,
+    "defaultMaxPlayers": 10,
+    "ports": [
+      "__game__/udp"
+    ],
+    "defaultEnv": {
+      "LOAD_LATEST_SAVE": "true",
+      "GENERATE_NEW_SAVE": "true",
+      "SAVE_NAME": "new-map"
+    },
+    "consoleExec": null,
+    "notes": "Saves in /data/saves.",
+    "fileRoot": "/factorio"
+  },
+  {
+    "id": "cs2",
+    "game": "Counter-Strike 2",
+    "image": "joedwards32/cs2:latest",
+    "defaultPort": 27015,
+    "defaultQueryPort": 27015,
+    "defaultMaxPlayers": 10,
+    "ports": [
+      "__game__/tcp",
+      "__game__/udp"
+    ],
+    "defaultEnv": {
+      "CS2_SERVERNAME": "CS2 Server",
+      "CS2_GAMETYPE": "0",
+      "CS2_GAMEMODE": "1",
+      "CS2_MAPGROUP": "mg_active",
+      "CS2_STARTMAP": "de_dust2",
+      "CS2_MAXPLAYERS": "10",
+      "CS2_PW": ""
+    },
+    "consoleExec": null,
+    "notes": "~15GB download on first start.",
+    "fileRoot": "/home/steam/cs2-dedicated"
+  },
+  {
+    "id": "palworld",
+    "game": "Palworld",
+    "image": "thijsvanloef/palworld-server-docker:latest",
+    "defaultPort": 8211,
+    "defaultQueryPort": 27015,
+    "defaultMaxPlayers": 32,
+    "ports": [
+      "8211/udp",
+      "27015/udp"
+    ],
+    "defaultEnv": {
+      "PLAYERS": "32",
+      "SERVER_PASSWORD": "",
+      "ADMIN_PASSWORD": "adminpass",
+      "MULTITHREADING": "true",
+      "COMMUNITY": "false",
+      "SERVER_NAME": "Palworld Server",
+      "SERVER_DESCRIPTION": "TrueNAS GSM"
+    },
+    "consoleExec": null,
+    "notes": "~10GB on first launch.",
+    "fileRoot": "/palworld"
+  },
+  {
+    "id": "satisfactory",
+    "game": "Satisfactory",
+    "image": "wolveix/satisfactory-server:latest",
+    "defaultPort": 7777,
+    "defaultQueryPort": 15777,
+    "defaultMaxPlayers": 4,
+    "ports": [
+      "7777/udp",
+      "15000/udp",
+      "15777/udp"
+    ],
+    "defaultEnv": {
+      "MAXPLAYERS": "4",
+      "PGID": "1000",
+      "PUID": "1000",
+      "STEAMBETA": "false"
+    },
+    "consoleExec": null,
+    "notes": "~10GB download.",
+    "fileRoot": "/config"
+  },
+  {
+    "id": "rust",
+    "game": "Rust",
+    "image": "didstopia/rust-server:latest",
+    "defaultPort": 28015,
+    "defaultQueryPort": 28016,
+    "defaultMaxPlayers": 100,
+    "ports": [
+      "28015/tcp",
+      "28015/udp",
+      "28016/tcp",
+      "8080/tcp"
+    ],
+    "defaultEnv": {
+      "RUST_SERVER_NAME": "Rust Server",
+      "RUST_SERVER_SEED": "12345",
+      "RUST_SERVER_WORLDSIZE": "4000",
+      "RUST_SERVER_MAXPLAYERS": "100",
+      "RUST_RCON_PASSWORD": "rconpass",
+      "RUST_RCON_PORT": "28016"
+    },
+    "consoleExec": null,
+    "notes": "~10GB download.",
+    "fileRoot": "/steamcmd/rust"
+  },
+  {
+    "id": "ark",
+    "game": "ARK: Survival Evolved",
+    "image": "hermsi/ark-server:latest",
+    "defaultPort": 7777,
+    "defaultQueryPort": 27015,
+    "defaultMaxPlayers": 10,
+    "ports": [
+      "7777-7778/udp",
+      "27015/udp"
+    ],
+    "defaultEnv": {
+      "SESSION_NAME": "ARK Server",
+      "MAX_PLAYERS": "10",
+      "SERVER_MAP": "TheIsland",
+      "SERVER_PASSWORD": "",
+      "ADMIN_PASSWORD": "adminpass",
+      "ENABLE_EPIC": "false"
+    },
+    "consoleExec": null,
+    "notes": "~50GB download.",
+    "fileRoot": "/ark"
+  },
+  {
+    "id": "enshrouded",
+    "game": "Enshrouded",
+    "image": "mornedhels/enshrouded-server:latest",
+    "defaultPort": 15636,
+    "defaultQueryPort": 15637,
+    "defaultMaxPlayers": 16,
+    "ports": [
+      "15636/udp",
+      "15637/udp"
+    ],
+    "defaultEnv": {
+      "SERVER_NAME": "Enshrouded Server",
+      "SERVER_PASSWORD": "",
+      "SERVER_SLOT_COUNT": "16",
+      "SERVER_IP": "0.0.0.0"
+    },
+    "extraArgs": "",
+    "consoleExec": null,
+    "notes": "~8GB download on first start. Requires ~16GB RAM for full map.",
+    "fileRoot": "/opt/enshrouded/server"
+  },
+  {
+    "id": "linuxgsm",
+    "game": "LinuxGSM Generic",
+    "image": "gameservermanagers/linuxgsm:latest",
+    "defaultPort": 27015,
+    "defaultQueryPort": 27015,
+    "defaultMaxPlayers": 20,
+    "ports": [
+      "__game__/tcp",
+      "__game__/udp"
+    ],
+    "defaultEnv": {
+      "LGSM_GAMESERVER": "csgoserver"
+    },
+    "consoleExec": null,
+    "notes": "Set LGSM_GAMESERVER to any LinuxGSM game ID (mcserver, csgoserver, etc).",
+    "fileRoot": "/data"
+  }
+]
