@@ -835,7 +835,7 @@ function renderPlugins() {
     return `
 <div class="section-row">
   <span class="section-title">Plugin Browser</span>
-  <span style="font-size:11px;color:var(--muted)">Curated registry — ${pluginState.available.length || '…'} plugins</span>
+  <span style="font-size:11px;color:var(--muted)">Curated registry — <span id="plugin-reg-count">${pluginState.available.length || '…'}</span> plugins</span>
 </div>
 ${!inst ? '<div class="hint hint-orange">⚠ No online WGSM instance — add one in Instances first.</div>' : ''}
 
@@ -876,6 +876,8 @@ async function loadPlugins() {
     // Available list comes from the inline registry — always 87 plugins,
     // no network call, no server restart needed.
     pluginState.available = PLUGIN_REGISTRY;
+    const _countEl = document.getElementById('plugin-reg-count');
+    if (_countEl) _countEl.textContent = PLUGIN_REGISTRY.length;
     pluginState.byFileName = {};
     PLUGIN_REGISTRY.forEach(p => { pluginState.byFileName[p.fileName] = p; });
 
